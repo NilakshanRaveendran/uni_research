@@ -1,0 +1,19 @@
+{
+  "pretrained": {
+    "bleu": 23.979205047145815,
+    "chrf": 49.87207672811113,
+    "n": 432,
+    "decode_s": 36.9
+  },
+  "finetuned": {
+    "bleu": 26.314879710110148,
+    "chrf": 51.69643809080141,
+    "n": 432,
+    "decode_s": 40.5
+  },
+  "delta": {
+    "bleu": 2.336,
+    "chrf": 1.824
+  },
+  "caveat": "DRAL Spanish is a conversational re-enactment, not a literal translation. A BLEU gain here reflects adaptation to the reference style and disfluency conventions, not improved translation adequacy."
+}

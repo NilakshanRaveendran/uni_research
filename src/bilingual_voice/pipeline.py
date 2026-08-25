@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import os
 from collections.abc import Iterable
 from pathlib import Path
@@ -23,6 +24,7 @@ RESULT_FIELDS = [
     "translated_text",
     "tts_asr_text",
     "generated_audio",
+    "tts_seed",
     "asr_wer",
     "tts_intelligibility_wer",
     "speaker_similarity",
@@ -36,9 +38,9 @@ RESULT_FIELDS = [
     "energy_source",
     "energy_generated",
     "energy_target_reference",
-    "source_duration",
-    "generated_duration",
-    "target_reference_duration",
+    "duration_source",
+    "duration_generated",
+    "duration_target_reference",
     "speaking_rate_source",
     "speaking_rate_generated",
     "speaking_rate_target_reference",
@@ -46,6 +48,22 @@ RESULT_FIELDS = [
     "error_stage",
     "error_message",
 ]
+
+# Result column stem -> extract_prosody key. Every prosody column follows the
+# "{column}_{role}" convention that metrics.py and plots.py read back.
+PROSODY_COLUMNS = (
+    ("f0_mean", "f0_mean"),
+    ("f0_std", "f0_std"),
+    ("energy", "energy_mean"),
+    ("duration", "duration"),
+    ("speaking_rate", "speaking_rate"),
+)
+
+
+def sample_seed(pair_id: str, direction: str) -> int:
+    """Stable per-sample TTS seed. Uses sha256, not hash(), which is salted per process."""
+    digest = hashlib.sha256(f"{pair_id}|{direction}".encode()).digest()
+    return int.from_bytes(digest[:4], "big") % (2**31 - 1)
 
 
 class LocalModels:
@@ -116,11 +134,18 @@ class LocalModels:
             self._tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to("cpu")
         return self._tts
 
-    def synthesize(self, text: str, speaker_wav: Path, language: str, output: Path) -> None:
+    def synthesize(
+        self, text: str, speaker_wav: Path, language: str, output: Path, seed: int
+    ) -> None:
         if not text.strip():
             raise ValueError("XTTS input text is empty")
+        import torch
+
         output.parent.mkdir(parents=True, exist_ok=True)
-        self.tts.tts_to_file(
+        # Resolve the lazy model before seeding so loading cannot consume the RNG stream.
+        tts = self.tts
+        torch.manual_seed(seed)
+        tts.tts_to_file(
             text=text,
             speaker_wav=str(speaker_wav),
             language=language,
@@ -209,7 +234,11 @@ def evaluate_one(
         )
 
         stage = "tts"
-        models.synthesize(result["translated_text"], source_audio, target_language, generated)
+        seed = sample_seed(row["pair_id"], direction)
+        result["tts_seed"] = str(seed)
+        models.synthesize(
+            result["translated_text"], source_audio, target_language, generated, seed
+        )
         result["generated_audio"] = str(generated.resolve())
 
         stage = "tts_asr"
@@ -225,22 +254,14 @@ def evaluate_one(
         )
 
         stage = "prosody"
-        source_features = extract_prosody(source_audio, result["source_reference_text"])
-        generated_features = extract_prosody(generated, result["translated_text"])
-        target_features = extract_prosody(target_audio, result["translation_reference"])
-        for feature, column in (("f0_mean", "f0_mean"), ("f0_std", "f0_std")):
-            result[f"{column}_source"] = str(source_features[feature])
-            result[f"{column}_generated"] = str(generated_features[feature])
-            result[f"{column}_target_reference"] = str(target_features[feature])
-        result["energy_source"] = str(source_features["energy_mean"])
-        result["energy_generated"] = str(generated_features["energy_mean"])
-        result["energy_target_reference"] = str(target_features["energy_mean"])
-        result["source_duration"] = str(source_features["duration"])
-        result["generated_duration"] = str(generated_features["duration"])
-        result["target_reference_duration"] = str(target_features["duration"])
-        result["speaking_rate_source"] = str(source_features["speaking_rate"])
-        result["speaking_rate_generated"] = str(generated_features["speaking_rate"])
-        result["speaking_rate_target_reference"] = str(target_features["speaking_rate"])
+        measured = {
+            "source": extract_prosody(source_audio, result["source_reference_text"]),
+            "generated": extract_prosody(generated, result["translated_text"]),
+            "target_reference": extract_prosody(target_audio, result["translation_reference"]),
+        }
+        for column, feature in PROSODY_COLUMNS:
+            for role, features in measured.items():
+                result[f"{column}_{role}"] = str(features[feature])
         result["status"] = "ok"
     except Exception as exc:  # noqa: BLE001 - failures must become auditable CSV rows
         result["status"] = "failed"
@@ -254,6 +275,16 @@ def read_results(path: Path) -> list[dict[str, str]]:
         return []
     with path.open(newline="", encoding="utf-8-sig") as handle:
         return list(csv.DictReader(handle))
+
+
+def _write_results(rows: list[dict[str, str]], path: Path) -> None:
+    """Replace the results CSV atomically so a crash mid-write cannot truncate it."""
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=RESULT_FIELDS)
+        writer.writeheader()
+        writer.writerows(rows)
+    os.replace(tmp, path)
 
 
 def run_evaluation(
@@ -280,8 +311,5 @@ def run_evaluation(
                 old for old in all_rows if (old.get("sample_id"), old.get("direction")) != key
             ]
             all_rows.append(result)
-            with output_csv.open("w", newline="", encoding="utf-8") as handle:
-                writer = csv.DictWriter(handle, fieldnames=RESULT_FIELDS)
-                writer.writeheader()
-                writer.writerows(all_rows)
+            _write_results(all_rows, output_csv)
     return all_rows

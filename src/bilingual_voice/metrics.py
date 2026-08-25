@@ -93,15 +93,22 @@ def summarize_rows(rows: list[dict[str, str]]) -> dict[str, object]:
             scores["corpus_asr_wer"] = None
         scores["asr_reference_count"] = len(with_source_references)
 
-        with_tts_asr = [row for row in successful if row.get("tts_asr_text")]
+        # Filter on the REFERENCE being present, never on the hypothesis. An empty Whisper
+        # transcription of generated speech means the synthesised audio was unintelligible --
+        # that is a total intelligibility failure scoring WER 1.0, not a missing observation.
+        # Excluding those rows would make corpus intelligibility look better than it is.
+        with_tts_asr = [row for row in successful if row.get("translated_text", "").strip()]
         if with_tts_asr:
             scores["corpus_tts_intelligibility_wer"] = normalized_corpus_wer(
                 [row["translated_text"] for row in with_tts_asr],
-                [row["tts_asr_text"] for row in with_tts_asr],
+                [row.get("tts_asr_text", "") for row in with_tts_asr],
             )
         else:
             scores["corpus_tts_intelligibility_wer"] = None
         scores["tts_asr_count"] = len(with_tts_asr)
+        scores["tts_asr_empty_count"] = sum(
+            1 for row in with_tts_asr if not row.get("tts_asr_text", "").strip()
+        )
 
         for field in (
             "asr_wer",
@@ -119,6 +126,24 @@ def summarize_rows(rows: list[dict[str, str]]) -> dict[str, object]:
                     values.append(value)
             scores[f"mean_{field}"] = sum(values) / len(values) if values else None
             scores[f"{field}_count"] = len(values)
+
+            # Row-level means over-weight whichever speakers contributed most recordings, and
+            # DRAL's test split is very uneven (one speaker has 118 pairs, another 2). The
+            # speaker-level mean -- average within each speaker, then across speakers -- gives
+            # every speaker equal weight and is the defensible statistic to report.
+            by_speaker: dict[str, list[float]] = defaultdict(list)
+            for row in successful:
+                try:
+                    value = float(row.get(field, ""))
+                except (TypeError, ValueError):
+                    continue
+                if math.isfinite(value):
+                    by_speaker[row.get("speaker_id", "")].append(value)
+            per_speaker = [sum(v) / len(v) for v in by_speaker.values() if v]
+            scores[f"speaker_mean_{field}"] = (
+                sum(per_speaker) / len(per_speaker) if per_speaker else None
+            )
+            scores[f"{field}_speaker_count"] = len(per_speaker)
 
         same_speaker = [row for row in successful if row.get("same_speaker_pair") == "true"]
         scores["prosody_reference_same_speaker_count"] = len(same_speaker)

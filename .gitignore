@@ -54,3 +54,14 @@ results/*.json
 plots/*.png
 plots/*.pdf
 
+
+# Web app
+webapp/jobs/
+webapp/frontend/node_modules/
+webapp/frontend/.next/
+webapp/frontend/next-env.d.ts
+webapp/frontend/tsconfig.tsbuildinfo
+
+# Fine-tuned model weights are regenerable from finetune.py (~300 MB each) -- keep the
+# curves, comparison JSONs and hypotheses, which are the actual results.
+artifacts/finetune/best-*/

@@ -1,3 +1,21 @@
+> # ⚠️ DEPRECATED — DO NOT FOLLOW
+>
+> This guide describes an **earlier, different experiment** and no longer matches the
+> implementation. Following it would produce a different study from the one actually run.
+>
+> | This guide says | The implementation actually uses |
+> |---|---|
+> | CVSS / Common Voice / LibriSpeech | **DRAL** (2,893 paired EN/ES re-enactments) |
+> | NLLB | **MarianMT** (`Helsinki-NLP/opus-mt-{en-es,es-en}`) |
+> | Resemblyzer | **ECAPA** (`speechbrain/spkrec-ecapa-voxceleb`) |
+> | UTMOS, round-trip WER | ECAPA cosine vs a **human cross-language anchor**, intelligibility WER |
+> | Google Colab | **local Apple Silicon** (CPU, MPS for MarianMT) |
+>
+> **[README.md](README.md) is the accurate document.** Use it, plus the `bvt` commands and
+> `python -m bilingual_voice.analysis`. Retained only as a record of the original plan.
+
+---
+
 # Step-by-Step Execution Guide
 ## Bilingual Voice Transcription & Synthesis Preserving Speaker Identity (ES ↔ EN)
 
