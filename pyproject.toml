@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bilingual-voice-translation"
+version = "0.1.0"
+description = "Reproducible English-Spanish speech-to-speech research pipeline for DRAL"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "jiwer>=3.0,<5",
+  "librosa>=0.10.2,<0.12",
+  "matplotlib>=3.8,<4",
+  "numpy>=1.26,<3",
+  "pandas>=2.2,<3",
+  "sacrebleu>=2.4,<3",
+  "scipy>=1.13,<2",
+  "soundfile>=0.12,<1",
+]
+
+[project.optional-dependencies]
+ml = [
+  "coqui-tts>=0.27.4,<0.29",
+  "openai-whisper>=20250625",
+  "sacremoses>=0.1,<1",
+  "sentencepiece>=0.2,<1",
+  "speechbrain>=1.0,<2",
+  "torch>=2.2",
+  "torchaudio>=2.2",
+  "torchcodec>=0.8",
+  "transformers>=4.48,<5",
+]
+dev = [
+  "pytest>=8,<9",
+  "ruff>=0.12,<1",
+]
+
+[project.scripts]
+bvt = "bilingual_voice.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

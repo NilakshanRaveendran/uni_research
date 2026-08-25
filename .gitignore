@@ -1,0 +1,56 @@
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python & environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.python-version
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDEs & editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Testing & linting
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Large/raw research artifacts
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/README.md
+data/processed/*
+!data/processed/.gitkeep
+data/splits/*
+!data/splits/.gitkeep
+models/
+outputs/
+results/*.csv
+results/*.json
+plots/*.png
+plots/*.pdf
+
