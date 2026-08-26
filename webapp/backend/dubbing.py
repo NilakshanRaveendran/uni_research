@@ -160,7 +160,13 @@ def time_scale(audio, sr: int, factor: float):
             return audio
         index = np.linspace(0, frames - 1, max(4, int(round(frames * factor))))
         source = np.arange(frames)
-        f0_s = np.interp(index, source, f0)
+        # F0 must be resampled by NEAREST NEIGHBOUR, not linearly. WORLD stores unvoiced frames
+        # as f0 = 0, so linear interpolation between a voiced frame and an unvoiced one invents
+        # pitch values that were never in the signal and smears the voiced/unvoiced boundary.
+        # Measured effect of getting this wrong: a 3.5 semitone shift on a segment that was only
+        # supposed to be stretched in time.
+        f0_s = f0[np.clip(np.round(index).astype(int), 0, frames - 1)]
+        # Spectral envelope and aperiodicity are smooth and continuous, so linear is correct there.
         sp_s = np.stack([np.interp(index, source, spectrum[:, k])
                          for k in range(spectrum.shape[1])], axis=1)
         ap_s = np.stack([np.interp(index, source, aperiodicity[:, k])
