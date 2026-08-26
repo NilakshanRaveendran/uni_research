@@ -19,7 +19,7 @@ import shutil
 import subprocess
 import time
 import wave
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 TARGET_SR = 16000  # Whisper / ECAPA operate at 16 kHz
@@ -75,9 +75,19 @@ def _run(cmd: list[str]) -> None:
 
 def ffprobe_duration(path: Path) -> float:
     result = subprocess.run(
-        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
-         "-of", "default=noprint_wrappers=1:nokey=1", str(path)],
-        capture_output=True, text=True, check=False,
+        [
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            str(path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
     )
     try:
         return float(result.stdout.strip())
@@ -88,16 +98,42 @@ def ffprobe_duration(path: Path) -> float:
 def extract_audio(video: Path, out_wav: Path) -> Path:
     """Pull a 16 kHz mono WAV out of any container ffmpeg can read."""
     out_wav.parent.mkdir(parents=True, exist_ok=True)
-    _run(["ffmpeg", "-y", "-i", str(video), "-vn", "-ac", "1", "-ar", str(TARGET_SR),
-          "-c:a", "pcm_s16le", str(out_wav)])
+    _run(
+        [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(video),
+            "-vn",
+            "-ac",
+            "1",
+            "-ar",
+            str(TARGET_SR),
+            "-c:a",
+            "pcm_s16le",
+            str(out_wav),
+        ]
+    )
     return out_wav
 
 
 def has_video_stream(path: Path) -> bool:
     result = subprocess.run(
-        ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
-         "stream=codec_type", "-of", "csv=p=0", str(path)],
-        capture_output=True, text=True, check=False,
+        [
+            "ffprobe",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=codec_type",
+            "-of",
+            "csv=p=0",
+            str(path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
     )
     return "video" in result.stdout
 
@@ -105,9 +141,28 @@ def has_video_stream(path: Path) -> bool:
 def merge_audio_into_video(video: Path, audio: Path, out_video: Path) -> Path:
     """Replace the video's audio track. Video is stream-copied, so this is fast and lossless."""
     out_video.parent.mkdir(parents=True, exist_ok=True)
-    _run(["ffmpeg", "-y", "-i", str(video), "-i", str(audio),
-          "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
-          "-shortest", str(out_video)])
+    _run(
+        [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(video),
+            "-i",
+            str(audio),
+            "-map",
+            "0:v:0",
+            "-map",
+            "1:a:0",
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-shortest",
+            str(out_video),
+        ]
+    )
     return out_video
 
 
@@ -158,7 +213,7 @@ def time_scale(audio, sr: int, factor: float):
         frames = len(f0)
         if frames < 4:
             return audio
-        index = np.linspace(0, frames - 1, max(4, int(round(frames * factor))))
+        index = np.linspace(0, frames - 1, max(4, round(frames * factor)))
         source = np.arange(frames)
         # F0 must be resampled by NEAREST NEIGHBOUR, not linearly. WORLD stores unvoiced frames
         # as f0 = 0, so linear interpolation between a voiced frame and an unvoiced one invents
@@ -167,10 +222,13 @@ def time_scale(audio, sr: int, factor: float):
         # supposed to be stretched in time.
         f0_s = f0[np.clip(np.round(index).astype(int), 0, frames - 1)]
         # Spectral envelope and aperiodicity are smooth and continuous, so linear is correct there.
-        sp_s = np.stack([np.interp(index, source, spectrum[:, k])
-                         for k in range(spectrum.shape[1])], axis=1)
-        ap_s = np.stack([np.interp(index, source, aperiodicity[:, k])
-                         for k in range(aperiodicity.shape[1])], axis=1)
+        sp_s = np.stack(
+            [np.interp(index, source, spectrum[:, k]) for k in range(spectrum.shape[1])], axis=1
+        )
+        ap_s = np.stack(
+            [np.interp(index, source, aperiodicity[:, k]) for k in range(aperiodicity.shape[1])],
+            axis=1,
+        )
         return pyworld.synthesize(
             np.ascontiguousarray(f0_s),
             np.ascontiguousarray(sp_s),
@@ -227,9 +285,8 @@ def dub(
         raise RuntimeError("No speech detected in the uploaded file")
     note(20, f"Found {len(segments)} speech segments")
 
-    source_audio, source_sr = _read_wav(source_wav)
     timeline_sr = 24000  # XTTS-v2 output rate; the assembled track uses this throughout
-    timeline = np.zeros(int(math.ceil(total_duration * timeline_sr)) + timeline_sr, dtype=np.float64)
+    timeline = np.zeros(math.ceil(total_duration * timeline_sr) + timeline_sr, dtype=np.float64)
 
     results: list[SegmentResult] = []
     segment_dir = job_dir / "segments"
@@ -240,9 +297,16 @@ def dub(
         note(span, f"Segment {i + 1}/{len(segments)}: translating and synthesising")
         original = seg["end"] - seg["start"]
         record = SegmentResult(
-            index=i, start=seg["start"], end=seg["end"], source_text=seg["text"],
-            translated_text="", original_duration=original, raw_tts_duration=0.0,
-            final_duration=0.0, scale_applied=1.0, clamped=False,
+            index=i,
+            start=seg["start"],
+            end=seg["end"],
+            source_text=seg["text"],
+            translated_text="",
+            original_duration=original,
+            raw_tts_duration=0.0,
+            final_duration=0.0,
+            scale_applied=1.0,
+            clamped=False,
         )
         try:
             translated = models.translate(seg["text"], source_lang, target_lang)

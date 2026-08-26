@@ -221,8 +221,7 @@ def load_features(path: Path, same_speaker_only: bool = True):
             "nan_f0": df[f"{side}_f0_mean_st"].notna().to_numpy(),
             "voiced_ratio": (df[f"{side}_voiced_ratio"] >= MIN_VOICED_RATIO).to_numpy(),
             "duration": (
-                (df[f"{side}_duration"] >= MIN_DURATION)
-                & (df[f"{side}_duration"] <= MAX_DURATION)
+                (df[f"{side}_duration"] >= MIN_DURATION) & (df[f"{side}_duration"] <= MAX_DURATION)
             ).to_numpy(),
             # Backstop: a mean F0 outside the plausible speaking band is a tracking failure,
             # not a voice. One such pair contributes ~30x a normal semitone error and would
@@ -455,7 +454,9 @@ def evaluate(df, feature_set: str = "t0"):
             work = frame.dropna(subset=needed)
             parts = {s: work[work["split"] == s] for s in ("train", "dev", "test")}
             if min(len(p) for p in parts.values()) < 10:
-                print(f"  skip {direction}/{target}: too few rows {[len(p) for p in parts.values()]}")
+                print(
+                    f"  skip {direction}/{target}: too few rows {[len(p) for p in parts.values()]}"
+                )
                 continue
 
             def xy(part, target=target):
@@ -471,8 +472,8 @@ def evaluate(df, feature_set: str = "t0"):
             work_idx = parts["test"].index
 
             # --- baselines, all fitted on train only ---
-            b1 = float(np.mean(ytr))                       # predict train mean
-            offset = float(np.mean(ytr - ctr))             # B2's single global scalar
+            b1 = float(np.mean(ytr))  # predict train mean
+            offset = float(np.mean(ytr - ctr))  # B2's single global scalar
             preds = {
                 "B1_train_mean": np.full_like(yte, b1),
                 "B0_copy_source": cte,
@@ -518,17 +519,35 @@ def evaluate(df, feature_set: str = "t0"):
                     score["medae_vs_b2_pct"] = (
                         round(100.0 * (score["medae"] - b2_med) / b2_med, 2) if b2_med > 0 else None
                     )
-                    score["wilcoxon_p_vs_b2"] = 1.0 if identical else float(wilcoxon(err, b2_err).pvalue)
+                    score["wilcoxon_p_vs_b2"] = (
+                        1.0 if identical else float(wilcoxon(err, b2_err).pvalue)
+                    )
                     score["equivalent_to_b2"] = bool(identical)
                     score.update(
                         _cluster_stats(err, b2_err, parts["test"].loc[work_idx, "speaker"])
                     )
                 rows.append(score)
 
-    order = ["direction", "target", "system", "unit", "n", "mae", "medae", "rmse", "pearson_r",
-             "mae_vs_b2_pct", "medae_vs_b2_pct", "wilcoxon_p_vs_b2",
-             "n_speakers", "wilcoxon_p_vs_b2_by_speaker", "mae_diff_cluster_ci95_low",
-             "mae_diff_cluster_ci95_high", "cluster_ci_excludes_zero", "equivalent_to_b2"]
+    order = [
+        "direction",
+        "target",
+        "system",
+        "unit",
+        "n",
+        "mae",
+        "medae",
+        "rmse",
+        "pearson_r",
+        "mae_vs_b2_pct",
+        "medae_vs_b2_pct",
+        "wilcoxon_p_vs_b2",
+        "n_speakers",
+        "wilcoxon_p_vs_b2_by_speaker",
+        "mae_diff_cluster_ci95_low",
+        "mae_diff_cluster_ci95_high",
+        "cluster_ci_excludes_zero",
+        "equivalent_to_b2",
+    ]
     results = pd.DataFrame(rows)
     return results[[c for c in order if c in results.columns]], pd.DataFrame(coefficients)
 
@@ -550,7 +569,9 @@ def corpus_table(df):
         en = sub[en_col].to_numpy(float)
         es = sub[es_col].to_numpy(float)
         delta = es - en
-        sem = float(np.std(delta, ddof=1) / math.sqrt(len(delta))) if len(delta) > 1 else float("nan")
+        sem = (
+            float(np.std(delta, ddof=1) / math.sqrt(len(delta))) if len(delta) > 1 else float("nan")
+        )
         rows.append(
             {
                 "measure": label,
@@ -601,11 +622,18 @@ def make_figures(df, results, outdir: Path) -> list[Path]:
         written.append(path)
 
     # F2 -- histogram of log ES/EN duration ratio
-    ratio = np.log(df["es_duration"] / df["en_duration"]).replace([np.inf, -np.inf], np.nan).dropna()
+    ratio = (
+        np.log(df["es_duration"] / df["en_duration"]).replace([np.inf, -np.inf], np.nan).dropna()
+    )
     fig, ax = plt.subplots(figsize=(6.5, 4.2))
     ax.hist(ratio, bins=60, color="#4477aa", alpha=0.85)
-    ax.axvline(float(np.median(ratio)), color="crimson", ls="--", lw=1.5,
-               label=f"median = {float(np.median(ratio)):.3f}")
+    ax.axvline(
+        float(np.median(ratio)),
+        color="crimson",
+        ls="--",
+        lw=1.5,
+        label=f"median = {float(np.median(ratio)):.3f}",
+    )
     ax.axvline(0, color="gray", ls=":", lw=1)
     ax.set_xlabel("log(Spanish duration / English duration)")
     ax.set_ylabel("Number of pairs")
@@ -617,7 +645,8 @@ def make_figures(df, results, outdir: Path) -> list[Path]:
     sub = df[["en_f0_mean_st", "es_f0_mean_st"]].dropna()
     fig, ax = plt.subplots(figsize=(5.6, 5.4))
     ax.scatter(sub["en_f0_mean_st"], sub["es_f0_mean_st"], s=10, alpha=0.4, color="#4477aa")
-    low = float(min(sub.min())); high = float(max(sub.max()))
+    low = float(min(sub.min()))
+    high = float(max(sub.max()))
     ax.plot([low, high], [low, high], "--", color="gray", lw=1, label="y = x")
     ax.set_xlabel("English F0 mean (semitones re 100 Hz)")
     ax.set_ylabel("Spanish F0 mean (semitones re 100 Hz)")
@@ -652,7 +681,9 @@ def make_figures(df, results, outdir: Path) -> list[Path]:
         for direction in sorted(results["direction"].unique()):
             part = results[results["direction"] == direction]
             targets = sorted(part["target"].unique())
-            fig, axes = plt.subplots(1, len(targets), figsize=(4.0 * len(targets), 4.2), squeeze=False)
+            fig, axes = plt.subplots(
+                1, len(targets), figsize=(4.0 * len(targets), 4.2), squeeze=False
+            )
             for ax, target in zip(axes[0], targets, strict=True):
                 vals, unit = [], ""
                 for system in systems:
@@ -663,8 +694,14 @@ def make_figures(df, results, outdir: Path) -> list[Path]:
                 bars = ax.bar(range(len(systems)), vals, color=colours, edgecolor="black", lw=0.4)
                 for rect, value in zip(bars, vals, strict=True):
                     if np.isfinite(value):
-                        ax.text(rect.get_x() + rect.get_width() / 2, value, f"{value:.3f}",
-                                ha="center", va="bottom", fontsize=8)
+                        ax.text(
+                            rect.get_x() + rect.get_width() / 2,
+                            value,
+                            f"{value:.3f}",
+                            ha="center",
+                            va="bottom",
+                            fontsize=8,
+                        )
                 ax.set_xticks(range(len(systems)))
                 ax.set_xticklabels(["B1\nmean", "B0\ncopy", "B2\ncopy+off", "ridge"], fontsize=8)
                 ax.set_title(target, fontsize=10)
@@ -700,8 +737,11 @@ def _report(features_csv: Path, outdir: Path, feature_set: str) -> None:
     try:
         assert_speaker_disjoint(
             [
-                {"english_speaker_id": str(r.en_speaker), "spanish_speaker_id": str(r.es_speaker),
-                 "split": str(r.split)}
+                {
+                    "english_speaker_id": str(r.en_speaker),
+                    "spanish_speaker_id": str(r.es_speaker),
+                    "split": str(r.split),
+                }
                 for r in df.itertuples()
             ]
         )
@@ -719,7 +759,11 @@ def _report(features_csv: Path, outdir: Path, feature_set: str) -> None:
     results, coefficients = evaluate(df, feature_set)
 
     (outdir / "T1_gate_stats.json").write_text(json.dumps(stats, indent=2, default=str) + "\n")
-    for name, table in (("T3_corpus", corpus), ("T4_results", results), ("T5_coefficients", coefficients)):
+    for name, table in (
+        ("T3_corpus", corpus),
+        ("T4_results", results),
+        ("T5_coefficients", coefficients),
+    ):
         table.to_csv(outdir / f"{name}.csv", index=False)
         (outdir / f"{name}.md").write_text(_fmt(table) + "\n")
         try:
@@ -733,13 +777,16 @@ def _report(features_csv: Path, outdir: Path, feature_set: str) -> None:
     import subprocess
 
     try:
-        commit = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-            check=False,
-        ).stdout.strip() or "uncommitted"
+        commit = (
+            subprocess.run(
+                ["git", "rev-parse", "--short", "HEAD"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
+            ).stdout.strip()
+            or "uncommitted"
+        )
     except Exception:  # noqa: BLE001 - provenance must never break the report
         commit = "unknown"
     provenance = {

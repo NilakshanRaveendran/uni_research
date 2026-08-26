@@ -38,6 +38,15 @@ type Job = {
   result?: DubResult;
 };
 
+type Health = {
+  ok: boolean;
+  ffmpeg: boolean;
+  xtts_license_accepted: boolean;
+  mt_mode: string;
+  models_loaded: boolean;
+  max_upload_mb: number;
+};
+
 const DIRECTIONS: { id: Direction; from: string; to: string; flagFrom: string; flagTo: string }[] = [
   { id: "es-en", from: "Spanish", to: "English", flagFrom: "🇪🇸", flagTo: "🇬🇧" },
   { id: "en-es", from: "English", to: "Spanish", flagFrom: "🇬🇧", flagTo: "🇪🇸" },
@@ -68,12 +77,14 @@ function fmtBytes(n: number): string {
 }
 
 export default function Page() {
-  const [health, setHealth] = useState<{ ok: boolean; ffmpeg: boolean } | null>(null);
+  const [health, setHealth] = useState<Health | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [direction, setDirection] = useState<Direction>("es-en");
   const [job, setJob] = useState<Job | null>(null);
   const [error, setError] = useState<string>("");
   const [over, setOver] = useState(false);
+  // -1 means "no upload in flight"; 0-100 is a live upload percentage.
+  const [uploadPct, setUploadPct] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -81,7 +92,16 @@ export default function Page() {
     fetch("/api/health")
       .then((r) => r.json())
       .then(setHealth)
-      .catch(() => setHealth({ ok: false, ffmpeg: false }));
+      .catch(() =>
+        setHealth({
+          ok: false,
+          ffmpeg: false,
+          xtts_license_accepted: false,
+          mt_mode: "unavailable",
+          models_loaded: false,
+          max_upload_mb: 200,
+        }),
+      );
   }, []);
 
   const stopPolling = useCallback(() => {
@@ -118,18 +138,44 @@ export default function Page() {
     const body = new FormData();
     body.append("file", file);
     body.append("direction", direction);
-    try {
-      const res = await fetch("/api/jobs", { method: "POST", body });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data?.detail ?? "Upload failed");
-        return;
-      }
-      setJob({ job_id: data.job_id, status: "queued", progress: 0, message: "Queued" });
-      poll(data.job_id);
-    } catch {
-      setError("Could not reach the backend. Is it running on port 8000?");
-    }
+    // XMLHttpRequest rather than fetch: fetch() exposes no upload-progress events, so a large
+    // file would upload with no feedback at all. XHR gives us upload.onprogress.
+    setUploadPct(0);
+    await new Promise<void>((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/jobs");
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) setUploadPct(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => {
+        setUploadPct(-1);
+        let data: { job_id?: string; detail?: string } = {};
+        try {
+          data = JSON.parse(xhr.responseText);
+        } catch {
+          setError(`Server returned ${xhr.status} with an unreadable body`);
+          resolve();
+          return;
+        }
+        if (xhr.status >= 200 && xhr.status < 300 && data.job_id) {
+          setJob({ job_id: data.job_id, status: "queued", progress: 0, message: "Queued" });
+          poll(data.job_id);
+        } else {
+          setError(data.detail ?? `Upload failed (HTTP ${xhr.status})`);
+        }
+        resolve();
+      };
+      xhr.onerror = () => {
+        setUploadPct(-1);
+        setError("Could not reach the backend. Is it running on port 8000?");
+        resolve();
+      };
+      xhr.onabort = () => {
+        setUploadPct(-1);
+        resolve();
+      };
+      xhr.send(body);
+    });
   }
 
   function pick(f: File | undefined) {
@@ -139,7 +185,8 @@ export default function Page() {
     setError("");
   }
 
-  const busy = job?.status === "queued" || job?.status === "running";
+  const uploading = uploadPct >= 0;
+  const busy = uploading || job?.status === "queued" || job?.status === "running";
   const result = job?.status === "done" ? job.result : undefined;
   const activeStage = stageFromProgress(job?.progress ?? -1);
 
@@ -156,13 +203,18 @@ export default function Page() {
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <span className="pill">
-            <span className={`dot ${health?.ok ? "on" : "off"}`} />
-            {health === null ? "checking backend" : health.ok ? "backend ready" : "backend offline"}
+            <span className={`dot ${health !== null && health.ffmpeg ? "on" : "off"}`} />
+            {health === null ? "checking backend" : health.ffmpeg ? "backend ready" : "backend offline"}
           </span>
           <span className="pill">
             <span className={`dot ${health?.ffmpeg ? "on" : "off"}`} />
             ffmpeg
           </span>
+          <span className="pill">
+            <span className={`dot ${health?.xtts_license_accepted ? "on" : "off"}`} />
+            {health?.xtts_license_accepted ? "XTTS enabled" : "XTTS setup required"}
+          </span>
+          {health && <span className="pill">MT: {health.mt_mode}</span>}
         </div>
       </header>
 
@@ -172,6 +224,7 @@ export default function Page() {
           <h3>1 · Source media</h3>
           <p className="sub">
             Video or audio. MP4, MOV, MKV, WEBM, WAV, MP3, M4A, FLAC — up to 200 MB.
+            Best results come from a short, clean clip with one clearly audible speaker.
           </p>
           <div
             className={`drop ${over ? "over" : ""}`}
@@ -200,7 +253,20 @@ export default function Page() {
           {file && (
             <div className="filechip">
               <span className="name">{file.name}</span>
-              <span className="sz">{fmtBytes(file.size)}</span>
+              <span className="sz">
+                {uploading ? `uploading ${uploadPct}%` : job ? "uploaded ✓" : fmtBytes(file.size)}
+              </span>
+            </div>
+          )}
+          {uploading && (
+            <div style={{ marginTop: 10 }}>
+              <div className="bar">
+                <i style={{ width: `${uploadPct}%` }} />
+              </div>
+              <p className="note" style={{ marginTop: 7 }}>
+                Sending {fmtBytes(file?.size ?? 0)} to the server — {uploadPct}%
+                {uploadPct === 100 ? " · waiting for the server to accept it" : ""}
+              </p>
             </div>
           )}
         </section>
@@ -225,9 +291,29 @@ export default function Page() {
               </button>
             ))}
           </div>
-          <button className="btn" onClick={submit} disabled={!file || busy || !health?.ok}>
-            {busy ? "Dubbing…" : "Start dubbing"}
+          <button
+            className="btn"
+            onClick={submit}
+            disabled={!file || busy || !health?.ok}
+            title={
+              !file
+                ? "Choose a file first"
+                : !health?.ok
+                  ? "Backend is not ready — see the note below"
+                  : ""
+            }
+          >
+            {uploading ? `Uploading ${uploadPct}%` : busy ? "Dubbing…" : "Start dubbing"}
           </button>
+          {!file && health?.ok && (
+            <p className="note" style={{ marginTop: 9 }}>Choose a file to enable this button.</p>
+          )}
+          {health && !health.xtts_license_accepted && (
+            <div className="setup-box">
+              Review the Coqui model license, then restart the backend with
+              <code>COQUI_TOS_AGREED=1</code> to enable dubbing.
+            </div>
+          )}
         </section>
 
         {/* pipeline */}
@@ -251,15 +337,19 @@ export default function Page() {
         <section className="tile span-4">
           <h3>Progress</h3>
           <div className="pcts">
-            <b>{job ? `${job.progress}%` : "—"}</b>
+            <b>{uploading ? `${uploadPct}%` : job ? `${job.progress}%` : "—"}</b>
             <span className="note">
               {result ? `finished in ${result.elapsed_s}s` : busy ? "working…" : "idle"}
             </span>
           </div>
           <div className="bar">
-            <i style={{ width: `${job?.progress ?? 0}%` }} />
+            <i style={{ width: `${uploading ? uploadPct : (job?.progress ?? 0)}%` }} />
           </div>
-          <div className="msg">{job?.message ?? "Upload a file and press Start dubbing."}</div>
+          <div className="msg">
+            {uploading
+              ? `Uploading file… ${uploadPct}%`
+              : (job?.message ?? "Upload a file and press Start dubbing.")}
+          </div>
           {error && <div className="err-box" style={{ marginTop: 12 }}>{error}</div>}
           {job?.status === "error" && (
             <div className="err-box" style={{ marginTop: 12 }}>{job.message}</div>

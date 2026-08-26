@@ -128,12 +128,27 @@ Models download on first use. Each completed row is checkpointed immediately.
 
 ```bash
 python -m pytest
-python -m ruff check src tests
+python -m ruff check src tests webapp/backend
 python -m compileall -q src
 ```
 
-## Fine-tuning boundary
+## Fine-tuned MarianMT experiment
 
-The pretrained XTTS-v2 run is the required baseline. Fine-tuning is a separate,
-optional experiment and must use held-out utterances from one speaker. Do not begin
-fine-tuning until the zero-shot test split and evaluation summary are complete.
+MarianMT was fine-tuned independently in both directions using only the DRAL training split.
+Checkpoint selection used development loss, and the held-out test split was used once for the
+final comparison. The resulting gains were +2.336 BLEU for EN→ES and +3.228 BLEU for ES→EN.
+These gains measure adaptation to DRAL's conversational re-enactment style, not necessarily a
+general improvement in translation adequacy. Reproduce the experiment with
+`python -m bilingual_voice.finetune`.
+
+## Local website
+
+The local web application accepts a short video or audio file, runs Whisper → MarianMT → XTTS-v2,
+retimes generated segments, and returns dubbed media with segment details and measurements.
+
+```bash
+./webapp/start_local.sh
+```
+
+Open [http://localhost:3000](http://localhost:3000). Full setup and operating notes are in
+[`webapp/README.md`](webapp/README.md).

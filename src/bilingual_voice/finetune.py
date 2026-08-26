@@ -33,7 +33,9 @@ SEED = 498
 def build_pairs(rows: list[dict[str, str]], split: str, direction: str) -> list[tuple[str, str]]:
     """(source_text, target_text) pairs for one split and direction. Skips empty either side."""
     source_key, target_key = (
-        ("english_text", "spanish_text") if direction == "en-es" else ("spanish_text", "english_text")
+        ("english_text", "spanish_text")
+        if direction == "en-es"
+        else ("spanish_text", "english_text")
     )
     pairs = []
     for row in rows:
@@ -65,8 +67,12 @@ def _encode(tokenizer, batch, device):
     sources = [source for source, _ in batch]
     targets = [target for _, target in batch]
     encoded = tokenizer(
-        sources, text_target=targets, return_tensors="pt", padding=True,
-        truncation=True, max_length=MAX_LENGTH,
+        sources,
+        text_target=targets,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=MAX_LENGTH,
     )
     labels = encoded["labels"]
     labels[labels == tokenizer.pad_token_id] = -100  # ignore padding in the loss
@@ -123,7 +129,10 @@ def train(
         model(**probe).loss.backward()
         model.zero_grad(set_to_none=True)
     except Exception as exc:  # noqa: BLE001 - unsupported ops on MPS must not end the run
-        print(f"  device {device} failed ({type(exc).__name__}: {exc}); falling back to cpu", flush=True)
+        print(
+            f"  device {device} failed ({type(exc).__name__}: {exc}); falling back to cpu",
+            flush=True,
+        )
         device = torch.device("cpu")
         model = model.to(device)
     print(f"  device={device}", flush=True)
@@ -136,7 +145,9 @@ def train(
 
     for epoch in range(1, epochs + 1):
         model.train()
-        order = torch.randperm(len(train_pairs), generator=torch.Generator().manual_seed(SEED + epoch))
+        order = torch.randperm(
+            len(train_pairs), generator=torch.Generator().manual_seed(SEED + epoch)
+        )
         shuffled = [train_pairs[i] for i in order.tolist()]
         running, seen = 0.0, 0
         for step, batch in enumerate(_batches(shuffled, batch_size), 1):
@@ -185,8 +196,9 @@ def _plot_curves(history: list[dict], outdir: Path, direction: str) -> Path:
     axis.plot(epochs, [h["train_loss"] for h in history], "o-", label="train")
     axis.plot(epochs, [h["dev_loss"] for h in history], "s-", label="dev")
     best = min(history, key=lambda h: h["dev_loss"])
-    axis.axvline(best["epoch"], color="crimson", ls="--", lw=1,
-                 label=f"selected epoch {best['epoch']}")
+    axis.axvline(
+        best["epoch"], color="crimson", ls="--", lw=1, label=f"selected epoch {best['epoch']}"
+    )
     axis.set_xlabel("Epoch")
     axis.set_ylabel("Cross-entropy loss")
     axis.set_title(f"MarianMT fine-tuning: {direction}")
@@ -255,8 +267,10 @@ def compare(
             "n": len(hypotheses),
             "decode_s": round(time.time() - started, 1),
         }
-        print(f"  {label}: BLEU={results[label]['bleu']:.2f} chrF={results[label]['chrf']:.2f}",
-              flush=True)
+        print(
+            f"  {label}: BLEU={results[label]['bleu']:.2f} chrF={results[label]['chrf']:.2f}",
+            flush=True,
+        )
         (outdir / f"hyps-{label}-{direction}.txt").write_text(
             "\n".join(hypotheses) + "\n", encoding="utf-8"
         )
@@ -297,12 +311,19 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     if args.command == "train":
         summary = train(
-            args.manifest, args.outdir, args.direction, args.epochs,
-            args.batch_size, args.learning_rate, args.device,
+            args.manifest,
+            args.outdir,
+            args.direction,
+            args.epochs,
+            args.batch_size,
+            args.learning_rate,
+            args.device,
         )
         print(json.dumps(summary["best"], indent=2))
     else:
-        print(json.dumps(compare(args.manifest, args.outdir, args.direction, args.device), indent=2))
+        print(
+            json.dumps(compare(args.manifest, args.outdir, args.direction, args.device), indent=2)
+        )
 
 
 if __name__ == "__main__":

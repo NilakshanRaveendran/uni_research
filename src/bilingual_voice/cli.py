@@ -49,6 +49,11 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--whisper-size", default="small")
     run.add_argument("--mt-device", choices=("cpu", "mps"), default="cpu")
     run.add_argument("--model-root", type=Path, default=Path("models"))
+    run.add_argument(
+        "--finetuned-mt-root",
+        type=Path,
+        help="Directory containing best-en-es/ and best-es-en/ checkpoints",
+    )
     run.add_argument("--resume", action="store_true")
 
     summary = sub.add_parser("summarize")
@@ -97,7 +102,21 @@ def main(argv: list[str] | None = None) -> None:
         rows = [row for row in read_manifest(args.manifest) if row.get("split") == args.split]
         if args.limit is not None:
             rows = rows[: args.limit]
-        models = LocalModels(args.whisper_size, args.mt_device, args.model_root)
+        mt_model_dirs = None
+        if args.finetuned_mt_root:
+            mt_model_dirs = {
+                direction: args.finetuned_mt_root / f"best-{direction}"
+                for direction in args.directions
+            }
+            missing = [str(path) for path in mt_model_dirs.values() if not path.is_dir()]
+            if missing:
+                raise FileNotFoundError(f"Fine-tuned MarianMT checkpoint missing: {missing}")
+        models = LocalModels(
+            args.whisper_size,
+            args.mt_device,
+            args.model_root,
+            mt_model_dirs=mt_model_dirs,
+        )
         results = run_evaluation(
             rows, args.directions, args.output, args.audio_output, models, args.resume
         )

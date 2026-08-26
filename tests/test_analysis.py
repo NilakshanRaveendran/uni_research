@@ -35,12 +35,23 @@ def test_semitone_and_delta_transforms() -> None:
 
     # One pair: EN 1s / 100 Hz, ES 2s / 200 Hz.
     row = {
-        "pair_id": "p1", "split": "train", "same_speaker_pair": "true",
-        "en_speaker": "1", "es_speaker": "1",
-        "en_duration": 1.0, "en_f0_mean_st": 0.0, "en_f0_std_st": 1.0,
-        "en_voiced_ratio": 0.9, "en_n_words": 3.0, "en_speaking_rate": 3.0,
-        "es_duration": 2.0, "es_f0_mean_st": 12.0, "es_f0_std_st": 2.0,
-        "es_voiced_ratio": 0.9, "es_n_words": 4.0, "es_speaking_rate": 2.0,
+        "pair_id": "p1",
+        "split": "train",
+        "same_speaker_pair": "true",
+        "en_speaker": "1",
+        "es_speaker": "1",
+        "en_duration": 1.0,
+        "en_f0_mean_st": 0.0,
+        "en_f0_std_st": 1.0,
+        "en_voiced_ratio": 0.9,
+        "en_n_words": 3.0,
+        "en_speaking_rate": 3.0,
+        "es_duration": 2.0,
+        "es_f0_mean_st": 12.0,
+        "es_f0_std_st": 2.0,
+        "es_voiced_ratio": 0.9,
+        "es_n_words": 4.0,
+        "es_speaking_rate": 2.0,
     }
     df = pd.DataFrame([row])
 

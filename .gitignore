@@ -57,6 +57,7 @@ plots/*.pdf
 
 # Web app
 webapp/jobs/
+webapp/.runtime/
 webapp/frontend/node_modules/
 webapp/frontend/.next/
 webapp/frontend/next-env.d.ts

@@ -5,7 +5,36 @@ audio remuxed into the original picture. This implements **Objective 3** of the 
 ("integrate the synthesized dialogue with the original video, producing complete translated video
 outputs"), which the research CLI did not cover.
 
-## Run it
+## Install and run it locally
+
+From the project root, install the declared web dependencies once:
+
+```bash
+source .venv/bin/activate
+python -m pip install -e '.[ml,dev,web]'
+cd webapp/frontend && npm install && cd ../..
+```
+
+Review the [Coqui model license](https://coqui.ai/cpml). If you accept it, enable XTTS
+for this terminal before starting the app:
+
+```bash
+export COQUI_TOS_AGREED=1
+```
+
+The one-command launcher starts both services:
+
+```bash
+./webapp/start_local.sh
+```
+
+Open **http://localhost:3000**. Stop services started by the launcher with:
+
+```bash
+./webapp/stop_local.sh
+```
+
+For debugging, the equivalent manual setup uses two terminals. **Backend:**
 
 Two terminals. **Backend:**
 
@@ -22,8 +51,9 @@ npm install    # first time only
 npm run dev
 ```
 
-Open **http://localhost:3000**. The frontend proxies `/api/*` to port 8000, so there is no CORS
-setup and no environment variable to configure.
+The frontend proxies `/api/*` to port 8000. The backend selects the completed DRAL-fine-tuned
+MarianMT checkpoints by default; set `BVT_MT_MODE=pretrained` before launch to run the original
+translation baseline instead.
 
 ## What happens to an upload
 
@@ -77,6 +107,9 @@ Models load once on the first request (~30 s) and are reused for every later job
 
 Accepts `.mp4 .mov .mkv .webm .m4v .avi .wav .mp3 .m4a .flac`, up to 200 MB. Audio-only uploads
 work — the dubbed WAV becomes the deliverable since there is no picture to remux into.
+
+Use a short clip with one clearly audible speaker. The current app creates a speech-only dubbed
+track; it does not separate and preserve background music or handle multiple speakers separately.
 
 ## Outputs
 

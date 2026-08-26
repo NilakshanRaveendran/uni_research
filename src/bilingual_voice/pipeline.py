@@ -72,11 +72,16 @@ class LocalModels:
         whisper_size: str = "small",
         mt_device: str = "cpu",
         model_root: Path = Path("models"),
+        mt_model_dirs: dict[str, Path] | None = None,
     ) -> None:
         self.whisper_size = whisper_size
         self.mt_device = mt_device
         self.model_root = model_root.resolve()
         self.model_root.mkdir(parents=True, exist_ok=True)
+        self.mt_model_dirs = {
+            direction: path.expanduser().resolve()
+            for direction, path in (mt_model_dirs or {}).items()
+        }
         self._asr = None
         self._mt: dict[str, tuple[object, object]] = {}
         self._tts = None
@@ -104,16 +109,16 @@ class LocalModels:
         from transformers import MarianMTModel, MarianTokenizer
 
         key = f"{source}-{target}"
-        model_name = {
+        pretrained_name = {
             "en-es": "Helsinki-NLP/opus-mt-en-es",
             "es-en": "Helsinki-NLP/opus-mt-es-en",
         }[key]
+        model_name = str(self.mt_model_dirs.get(key, pretrained_name))
         if key not in self._mt:
             cache_dir = self.model_root / "huggingface"
-            tokenizer = MarianTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
-            model = MarianMTModel.from_pretrained(model_name, cache_dir=cache_dir).to(
-                self.mt_device
-            )
+            load_kwargs = {} if key in self.mt_model_dirs else {"cache_dir": cache_dir}
+            tokenizer = MarianTokenizer.from_pretrained(model_name, **load_kwargs)
+            model = MarianMTModel.from_pretrained(model_name, **load_kwargs).to(self.mt_device)
             model.eval()
             self._mt[key] = (tokenizer, model)
         tokenizer, model = self._mt[key]
@@ -236,9 +241,7 @@ def evaluate_one(
         stage = "tts"
         seed = sample_seed(row["pair_id"], direction)
         result["tts_seed"] = str(seed)
-        models.synthesize(
-            result["translated_text"], source_audio, target_language, generated, seed
-        )
+        models.synthesize(result["translated_text"], source_audio, target_language, generated, seed)
         result["generated_audio"] = str(generated.resolve())
 
         stage = "tts_asr"
