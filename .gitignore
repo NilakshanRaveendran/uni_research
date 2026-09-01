@@ -83,9 +83,11 @@ thesis/*.toc
 thesis/*.lof
 thesis/*.lot
 thesis/*.pdf
+!thesis/UWU_CST_2026_dissertation.pdf
 journal/*.aux
 journal/*.bbl
 journal/*.blg
 journal/*.log
 journal/*.out
 journal/*.pdf
+!journal/IEEE_manuscript.pdf
