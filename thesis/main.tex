@@ -1,0 +1,163 @@
+% =======================================================================================
+% Bilingual Voice Transcription and Synthesis Preserving Speaker Identity
+% Using NLP and Deep Learning
+%
+% Final-year research dissertation (CST 498-6 / IIT 474-6)
+% Department of Computer Science and Informatics, Faculty of Applied Sciences,
+% Uva Wellassa University of Sri Lanka.
+%
+% Build:  ./build.sh          (pdflatex -> bibtex -> pdflatex x2)
+% Layout: uwuthesis.sty implements SECTION-H of the UWU dissertation guidelines.
+%
+% -------------------------------------------------------------------------------------
+% CHECK BEFORE SUBMISSION -- three items only the candidates can confirm:
+%   1. \degreename below (the exact wording awarded by the Faculty)
+%   2. \submissionmonth below
+%   3. the contact details block on the declaration page
+% -------------------------------------------------------------------------------------
+\documentclass[12pt,a4paper,oneside]{report}
+\usepackage{uwuthesis}
+
+\newcommand{\thesistitle}{Bilingual Voice Transcription and Synthesis Preserving
+Speaker Identity Using NLP and Deep Learning}
+\newcommand{\degreename}{Bachelor of Science Honours in Computer Science and Technology}
+\newcommand{\submissionmonth}{August 2026}
+\newcommand{\supervisorname}{Mr.\ E.\,M.\,U.\,W.\,J.\,B. Ekanayake}
+\newcommand{\cosupervisorname}{Mr.\ H.\,P.\,D.\,P. Pathirana}
+
+\hypersetup{
+  pdftitle={\thesistitle},
+  pdfauthor={R. Nilakshan, I. R. Janukshan, P. Piranya},
+  pdfsubject={Final-year research dissertation, Uva Wellassa University},
+  pdfkeywords={speech-to-speech translation, voice cloning, prosody, DRAL, speaker identity}
+}
+
+\begin{document}
+
+% =======================================================================================
+% COVER PAGE  (no page number; Roman numbering begins on the title page)
+% =======================================================================================
+\thispagestyle{empty}
+\begin{center}
+  \singlespacing\setlength{\parskip}{0pt}
+  \vspace*{2.0cm}
+
+  {\LARGE\bfseries \thesistitle\par}
+
+  \vspace{3.0cm}
+
+  {\large R.\ Nilakshan\par}
+  {\large I.\ R.\ Janukshan\par}
+  {\large P.\ Piranya\par}
+
+  \vspace{3.0cm}
+
+  {\large Department of Computer Science and Informatics\par}
+  {\large Faculty of Applied Sciences\par}
+  {\large Uva Wellassa University, Sri Lanka\par}
+
+  \vspace{2.0cm}
+
+  {\large \submissionmonth\par}
+\end{center}
+\clearpage
+
+% =======================================================================================
+% FRONT MATTER  (Roman numerals, bottom centre)
+% =======================================================================================
+\frontmatterpages
+
+% ---------------------------------------------------------------- title page (page i, not printed)
+\thispagestyle{empty}
+\begin{center}
+  \singlespacing\setlength{\parskip}{0pt}
+  \vspace*{1.2cm}
+
+  {\LARGE\bfseries \thesistitle\par}
+
+  \vspace{2.0cm}
+
+  A dissertation submitted to the\\[0.4em]
+  Department of Computer Science and Informatics,\\
+  Faculty of Applied Sciences,\\
+  Uva Wellassa University\\[0.8em]
+  in partial fulfilment of the requirements for the award of the\\
+  Degree of \degreename
+
+  \vspace{1.6cm}
+
+  \emph{by}
+
+  \vspace{0.8em}
+
+  {\large\bfseries R.\ Nilakshan\quad (UWU/CST/21/055)\par}
+  {\large\bfseries I.\ R.\ Janukshan\quad (UWU/CST/21/056)\par}
+  {\large\bfseries P.\ Piranya\quad (UWU/CST/21/065)\par}
+
+  \vspace{1.6cm}
+
+  {\bfseries Department of Computer Science and Informatics\par}
+  {\bfseries Faculty of Applied Sciences\par}
+  {\bfseries Uva Wellassa University, Sri Lanka\par}
+
+  \vspace{1.4cm}
+
+  {\bfseries \submissionmonth\par}
+\end{center}
+\clearpage
+
+% ---------------------------------------------------------------- declaration
+\input{frontmatter/declaration}
+
+% ---------------------------------------------------------------- acknowledgement
+\input{frontmatter/acknowledgement}
+
+% ---------------------------------------------------------------- contents
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Contents}
+{\singlespacing\tableofcontents}
+
+% ---------------------------------------------------------------- abstract
+\input{frontmatter/abstract}
+
+% ---------------------------------------------------------------- lists
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+{\singlespacing\listoffigures}
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+{\singlespacing\listoftables}
+
+\input{frontmatter/abbreviations}
+
+% =======================================================================================
+% MAIN BODY  (Arabic numerals, bottom centre, beginning at 1)
+% =======================================================================================
+\mainmatterpages
+
+\input{chapters/01_introduction}
+\input{chapters/02_literature_review}
+\input{chapters/03_methodology}
+\input{chapters/04_results_discussion}
+\input{chapters/05_conclusions}
+
+% =======================================================================================
+% REFERENCES  (APA, author-year; uncited entries are not listed)
+% =======================================================================================
+\cleardoublepage
+\phantomsection
+{\singlespacing
+ \setlength{\parskip}{0.5\baselineskip}
+ \bibliographystyle{apacite}
+ \bibliography{references}}
+
+% =======================================================================================
+% APPENDICES
+% =======================================================================================
+\input{chapters/06_appendix}
+
+\end{document}

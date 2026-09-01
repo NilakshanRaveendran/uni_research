@@ -1,0 +1,66 @@
+{
+  "job_id": "dafbca947e47",
+  "direction": "es-en",
+  "video_out": "webapp/jobs/dafbca947e47/dubbed.mp4",
+  "audio_out": "webapp/jobs/dafbca947e47/dubbed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 4.46,
+      "source_text": "\u00bfCu\u00e1l tiempo es? \u00bfCu\u00e1l tiempo ha pasado despu\u00e9s del Empire?",
+      "translated_text": "What time is it? What time has it been after the Empire?",
+      "original_duration": 4.46,
+      "raw_tts_duration": 4.022666666666667,
+      "final_duration": 4.465,
+      "scale_applied": 1.1087172688100762,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 1,
+      "start": 4.46,
+      "end": 5.92,
+      "source_text": "Durante el Empire.",
+      "translated_text": "During the Empire.",
+      "original_duration": 1.46,
+      "raw_tts_duration": 4.544666666666667,
+      "final_duration": 2.27,
+      "scale_applied": 0.5,
+      "clamped": true,
+      "error": ""
+    },
+    {
+      "index": 2,
+      "start": 5.92,
+      "end": 11.42,
+      "source_text": "Me significa que actualmente nos escribimos el pr\u00f3ximo d\u00eda y que podamos ir el d\u00eda despu\u00e9s.",
+      "translated_text": "It means that we currently write the next day and that we can go the day after.",
+      "original_duration": 5.5,
+      "raw_tts_duration": 5.376666666666667,
+      "final_duration": 5.505,
+      "scale_applied": 1.022938623682579,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 3,
+      "start": 11.42,
+      "end": 14.620000000000001,
+      "source_text": "\u00a1Eso fue mi aventura de Disney!",
+      "translated_text": "That was my Disney adventure!",
+      "original_duration": 3.200000000000001,
+      "raw_tts_duration": 4.224666666666667,
+      "final_duration": 3.2,
+      "scale_applied": 0.7574562095628848,
+      "clamped": false,
+      "error": ""
+    }
+  ],
+  "speaker_similarity": 0.7177111506462097,
+  "duration_match_ratio": 1.0560875512995893,
+  "raw_duration_ratio": 1.2427268581851345,
+  "clamped_segments": 1,
+  "failed_segments": 0,
+  "elapsed_s": 335.5
+}

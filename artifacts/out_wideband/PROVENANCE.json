@@ -1,0 +1,60 @@
+{
+  "features_csv": "artifacts/features_wideband.csv",
+  "feature_set": "t1",
+  "features_used": [
+    "s_f0_mean_st",
+    "s_f0_std_st",
+    "s_log_dur",
+    "s_voiced_ratio",
+    "s_n_words",
+    "s_speaking_rate"
+  ],
+  "targets": [
+    "f0_mean_st",
+    "f0_std_st",
+    "log_dur_ratio"
+  ],
+  "directions": [
+    "en-es",
+    "es-en"
+  ],
+  "seed": 498,
+  "lambda_grid": [
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0,
+    10000.0,
+    100000.0,
+    1000000.0
+  ],
+  "f0_search_hz": [
+    65.0,
+    1000.0
+  ],
+  "f0_plausible_hz": [
+    60.0,
+    400.0
+  ],
+  "quality_gate": {
+    "min_voiced_ratio": 0.3,
+    "min_duration_s": 0.4,
+    "max_duration_s": 20.0,
+    "f0_band_hz": [
+      60.0,
+      400.0
+    ]
+  },
+  "same_speaker_only": true,
+  "git_commit": "ea7542c",
+  "python": "3.11.16",
+  "platform": "macOS-26.6-arm64-arm-64bit",
+  "numpy_version": "2.4.6",
+  "pandas_version": "2.3.3",
+  "scipy_version": "1.17.1",
+  "librosa_version": "0.11.0",
+  "matplotlib_version": "3.11.1"
+}

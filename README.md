@@ -141,6 +141,41 @@ These gains measure adaptation to DRAL's conversational re-enactment style, not 
 general improvement in translation adequacy. Reproduce the experiment with
 `python -m bilingual_voice.finetune`.
 
+## Write-up: dissertation and manuscript
+
+Two LaTeX documents are produced from the committed result files. Neither contains a hand-typed
+number: `thesis/scripts/thesis_numbers.py` writes `thesis/numbers.json` from the CSVs and JSON in
+`results/` and `artifacts/`, and `thesis/scripts/thesis_figures.py` draws every figure from it.
+
+| Path | What it is |
+|---|---|
+| `thesis/` | UWU final-year dissertation. `uwuthesis.sty` implements SECTION-H of the dissertation guidelines (A4, 3.85 cm left margin, Times New Roman 12, 1.5 spacing, page numbers bottom-centre, APA references via `apacite`). |
+| `journal/` | IEEE manuscript, unmodified `IEEEtran` class from the official IEEE template, `IEEEtran.bst` references. Journal format by default; change one class option for the conference format. |
+
+```bash
+python thesis/scripts/thesis_numbers.py     # -> thesis/numbers.json
+python thesis/scripts/thesis_figures.py     # -> thesis/figures/
+./thesis/build.sh                           # -> thesis/main.pdf
+./journal/build.sh                          # -> journal/main.pdf
+```
+
+Both builds need a TeX distribution with `apacite`, `IEEEtran` and the packages listed at the top
+of `thesis/uwuthesis.sty`.
+
+## Prosody measurement: two frequency bands, not one
+
+`prosody.py` and `analysis.py` share one definition of each band, and keeping them apart matters:
+
+- **Search band, 65-1000 Hz** — passed to `librosa.pyin`. It must be wide, because pyin's
+  voiced/unvoiced decision depends on the number of frequency candidates; narrowing it suppresses
+  voicing detection entirely on quiet recordings.
+- **Plausibility band, 60-400 Hz** — applied downstream in `metrics.py` and `analysis.py` as a
+  data-quality gate. A median F0 outside the adult speaking range is a tracking failure, not a voice.
+
+F0 is always correlated in **semitones**, never in hertz. Correlating in hertz without the gate
+understates the generated-versus-human correspondence by roughly a factor of seven; this is
+documented in Section 4.9 of the dissertation.
+
 ## Local website
 
 The local web application accepts a short video or audio file, runs Whisper → MarianMT → XTTS-v2,

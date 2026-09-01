@@ -1,0 +1,457 @@
+% ---------------------------------------------------------------------------------------
+% References for "Bilingual Voice Transcription and Synthesis Preserving Speaker Identity
+% Using NLP and Deep Learning".
+%
+% Shared by the dissertation (thesis/main.tex, APA via apacite) and the IEEE manuscript
+% (journal/main.tex, IEEEtran.bst). Keep entries complete enough for both styles.
+% Uncited entries must be removed before submission -- the UWU guideline forbids listing them.
+% ---------------------------------------------------------------------------------------
+
+% ---------------------------------------------------------------- corpus and data
+
+@techreport{ward2023dral,
+  author      = {Ward, Nigel G. and Avila, Jonathan E. and Rivas, Emilia and Marco, Divette},
+  title       = {Dialogs Re-enacted Across Languages, Version 2},
+  institution = {Department of Computer Science, University of Texas at El Paso},
+  number      = {UTEP-CS-23-27},
+  year        = {2023},
+  address     = {El Paso, TX, USA}
+}
+
+@inproceedings{ardila2020commonvoice,
+  author    = {Ardila, Rosana and Branson, Megan and Davis, Kelly and Kohler, Michael and
+               Meyer, Josh and Henretty, Michael and Morais, Reuben and Saunders, Lindsay and
+               Tyers, Francis M. and Weber, Gregor},
+  title     = {Common Voice: A Massively-Multilingual Speech Corpus},
+  booktitle = {Proceedings of the 12th Language Resources and Evaluation Conference (LREC)},
+  pages     = {4218--4222},
+  year      = {2020}
+}
+
+@inproceedings{jia2022cvss,
+  author    = {Jia, Ye and Ramanovich, Michelle Tadmor and Wang, Quan and Zen, Heiga},
+  title     = {{CVSS} Corpus and Massively Multilingual Speech-to-Speech Translation},
+  booktitle = {Proceedings of the 13th Language Resources and Evaluation Conference (LREC)},
+  pages     = {6691--6703},
+  year      = {2022}
+}
+
+@inproceedings{nagrani2017voxceleb,
+  author    = {Nagrani, Arsha and Chung, Joon Son and Zisserman, Andrew},
+  title     = {{VoxCeleb}: A Large-Scale Speaker Identification Dataset},
+  booktitle = {Proceedings of Interspeech},
+  pages     = {2616--2620},
+  year      = {2017}
+}
+
+% ---------------------------------------------------------------- speech recognition
+
+@inproceedings{radford2023whisper,
+  author    = {Radford, Alec and Kim, Jong Wook and Xu, Tao and Brockman, Greg and
+               McLeavey, Christine and Sutskever, Ilya},
+  title     = {Robust Speech Recognition via Large-Scale Weak Supervision},
+  booktitle = {Proceedings of the 40th International Conference on Machine Learning (ICML)},
+  pages     = {28492--28518},
+  year      = {2023},
+  publisher = {PMLR}
+}
+
+% ---------------------------------------------------------------- machine translation
+
+@inproceedings{vaswani2017attention,
+  author    = {Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and
+               Jones, Llion and Gomez, Aidan N. and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  title     = {Attention Is All You Need},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {30},
+  pages     = {5998--6008},
+  year      = {2017}
+}
+
+@inproceedings{junczysdowmunt2018marian,
+  author    = {Junczys-Dowmunt, Marcin and Grundkiewicz, Roman and Dwojak, Tomasz and
+               Hoang, Hieu and Heafield, Kenneth and Neckermann, Tom and Seide, Frank and
+               Germann, Ulrich and Fikri Aji, Alham and Bogoychev, Nikolay and
+               Martins, Andr{\'e} F. T. and Birch, Alexandra},
+  title     = {Marian: Fast Neural Machine Translation in {C++}},
+  booktitle = {Proceedings of ACL 2018, System Demonstrations},
+  pages     = {116--121},
+  year      = {2018}
+}
+
+@inproceedings{tiedemann2020opusmt,
+  author    = {Tiedemann, J{\"o}rg and Thottingal, Santhosh},
+  title     = {{OPUS-MT} --- Building Open Translation Services for the World},
+  booktitle = {Proceedings of the 22nd Annual Conference of the European Association for
+               Machine Translation (EAMT)},
+  pages     = {479--480},
+  year      = {2020}
+}
+
+@inproceedings{loshchilov2019adamw,
+  author    = {Loshchilov, Ilya and Hutter, Frank},
+  title     = {Decoupled Weight Decay Regularization},
+  booktitle = {Proceedings of the 7th International Conference on Learning Representations (ICLR)},
+  year      = {2019}
+}
+
+% ---------------------------------------------------------------- speech synthesis and voice cloning
+
+@inproceedings{shen2018tacotron2,
+  author    = {Shen, Jonathan and Pang, Ruoming and Weiss, Ron J. and Schuster, Mike and
+               Jaitly, Navdeep and Yang, Zongheng and Chen, Zhifeng and Zhang, Yu and
+               Wang, Yuxuan and Skerry-Ryan, R. J. and Saurous, Rif A. and Agiomyrgiannakis, Yannis and
+               Wu, Yonghui},
+  title     = {Natural {TTS} Synthesis by Conditioning {WaveNet} on Mel Spectrogram Predictions},
+  booktitle = {Proceedings of the IEEE International Conference on Acoustics, Speech and
+               Signal Processing (ICASSP)},
+  pages     = {4779--4783},
+  year      = {2018}
+}
+
+@inproceedings{kong2020hifigan,
+  author    = {Kong, Jungil and Kim, Jaehyeon and Bae, Jaekyoung},
+  title     = {{HiFi-GAN}: Generative Adversarial Networks for Efficient and High Fidelity
+               Speech Synthesis},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {33},
+  pages     = {17022--17033},
+  year      = {2020}
+}
+
+@inproceedings{kim2021vits,
+  author    = {Kim, Jaehyeon and Kong, Jungil and Son, Juhee},
+  title     = {Conditional Variational Autoencoder with Adversarial Learning for End-to-End
+               Text-to-Speech},
+  booktitle = {Proceedings of the 38th International Conference on Machine Learning (ICML)},
+  pages     = {5530--5540},
+  year      = {2021},
+  publisher = {PMLR}
+}
+
+@inproceedings{jia2018sv2tts,
+  author    = {Jia, Ye and Zhang, Yu and Weiss, Ron J. and Wang, Quan and Shen, Jonathan and
+               Ren, Fei and Chen, Zhifeng and Nguyen, Patrick and Pang, Ruoming and
+               Lopez Moreno, Ignacio and Wu, Yonghui},
+  title     = {Transfer Learning from Speaker Verification to Multispeaker Text-to-Speech Synthesis},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {31},
+  pages     = {4480--4490},
+  year      = {2018}
+}
+
+@inproceedings{casanova2022yourtts,
+  author    = {Casanova, Edresson and Weber, Julian and Shulby, Christopher and
+               Candido Junior, Arnaldo and G{\"o}lge, Eren and Ponti, Moacir Antonelli},
+  title     = {{YourTTS}: Towards Zero-Shot Multi-Speaker {TTS} and Zero-Shot Voice Conversion
+               for Everyone},
+  booktitle = {Proceedings of the 39th International Conference on Machine Learning (ICML)},
+  pages     = {2709--2720},
+  year      = {2022},
+  publisher = {PMLR}
+}
+
+@inproceedings{casanova2024xtts,
+  author    = {Casanova, Edresson and Davis, Kelly and G{\"o}lge, Eren and G{\"o}knar, G{\"o}rkem and
+               Gulea, Iulian and Hart, Logan and Aljafari, Aya and Meyer, Joshua and
+               Morais, Reuben and Olayemi, Samuel and Gasc{\'o}, Juli{\'a}n},
+  title     = {{XTTS}: A Massively Multilingual Zero-Shot Text-to-Speech Model},
+  booktitle = {Proceedings of Interspeech},
+  pages     = {4978--4982},
+  year      = {2024}
+}
+
+@inproceedings{qian2019autovc,
+  author    = {Qian, Kaizhi and Zhang, Yang and Chang, Shiyu and Yang, Xuesong and
+               Hasegawa-Johnson, Mark},
+  title     = {{AutoVC}: Zero-Shot Voice Style Transfer with Only Autoencoder Loss},
+  booktitle = {Proceedings of the 36th International Conference on Machine Learning (ICML)},
+  pages     = {5210--5219},
+  year      = {2019},
+  publisher = {PMLR}
+}
+
+% ---------------------------------------------------------------- prosody and expressive synthesis
+
+@inproceedings{skerryryan2018prosody,
+  author    = {Skerry-Ryan, R. J. and Battenberg, Eric and Xiao, Ying and Wang, Yuxuan and
+               Stanton, Daisy and Shor, Joel and Weiss, Ron J. and Clark, Rob and Saurous, Rif A.},
+  title     = {Towards End-to-End Prosody Transfer for Expressive Speech Synthesis with {Tacotron}},
+  booktitle = {Proceedings of the 35th International Conference on Machine Learning (ICML)},
+  pages     = {4693--4702},
+  year      = {2018},
+  publisher = {PMLR}
+}
+
+@inproceedings{wang2018gst,
+  author    = {Wang, Yuxuan and Stanton, Daisy and Zhang, Yu and Skerry-Ryan, R. J. and
+               Battenberg, Eric and Shor, Joel and Xiao, Ying and Jia, Ye and Ren, Fei and
+               Saurous, Rif A.},
+  title     = {Style Tokens: Unsupervised Style Modeling, Control and Transfer in End-to-End
+               Speech Synthesis},
+  booktitle = {Proceedings of the 35th International Conference on Machine Learning (ICML)},
+  pages     = {5180--5189},
+  year      = {2018},
+  publisher = {PMLR}
+}
+
+@inproceedings{swiatkowski2023dubbing,
+  author    = {Swiatkowski, Jakub and Wang, Duo and Babianski, Mikolaj and
+               Lumban Tobing, Patrick and Vipperla, Ravichander and Pollet, Vincent},
+  title     = {Cross-Lingual Prosody Transfer for Expressive Machine Dubbing},
+  booktitle = {Proceedings of Interspeech},
+  pages     = {4838--4842},
+  year      = {2023}
+}
+
+% ---------------------------------------------------------------- speech-to-speech translation
+
+@inproceedings{jia2022translatotron2,
+  author    = {Jia, Ye and Ramanovich, Michelle Tadmor and Remez, Tal and Pomerantz, Roi},
+  title     = {{Translatotron 2}: High-Quality Direct Speech-to-Speech Translation with
+               Voice Preservation},
+  booktitle = {Proceedings of the 39th International Conference on Machine Learning (ICML)},
+  pages     = {10120--10134},
+  year      = {2022},
+  publisher = {PMLR}
+}
+
+@inproceedings{lee2022discreteunits,
+  author    = {Lee, Ann and Chen, Peng-Jen and Wang, Changhan and Gu, Jiatao and Popuri, Sravya and
+               Ma, Xutai and Polyak, Adam and Adi, Yossi and He, Qing and Tang, Yun and
+               Pino, Juan and Hsu, Wei-Ning},
+  title     = {Direct Speech-to-Speech Translation with Discrete Units},
+  booktitle = {Proceedings of the 60th Annual Meeting of the Association for Computational
+               Linguistics (ACL)},
+  pages     = {3327--3339},
+  year      = {2022}
+}
+
+@inproceedings{inaguma2023unity,
+  author    = {Inaguma, Hirofumi and Popuri, Sravya and Kulikov, Ilia and Chen, Peng-Jen and
+               Wang, Changhan and Chung, Yu-An and Tang, Yun and Lee, Ann and
+               Watanabe, Shinji and Pino, Juan},
+  title     = {{UnitY}: Two-Pass Direct Speech-to-Speech Translation with Discrete Units},
+  booktitle = {Proceedings of the 61st Annual Meeting of the Association for Computational
+               Linguistics (ACL)},
+  pages     = {15655--15680},
+  year      = {2023}
+}
+
+@article{song2023styles2st,
+  author  = {Song, Kun and Ren, Yi and Lei, Yi and Wang, Chunfeng and Wei, Kun and Xie, Lei and
+             Yin, Xiang and Ma, Zejun},
+  title   = {{StyleS2ST}: Zero-Shot Style Transfer for Direct Speech-to-Speech Translation},
+  journal = {arXiv preprint arXiv:2305.17732},
+  year    = {2023}
+}
+
+@article{peng2024mslm,
+  author  = {Peng, Yifan and Kulikov, Ilia and Yang, Yilin and Popuri, Sravya and Lu, Hui and
+             Wang, Changhan and Gong, Hongyu},
+  title   = {{MSLM-S2ST}: A Multitask Speech Language Model for Textless Speech-to-Speech
+             Translation with Speaker Style Preservation},
+  journal = {arXiv preprint arXiv:2403.12408},
+  year    = {2024}
+}
+
+@article{seamless2023,
+  author  = {{Seamless Communication} and Barrault, Lo{\"i}c and Chung, Yu-An and
+             Coria Meglioli, Mariano and Dale, David and Dong, Ning and Duppenthaler, Mark and
+             Duquenne, Paul-Ambroise and Ellis, Brian and Elsahar, Hady and Haaheim, Justin and
+             Hoffman, John and Hwang, Min-Jae and Inaguma, Hirofumi and Klaiber, Christopher and
+             Kulikov, Ilia and Li, Pengwei and Licht, Daniel and Maillard, Jean and
+             Mavlyutov, Ruslan and Rakotoarison, Alice and Sadagopan, Kaushik Ram and
+             Ramakrishnan, Abinesh and Tran, Tuan and Wenzek, Guillaume and Yang, Yilin and
+             Ye, Ethan},
+  title   = {Seamless: Multilingual Expressive and Streaming Speech Translation},
+  journal = {arXiv preprint arXiv:2312.05187},
+  year    = {2023}
+}
+
+@inproceedings{sperber2020endtoend,
+  author    = {Sperber, Matthias and Paulik, Matthias},
+  title     = {Speech Translation and the End-to-End Promise: Taking Stock of Where We Are},
+  booktitle = {Proceedings of the 58th Annual Meeting of the Association for Computational
+               Linguistics (ACL)},
+  pages     = {7409--7421},
+  year      = {2020}
+}
+
+@inproceedings{bentivogli2021cascade,
+  author    = {Bentivogli, Luisa and Cettolo, Mauro and Gaido, Marco and Karakanta, Alina and
+               Martinelli, Alberto and Negri, Matteo and Turchi, Marco},
+  title     = {Cascade versus Direct Speech Translation: Do the Differences Still Make a Difference?},
+  booktitle = {Proceedings of the 59th Annual Meeting of the Association for Computational
+               Linguistics (ACL)},
+  pages     = {2873--2887},
+  year      = {2021}
+}
+
+% ---------------------------------------------------------------- automatic dubbing
+
+@inproceedings{federico2020dubbing,
+  author    = {Federico, Marcello and Enyedi, Robert and Barra-Chicote, Roberto and
+               Giri, Ritwik and Isik, Umut and Krishnaswamy, Arvindh and Sawaf, Hassan},
+  title     = {From Speech-to-Speech Translation to Automatic Dubbing},
+  booktitle = {Proceedings of the 17th International Conference on Spoken Language Translation
+               (IWSLT)},
+  pages     = {257--264},
+  year      = {2020}
+}
+
+@inproceedings{lakew2021verbosity,
+  author    = {Lakew, Surafel M. and Federico, Marcello and Wang, Yue and Hoang, Cuong and
+               Virkar, Yogesh and Barra-Chicote, Roberto and Enyedi, Robert},
+  title     = {Machine Translation Verbosity Control for Automatic Dubbing},
+  booktitle = {Proceedings of the IEEE International Conference on Acoustics, Speech and
+               Signal Processing (ICASSP)},
+  pages     = {7538--7542},
+  year      = {2021}
+}
+
+% ---------------------------------------------------------------- speaker embeddings and toolkits
+
+@inproceedings{desplanques2020ecapa,
+  author    = {Desplanques, Brecht and Thienpondt, Jenthe and Demuynck, Kris},
+  title     = {{ECAPA-TDNN}: Emphasized Channel Attention, Propagation and Aggregation in
+               {TDNN} Based Speaker Verification},
+  booktitle = {Proceedings of Interspeech},
+  pages     = {3830--3834},
+  year      = {2020}
+}
+
+@article{ravanelli2021speechbrain,
+  author  = {Ravanelli, Mirco and Parcollet, Titouan and Plantinga, Peter and Rouhe, Aku and
+             Cornell, Samuele and Lugosch, Loren and Subakan, Cem and Dawalatabad, Nauman and
+             Heba, Abdelwahab and Zhong, Jianyuan and Chou, Ju-Chieh and Yeh, Sung-Lin and
+             Fu, Szu-Wei and Liao, Chien-Feng and Rastorgueva, Elena and Grondin, Fran{\c{c}}ois and
+             Aris, William and Na, Hwidong and Gao, Yan and De Mori, Renato and Bengio, Yoshua},
+  title   = {{SpeechBrain}: A General-Purpose Speech Toolkit},
+  journal = {arXiv preprint arXiv:2106.04624},
+  year    = {2021}
+}
+
+@inproceedings{mcfee2015librosa,
+  author    = {McFee, Brian and Raffel, Colin and Liang, Dawen and Ellis, Daniel P. W. and
+               McVicar, Matt and Battenberg, Eric and Nieto, Oriol},
+  title     = {librosa: Audio and Music Signal Analysis in {Python}},
+  booktitle = {Proceedings of the 14th Python in Science Conference (SciPy)},
+  pages     = {18--24},
+  year      = {2015}
+}
+
+@article{morise2016world,
+  author  = {Morise, Masanori and Yokomori, Fumiya and Ozawa, Kenji},
+  title   = {{WORLD}: A Vocoder-Based High-Quality Speech Synthesis System for Real-Time
+             Applications},
+  journal = {IEICE Transactions on Information and Systems},
+  volume  = {E99-D},
+  number  = {7},
+  pages   = {1877--1884},
+  year    = {2016}
+}
+
+@inproceedings{mauch2014pyin,
+  author    = {Mauch, Matthias and Dixon, Simon},
+  title     = {{pYIN}: A Fundamental Frequency Estimator Using Probabilistic Threshold
+               Distributions},
+  booktitle = {Proceedings of the IEEE International Conference on Acoustics, Speech and
+               Signal Processing (ICASSP)},
+  pages     = {659--663},
+  year      = {2014}
+}
+
+% ---------------------------------------------------------------- evaluation metrics and statistics
+
+@inproceedings{papineni2002bleu,
+  author    = {Papineni, Kishore and Roukos, Salim and Ward, Todd and Zhu, Wei-Jing},
+  title     = {{BLEU}: A Method for Automatic Evaluation of Machine Translation},
+  booktitle = {Proceedings of the 40th Annual Meeting of the Association for Computational
+               Linguistics (ACL)},
+  pages     = {311--318},
+  year      = {2002}
+}
+
+@inproceedings{popovic2015chrf,
+  author    = {Popovi{\'c}, Maja},
+  title     = {{chrF}: Character n-gram F-score for Automatic {MT} Evaluation},
+  booktitle = {Proceedings of the Tenth Workshop on Statistical Machine Translation (WMT)},
+  pages     = {392--395},
+  year      = {2015}
+}
+
+@inproceedings{post2018sacrebleu,
+  author    = {Post, Matt},
+  title     = {A Call for Clarity in Reporting {BLEU} Scores},
+  booktitle = {Proceedings of the Third Conference on Machine Translation (WMT)},
+  pages     = {186--191},
+  year      = {2018}
+}
+
+@article{hoerl1970ridge,
+  author  = {Hoerl, Arthur E. and Kennard, Robert W.},
+  title   = {Ridge Regression: Biased Estimation for Nonorthogonal Problems},
+  journal = {Technometrics},
+  volume  = {12},
+  number  = {1},
+  pages   = {55--67},
+  year    = {1970}
+}
+
+@article{wilcoxon1945,
+  author  = {Wilcoxon, Frank},
+  title   = {Individual Comparisons by Ranking Methods},
+  journal = {Biometrics Bulletin},
+  volume  = {1},
+  number  = {6},
+  pages   = {80--83},
+  year    = {1945}
+}
+
+@article{benjamini1995fdr,
+  author  = {Benjamini, Yoav and Hochberg, Yosef},
+  title   = {Controlling the False Discovery Rate: A Practical and Powerful Approach to
+             Multiple Testing},
+  journal = {Journal of the Royal Statistical Society, Series B},
+  volume  = {57},
+  number  = {1},
+  pages   = {289--300},
+  year    = {1995}
+}
+
+@book{efron1993bootstrap,
+  author    = {Efron, Bradley and Tibshirani, Robert J.},
+  title     = {An Introduction to the Bootstrap},
+  publisher = {Chapman and Hall/CRC},
+  address   = {New York},
+  year      = {1993}
+}
+
+% ---------------------------------------------------------------- works cited in the approved proposal
+
+@article{nuthakki2023multilingual,
+  author  = {Nuthakki, Praveen and Katamaneni, Madhavi and J. N., Chandra Sekhar and
+             Gubbala, Kudipudi and Domathoti, Bullarao and Maddumala, Venkata Rao and
+             Jetti, Kumar Raja},
+  title   = {Deep Learning Based Multilingual Speech Synthesis Using Multi Feature Fusion Methods},
+  journal = {ACM Transactions on Asian and Low-Resource Language Information Processing},
+  year    = {2023}
+}
+
+@article{ambadekar2025review,
+  author  = {Ambadekar, Shweta and Dhokiya, Tanmay and Gandhi, Harsh and Haria, Ishaan},
+  title   = {A Review on Multilingual Voice-to-Voice Translation},
+  journal = {Journal of All India Institute of Speech and Hearing},
+  volume  = {44},
+  number  = {1},
+  pages   = {1--23},
+  year    = {2025}
+}
+
+@phdthesis{yang2025emotional,
+  author = {Yang, Zhao},
+  title  = {Deep Emotional Text-to-Speech and Voice Conversion},
+  school = {Universit{\"a}t Augsburg},
+  year   = {2025}
+}

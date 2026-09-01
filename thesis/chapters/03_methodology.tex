@@ -1,0 +1,522 @@
+% =======================================================================================
+% Chapter 3 -- Methodology
+% SECTION-H(12): all materials and data explained, supported with figures and tables;
+% analytical techniques and experiments described in detail.
+% Chapters 3-5 together must not exceed forty pages.
+% =======================================================================================
+\chapter{Methodology}
+\label{ch:methodology}
+
+\section{Research Design}
+\label{sec:design}
+
+The study follows a quantitative, experimental design within a positivist frame: a working system
+is constructed, and its behaviour is characterised by instrumental measurement on data it has never
+seen. Four experiments are reported.
+
+\begin{enumerate}[label=\textbf{E\arabic*.}]
+  \item \textbf{Synthesis experiment.} The complete cascade is run over the held-out test split in
+        both directions, and recognition accuracy, translation quality, speaker identity,
+        intelligibility and prosody are measured for every utterance
+        (Sections~\ref{sec:architecture}--\ref{sec:instruments}).
+  \item \textbf{Corpus study.} The cross-lingual prosodic relationship between English and Spanish
+        is characterised for the same human speaker over the whole corpus
+        (Section~\ref{sec:corpus_study}).
+  \item \textbf{Prosody prediction experiment.} A supervised mapping from source-language to
+        target-language prosody is fitted on the training split, selected on development data and
+        tested once, against three baselines (Section~\ref{sec:ridge}).
+  \item \textbf{Fine-tuning experiment.} The translation component is adapted to the in-domain
+        conversational data and compared against its pre-trained baseline under identical decoding
+        (Section~\ref{sec:finetune_method}).
+\end{enumerate}
+
+A fifth deliverable, the dubbing application (Section~\ref{sec:webapp}), is engineering rather than
+experiment; it realises Objective~3 and is described because it is a research output and because
+the retiming stage it contains follows directly from a measured result.
+
+The design has one defining property. Because every test utterance has a matching human recording
+of \emph{the same speaker performing the same content in the target language}, each measurement is
+made against a human reference rather than in the abstract. That is what converts an uninterpretable
+similarity score into a percentage of an achievable ceiling.
+
+\section{Materials: the DRAL Corpus}
+\label{sec:corpus}
+
+All experimental data come from the 16\,kHz release of the Dialogs Re-enacted Across Languages
+corpus \cite{ward2023dral}, obtained from the University of Texas at El Paso and placed in the
+public domain by its authors. In the collection protocol, bilingual participants hold a
+spontaneous conversation in one language; the recording is then segmented, and the same
+participants re-enact each fragment in the other language, aiming to reproduce not only the content
+but the manner of the original. Both sides of a pair therefore come from one person performing one
+communicative act twice.
+
+Only the \texttt{fragments-short} portion of the release was used. The \texttt{fragments-long} and
+\texttt{recordings} portions contain longer or unsegmented versions of the same material and carry
+no additional pair structure, and the Japanese material in the release is out of scope. Pairs were
+resolved through the official \texttt{trans\_id} links in
+\pth{metadata/fragments-short.csv} rather than by substituting the language prefix in a filename,
+because a number of valid pairs use different conversation or channel identifiers. Human
+transcripts were merged from the official \pth{EN_transcripts.txt} and
+\pth{ES_transcripts.txt} files; where a transcript is absent the field is left empty and the
+affected metric is reported as unavailable, never imputed from recogniser output.
+Table~\ref{tab:corpus} records the resulting inventory, which was validated locally rather than
+taken from the documentation.
+
+\begin{table}[htbp]
+\caption{Inventory of the DRAL 16\,kHz \texttt{fragments-short} release as validated locally. All
+figures were produced by \texttt{bvt inspect-dral} and \texttt{bvt build-manifest}.}
+\label{tab:corpus}
+\centering
+{\singlespacing\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Property} & \textbf{Value} \\
+\midrule
+Linked English--Spanish fragment pairs & 2{,}893 \\
+Audio files opened successfully        & 5{,}786 \\
+Total speech duration                  & 4.27 hours \\
+Files at 16\,kHz                       & 5{,}784 \\
+Unique speaker identifiers             & 96 \\
+Pairs performed by one speaker         & 2{,}834 \\
+Pairs with differing linked speaker identifiers & 59 \\
+Non-empty English human transcripts    & 2{,}871 \\
+Non-empty Spanish human transcripts    & 2{,}881 \\
+\bottomrule
+\end{tabular}\par}
+\end{table}
+
+\subsection{Why This Corpus and Not the Ones Named in the Proposal}
+\label{sec:corpus_choice}
+
+The approved proposal named Mozilla Common Voice \cite{ardila2020commonvoice} and the CVSS
+speech-to-speech corpus \cite{jia2022cvss}. Both were examined and set aside, for one reason. In
+Common Voice the English and Spanish recordings come from different people, so there is no
+same-speaker cross-language reference. In CVSS the target-language speech is itself synthesised by
+a text-to-speech system, so comparing generated speech against it would compare one synthesiser
+with another rather than with a human. Neither corpus can supply the human ceiling on which the
+central measurement of this study depends. DRAL can, because one bilingual person performs both
+sides. The cost of the choice is scale --- 4.27 hours against thousands --- and it is accepted
+deliberately: this study measures rather than trains, and measurement needs a valid reference more
+than it needs volume.
+
+Two files, \texttt{EN\_072\_7.wav} and \texttt{ES\_072\_7.wav}, are stored at 44.1\,kHz despite the
+name of the release; they are resampled at read time for feature extraction and speaker embedding,
+and the raw data are not modified. One line of \pth{ES_transcripts.txt} lacks a field delimiter;
+the parser recovers the annotator code and emits a warning rather than editing the source file.
+
+\subsection{Speaker-Disjoint Partitioning}
+\label{sec:splits}
+
+The corpus was partitioned into training, development and test sets in the proportions
+70/15/15 with random seed 498. A conventional random split would be invalid here, because a speaker
+appearing in both training and test data would let the evaluation reward memorised voice
+characteristics rather than generalisation. Assignment therefore operates on \emph{speakers}, not
+on pairs.
+
+Because 59 pairs link fragments whose English and Spanish sides carry different speaker
+identifiers, the two identifiers of such a pair must never be separated. The splitter first builds
+a graph in which an edge joins the two speaker identifiers of every pair, computes the connected
+components of that graph, and assigns whole components to splits. This guarantees that no speaker,
+and no linked group of speakers, appears on both sides of the train/test boundary; the property is
+asserted programmatically after assignment. The resulting split contains 2{,}022 training pairs,
+436 development pairs and 435 test pairs. The test split, on which all reported system results are
+computed, contains 14 speakers.
+
+\section{System Architecture}
+\label{sec:architecture}
+
+The system is a cascade of four pre-trained neural components, illustrated in
+Figure~\ref{fig:architecture}. Three participate in generation; the fourth is used only for
+measurement.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=2pt, minimum height=1.05cm, minimum width=2.1cm,
+              align=center, font=\small, fill=blue!5, inner sep=2pt},
+  measbox/.style={draw, rounded corners=2pt, minimum height=1.0cm, minimum width=2.6cm,
+              align=center, font=\small, fill=orange!10, dashed, inner sep=2pt},
+  data/.style={align=center, font=\scriptsize\itshape, inner sep=2pt},
+  arr/.style={-{Latex[length=2mm]}, thick},
+  measline/.style={-{Latex[length=1.8mm]}, semithick, dashed, gray!70},
+  lbl/.style={font=\scriptsize, inner sep=1pt, fill=white}
+]
+% ---- generation path -----------------------------------------------------------------
+\node[data]                        (src)  at (0,0)    {source\\audio};
+\node[box,  right=0.7cm of src]    (asr)               {Whisper\\[-1pt]\scriptsize small};
+\node[box,  right=0.75cm of asr]   (mt)                {MarianMT\\[-1pt]\scriptsize opus-mt};
+\node[box,  right=1.25cm of mt]    (tts)               {XTTS-v2};
+\node[data, right=0.7cm of tts]    (out)               {dubbed\\audio};
+
+\draw[arr] (src) -- (asr);
+\draw[arr] (asr) -- node[lbl, above] {text}        (mt);
+\draw[arr] (mt)  -- node[lbl, above] {translation} (tts);
+\draw[arr] (tts) -- (out);
+
+% voice conditioning: the source waveform reaches the synthesiser, but only as a voice
+% reference -- no pitch contour, no timing.
+\draw[arr] (src.south) -- ++(0,-0.85)
+           -- node[lbl, below, pos=0.55] {reference audio (voice only)} ($(tts.south)+(0,-0.85)$)
+           -- (tts.south);
+
+% ---- measurement layer ---------------------------------------------------------------
+\node[measbox] (ecapa)   at ($(mt.south)+(-0.9,-3.3)$) {ECAPA-TDNN\\[-1pt]\scriptsize speaker embedding};
+\node[measbox, right=0.9cm of ecapa] (pros) {pyin / RMS\\[-1pt]\scriptsize prosody features};
+\node[data, left=0.9cm of ecapa] (human) {human target-language\\recording (DRAL)};
+
+\draw[measline] (out.south)   -- ++(0,-1.55) -| (pros.north);
+\draw[measline] ($(out.south)+(0,-1.55)$) -| (ecapa.north);
+\draw[measline] (human.east)  -- (ecapa.west);
+\draw[measline] (human.south) |- ($(pros.south)+(0,-0.55)$) -- (pros.south);
+\draw[measline] (src.south)   -- ++(0,-0.4) -| ($(ecapa.north)+(-0.7,0)$);
+
+\node[font=\scriptsize\itshape, gray!70, anchor=west] at ($(pros.east)+(0.15,0)$) {measurement only};
+\end{tikzpicture}
+\caption{Architecture of the cascaded English--Spanish speech-to-speech translation system. Solid
+arrows are the generation path; the dashed lower layer is measurement only and never influences
+generation. XTTS-v2 is conditioned on the source recording for voice, but is not given the source
+pitch contour --- a design property that Section~\ref{sec:prosody_gap} shows to be consequential.}
+\label{fig:architecture}
+\end{figure}
+
+\textbf{Recognition.} Whisper \texttt{small} \cite{radford2023whisper} transcribes the source
+recording, with the source language supplied explicitly rather than auto-detected, so that a
+recognition error cannot silently become a language-identification error.
+
+\textbf{Translation.} MarianMT \cite{junczysdowmunt2018marian} in the two OPUS-MT bilingual
+configurations \pth{Helsinki-NLP/opus-mt-en-es} and \pth{Helsinki-NLP/opus-mt-es-en}
+\cite{tiedemann2020opusmt} translates the transcript, decoding with a maximum of 512 new tokens.
+
+\textbf{Synthesis.} XTTS-v2 \cite{casanova2024xtts} synthesises the translation in the target
+language, conditioned on the \emph{source} recording as the voice reference. The synthesiser
+receives the target text and the reference waveform; it does not receive the source pitch contour,
+its energy envelope or its timing.
+
+\textbf{Measurement.} ECAPA-TDNN \cite{desplanques2020ecapa}, distributed as
+\pth{speechbrain/spkrec-ecapa-voxceleb} \cite{ravanelli2021speechbrain}, produces speaker
+embeddings. It generates nothing; it is an instrument.
+
+Determinism is enforced per utterance. The synthesis seed is derived as the first four bytes of
+\texttt{sha256(pair\_id\,|\,direction)} reduced modulo $2^{31}-1$, and the framework's random
+number generator is seeded with it immediately before synthesis. Python's built-in \texttt{hash} is
+salted per process and is deliberately not used. Every row of the results file records the seed
+that produced it, so any single utterance can be regenerated exactly.
+
+Failures are treated as data. If any stage raises, the row is written with
+\texttt{status = failed}, the failing stage and the exception message, and it remains in the
+results file and in the reported failure rate. No row is silently dropped.
+
+\section{Evaluation Instruments}
+\label{sec:instruments}
+
+\subsection{Recognition Accuracy}
+Word error rate is computed between the human transcript and the Whisper output using
+\texttt{jiwer}, under a fixed normalisation applied identically to reference and hypothesis:
+lower-casing, punctuation removal, whitespace collapsing and trimming. Both a corpus-level WER
+(total edits divided by total reference words) and a mean over utterances are reported, because the
+two answer different questions and diverge when short utterances are common. Utterances without a
+human transcript are excluded from this metric only.
+
+\subsection{Translation Quality}
+Corpus BLEU \cite{papineni2002bleu} and chrF \cite{popovic2015chrf} are computed with
+\texttt{sacrebleu} \cite{post2018sacrebleu} against the human transcript of the paired
+target-language recording. That reference deserves a caution which is repeated wherever the
+resulting scores appear: the DRAL target side is a \emph{re-enactment}, not a literal translation,
+so the reference is a legitimate rendition of the same communicative content but not a
+sentence-level gloss. The absolute scores are therefore lower than the same models achieve on
+written parallel corpora, and only differences measured against the same reference are meaningful.
+
+\subsection{Speaker Identity and the Human Ceiling}
+\label{sec:identity_method}
+Speaker similarity is the cosine between ECAPA embeddings of two recordings, computed after
+down-mixing to mono and resampling to 16\,kHz. Two quantities are computed for every utterance:
+
+\begin{align}
+S_{\text{system}} &= \cos\!\big(e(\text{source recording}),\; e(\text{synthesised output})\big),
+\label{eq:ssystem}\\[2pt]
+S_{\text{human}}  &= \cos\!\big(e(\text{source recording}),\;
+                                e(\text{human target-language recording})\big),
+\label{eq:shuman}
+\end{align}
+
+where $e(\cdot)$ denotes the ECAPA embedding. $S_{\text{human}}$ is the \emph{ceiling}: it is how
+similar the same person sounds to themselves when they switch language, measured on real human
+recordings. Identity preservation is reported as the ratio
+$100\,S_{\text{system}}/S_{\text{human}}$. This anchor is available only because DRAL is
+same-speaker parallel; in a corpus without that property, $S_{\text{system}}$ would have no scale.
+
+Both quantities are averaged first within each speaker and then across speakers. The test split is
+markedly unbalanced --- one speaker contributes 118 pairs and another two --- so a plain mean over
+rows would weight the result towards whoever happened to be recorded most. The speaker-level mean
+gives every speaker equal weight and is the statistic reported throughout; row-level means are
+given alongside it in Appendix~\ref{app:speakerlevel} for completeness.
+
+\subsection{Intelligibility of Synthesised Speech}
+The synthesised output is re-transcribed with Whisper and compared against the text that was sent
+to the synthesiser. This isolates the synthesiser: a high value means the generated waveform is
+hard to recognise, independently of whether the translation was any good. Rows are filtered on the
+\emph{reference} being present, never on the hypothesis. An empty re-transcription means the audio
+was unintelligible, which is a total failure scoring 1.0, not a missing observation; excluding such
+rows would make the corpus figure look better than it is.
+
+\subsection{Prosodic Features}
+\label{sec:prosody_features}
+Four acoustic descriptors are extracted from every recording with librosa
+\cite{mcfee2015librosa}: fundamental frequency by the probabilistic pYIN estimator
+\cite{mauch2014pyin}, frame-level root-mean-square energy, total duration, and speaking rate as
+words per second from the corresponding text.
+
+Two distinct frequency bands are used, and keeping them distinct is essential to the correctness of
+the result.
+
+\begin{itemize}
+  \item The \textbf{search band}, 65--1000\,Hz, is the range given to pYIN. It must be wide.
+        pYIN's voiced/unvoiced decision depends on the number of frequency candidates available,
+        so narrowing the band lowers the aggregate voiced probability and the estimator stops
+        detecting voicing at all on quiet recordings. This was measured, not assumed
+        (Section~\ref{sec:f0correction}).
+  \item The \textbf{plausibility band}, 60--400\,Hz, is applied downstream as a data-quality gate.
+        A wide search band admits occasional octave doublings; a median F0 outside the plausible
+        adult speaking range is a tracking failure rather than a voice, and such observations are
+        excluded before any statistic is computed.
+\end{itemize}
+
+All F0 statistics are computed in \textbf{semitones} relative to a 100\,Hz reference,
+\begin{equation}
+s = 12\log_2\!\left(\frac{f}{100}\right),
+\label{eq:semitones}
+\end{equation}
+where $f$ is the measured frequency in hertz, because pitch perception is logarithmic. A correlation computed in hertz is
+dominated by whichever values lie furthest from the mean, and a single octave-doubled observation
+can destroy it; the consequences of getting this wrong are reported in
+Section~\ref{sec:f0correction}. Throughout, \emph{F0 level} denotes the mean semitone value of an
+utterance and \emph{F0 range} its within-utterance standard deviation in semitones.
+
+\subsection{Metrics Deliberately Not Used}
+\label{sec:not_used}
+The approved proposal named PESQ and STOI. Both are intrusive metrics: they compare a degraded
+signal against a time-aligned clean recording of \emph{the same utterance}. In cross-lingual
+synthesis no such reference can exist, because the output is in a different language and contains
+different words of different durations. Reporting them would mean either fabricating an alignment
+or comparing unrelated signals. They are therefore not reported, and the reason is stated rather
+than left as an omission. A mean opinion score study was also planned; it was not conducted within
+the available time and is recorded as a limitation in Section~\ref{sec:limitations} and as the
+first item of future work.
+
+\section{Corpus Study: Cross-Lingual Prosody in Human Speech}
+\label{sec:corpus_study}
+
+The corpus study characterises the relationship between the English and Spanish prosody of the
+\emph{same} speaker, over the whole corpus rather than the test split, and supplies the human
+reference against which the system is judged.
+
+\subsection{Quality Gate}
+Both sides of a pair must yield a usable measurement, so a pair is retained only if, on
+\emph{both} sides: F0 was estimated at all; the voiced-frame ratio is at least 0.30; duration lies
+between 0.4 and 20\,s; and mean F0 lies inside the plausibility band. Analysis is further
+restricted to pairs performed by a single speaker, since the research question is about one
+person's behaviour in two languages. The gate is a criterion on the \emph{measurement}, applied
+before any outcome is computed, and every count it removes is reported in
+Table~\ref{tab:gate}.
+
+\subsection{Within- and Between-Speaker Decomposition}
+\label{sec:decomposition}
+A Pearson correlation computed over utterances pooled from many speakers conflates two effects. If
+low-pitched people are low-pitched in both languages, a strong pooled correlation follows from
+speaker identity alone, with no prosody transfer whatsoever. Every correlation in this dissertation
+is therefore reported in three forms:
+
+\begin{itemize}
+  \item the \textbf{pooled} correlation over all utterances;
+  \item the \textbf{between-speaker} correlation, computed over one point per speaker, namely
+        their mean on each side;
+  \item the \textbf{within-speaker} correlation, computed after centring both variables inside
+        each speaker, which removes stable speaker differences and leaves only utterance-level
+        variation.
+\end{itemize}
+
+The within-speaker figure is the one that answers the research question, and it is the figure
+quoted in the discussion. The share of total variance attributable to speaker differences is
+reported alongside, from a one-way decomposition
+$\mathrm{SS}_{\text{between}}/(\mathrm{SS}_{\text{between}}+\mathrm{SS}_{\text{within}})$.
+
+\section{Predicting Target-Language Prosody}
+\label{sec:ridge}
+
+The corpus study measures the correspondence; this experiment asks whether it can be
+\emph{exploited}. For each direction and each of three targets --- target F0 level, target F0
+range, and $\log(\text{target duration}/\text{source duration})$ --- a model predicts the target
+value from six source-side features: F0 level, F0 range, log duration, voiced ratio, word count and
+speaking rate.
+
+\subsection{Baselines}
+A model is only interesting if it beats what can be obtained without one. Three baselines are
+fitted on the training split alone:
+
+\begin{description}[leftmargin=2.6cm, style=nextline]
+  \item[\textbf{B0}] \emph{copy source} --- predict the source value unchanged (and zero for the
+        log duration ratio).
+  \item[\textbf{B1}] \emph{train mean} --- predict the training-set mean of the target, ignoring
+        the source entirely.
+  \item[\textbf{B2}] \emph{copy plus offset} --- predict the source value plus a single global
+        scalar, the mean residual on the training split. This is the baseline to beat: it captures
+        any systematic language-level shift with one number.
+\end{description}
+
+\subsection{Ridge Regression on the Residual}
+The model is ridge regression \cite{hoerl1970ridge} in closed form, with standardised inputs and
+an unpenalised intercept, fitted to the \emph{residual from copy-source} rather than to the
+absolute target:
+
+\begin{equation}
+\hat{\mathbf{w}} = \big(\mathbf{X}^{\!\top}\mathbf{X} + \lambda \mathbf{I}\big)^{-1}
+                    \mathbf{X}^{\!\top}\big(\mathbf{y} - \mathbf{c}\big),
+\qquad
+\hat{y} = c + \mathbf{x}^{\!\top}\hat{\mathbf{w}} + b,
+\label{eq:ridge}
+\end{equation}
+
+where $\mathbf{X}$ holds the standardised source features, $\mathbf{y}$ the targets, $\mathbf{c}$
+the copy-source prediction, $\lambda$ the regularisation strength and $b$ the intercept. Fitting
+the residual makes the model strictly \emph{nest} B2: as $\lambda \to \infty$ the weights vanish
+and the prediction becomes copy-plus-mean-residual, which is exactly B2. The model can therefore
+only improve on B2 up to estimation noise, which removes an entire class of misleading comparison.
+
+$\lambda$ is selected on the development split from the grid
+$\{10^{-3},10^{-2},\dots,10^{6}\}$ using the one-standard-error rule: the largest $\lambda$ whose
+development error is within one standard error of the best. Plain minimisation is unstable on a
+few-hundred-row development set, and because the model nests B2, an unlucky small $\lambda$ can
+make it appear worse than the trivial baseline for reasons that are pure selection noise.
+Preferring the most-shrunk admissible $\lambda$ biases towards the baseline, which is the
+conservative choice. The test split is scored once.
+
+\subsection{Statistical Inference with Speaker Clustering}
+\label{sec:inference}
+The test split holds 348 usable pairs (347 in \esto{}) but only 14 speakers, and errors are correlated
+within a speaker. Treating each recording as an independent observation would overstate
+significance. Two clustered procedures are reported instead of the naive per-recording test: a
+Wilcoxon signed-rank test \cite{wilcoxon1945} on \emph{per-speaker mean absolute errors}
+($n=14$), and a bootstrap confidence interval for the difference in mean absolute error that
+resamples \emph{speakers} rather than recordings \cite{efron1993bootstrap}, with 2{,}000 draws at
+seed 498. Because six models are fitted, the family-wise position is reported explicitly using
+Bonferroni and Benjamini--Hochberg \cite{benjamini1995fdr} corrections rather than left implicit.
+
+Two properties of the design produce results that look like defects and are not, so they are
+stated in advance. For the log duration ratio, B1 and B2 are mathematically identical, since
+copy-source is zero and copy-plus-offset reduces to the training mean; the comparison between them
+is therefore exactly null. And the errors of B0, B1 and B2 are symmetric between directions by
+construction, because exchanging source and target mirrors the error distribution; only the ridge
+rows genuinely differ between the two directions.
+
+\section{Fine-Tuning the Translation Component}
+\label{sec:finetune_method}
+
+The pre-trained translation models were trained on written text, whereas the corpus is spontaneous
+bilingual conversation containing disfluencies, fillers and regional lexis. This experiment
+measures what in-domain adaptation is worth. Each direction was fine-tuned independently from the
+pre-trained checkpoint on the training split only, with the settings in
+Table~\ref{tab:finetune_setup}.
+
+\begin{table}[htbp]
+\caption{Fine-tuning configuration. Decoding settings are identical for the pre-trained and
+fine-tuned systems, so the comparison isolates the effect of adaptation.}
+\label{tab:finetune_setup}
+\centering
+{\singlespacing\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Setting} & \textbf{Value} \\
+\midrule
+Starting checkpoints      & \pth{Helsinki-NLP/opus-mt-en-es}, \texttt{opus-mt-es-en} \\
+Training pairs            & 1{,}998 per direction (training split only) \\
+Development pairs         & 429 \\
+Test pairs                & 432 (scored once) \\
+Optimiser                 & AdamW \cite{loshchilov2019adamw}, learning rate $2\times10^{-5}$ \\
+Batch size                & 8, gradient clipping at 1.0 \\
+Maximum sequence length   & 128 tokens \\
+Epochs run                & 4; checkpoint selected on development loss \\
+Random seed               & 498 \\
+Hardware                  & Apple M1 GPU via Metal Performance Shaders \\
+Decoding (both systems)   & beam size 4, maximum 128 new tokens \\
+\bottomrule
+\end{tabular}\par}
+\end{table}
+
+The learning rate is deliberately small. A large rate would overwrite the general translation
+knowledge acquired from OPUS, and $2\times10^{-5}$ is roughly an order of magnitude below typical
+from-scratch rates, which is the standard range for adapting a pre-trained transformer. Only the
+translation component was adapted; the reasoning for not fine-tuning the other components is given
+in Section~\ref{sec:why_only_mt}.
+
+\section{Dubbing Application}
+\label{sec:webapp}
+
+Objective~3 requires the synthesised dialogue to be integrated with the original video. The
+research pipeline evaluates pre-segmented fragments, whereas real video contains continuous speech,
+so a separate application was built around the same model instances --- it imports the pipeline's
+model wrapper directly, so the application and the evaluation cannot drift apart. Its stages are
+listed in Table~\ref{tab:webapp}.
+
+\begin{table}[htbp]
+\caption{Processing stages of the dubbing application. Stage~5 exists because of the measured
+duration inflation reported in Section~\ref{sec:duration_result}.}
+\label{tab:webapp}
+\centering
+{\singlespacing\small
+\begin{tabular}{@{}clp{7.3cm}@{}}
+\toprule
+\textbf{Stage} & \textbf{Tool} & \textbf{Operation} \\
+\midrule
+1 & \texttt{ffmpeg}  & Extract the audio track to 16\,kHz mono PCM. \\
+2 & Whisper          & Transcribe with segment timestamps, giving each utterance a slot on the timeline. \\
+3 & MarianMT         & Translate each segment independently. \\
+4 & XTTS-v2          & Synthesise each segment, conditioned on the full source audio for voice. \\
+5 & WORLD            & Time-scale each synthesised segment to the duration of the slot it replaces. \\
+6 & \texttt{ffmpeg}  & Remux: copy the video stream unchanged, replace the audio. \\
+\bottomrule
+\end{tabular}\par}
+\end{table}
+
+Stage~5 is the substantive one. Each synthesised segment is stretched or compressed to exactly the
+duration of the segment it replaces using WORLD analysis and resynthesis \cite{morise2016world},
+which changes duration without changing pitch, so formants --- and therefore the speaker's
+identity --- survive the operation. Segments are then placed on a silent timeline at their original
+start times, so the dubbed track has the same length as the source. Scaling is clamped to the range
+$0.5\times$ to $2.0\times$, beyond which the audio degrades audibly; clamped segments are counted
+and displayed rather than hidden, and Section~\ref{sec:dubbing_result} reports what happens when
+the clamp binds. Stage~6 copies the video stream bit-for-bit, so the picture is never re-encoded.
+
+\section{Computational Environment and Reproducibility}
+\label{sec:reproducibility}
+
+All experiments were run locally on an Apple silicon machine: the recogniser, synthesiser and
+speaker encoder on the CPU, which is the stable configuration for this stack on that platform, and
+translation fine-tuning on the integrated GPU through Metal Performance Shaders. No cloud compute
+was used and no data left the machine.
+
+Five practices support reproduction. Every experiment is driven by a command-line entry point
+rather than by a notebook. Every result row is checkpointed to disk as it is produced, so a long
+run can resume without repeating completed work. Every reported figure and table is regenerated
+from the committed result files by a script, so no number in Chapter~\ref{ch:results} is typed by
+hand. A provenance record is written beside the analysis outputs, capturing the git commit, the
+interpreter version, the platform and the versions of every numerical library. And the exact
+commands that reproduce each result are listed in Appendix~\ref{app:repro}.
+
+\section{Ethical Considerations}
+\label{sec:ethics}
+
+No human participants were recruited and no personal data were collected for this study. The
+corpus is a public-domain release whose own collection protocol obtained participant consent
+\cite{ward2023dral}; it is used within its licence and is not redistributed. The pre-trained
+models are used under their respective licences, and the synthesiser's non-commercial licence was
+reviewed and accepted explicitly before use, through a deliberate opt-in rather than a default.
+
+Voice cloning carries a dual-use risk that a dissertation on the subject should state plainly. A
+system that reproduces a person's voice in a language they never spoke can be used to fabricate
+speech attributed to them. Three properties of this work limit that risk without eliminating it:
+the study operates only on a public-domain corpus whose participants consented to research use; no
+model was trained to reproduce any specific individual, all cloning being zero-shot from a
+reference recording; and the application produces no watermark-free artefact beyond what the
+underlying public model already produces. Any deployment beyond research use should require
+verified consent from the speaker whose voice is cloned, and should mark generated audio as
+synthetic.

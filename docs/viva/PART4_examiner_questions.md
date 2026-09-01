@@ -1,3 +1,43 @@
+> # ⛔ SUPERSEDED — DO NOT STUDY FROM THIS FILE
+>
+> **Read this whole box before reading anything below it.**
+>
+> This pack was written on 26 August 2026, **before** the F0 measurement was corrected (commits
+> `312b42d` and `ea7542c`). Every prosody-prediction answer below is built on the superseded
+> analysis in `artifacts/out_final/`. The dissertation reports the corrected analysis in
+> `artifacts/out_wideband/`. **If you memorise the answers below you will contradict your own
+> submitted thesis in front of the panel.**
+>
+> | This file rehearses | The thesis says | Occurrences here |
+> |---|---|---|
+> | ridge beats B2 by **−9.54 %** / **−14.65 %** | **−5.14 %** / **−3.89 %** | 12 + 12 |
+> | speaker *p* = **0.0419** / **0.0166** | ***p* = 0.0012 / 0.0001** | 10 |
+> | learned weight **−0.6034** / **−0.5916** | **−0.1906** / **−0.1429** | 3 |
+> | test split = **357** pairs | **348** (347 in es-en) | 14 |
+> | human F0 level *r* = **0.927** | **0.9519** pooled, **0.8488** within-speaker | 18 |
+> | F0 range transfers at *r* = **0.307** | **0.263** pooled, **0.214** within-speaker | — |
+>
+> **The most dangerous single line is §3.6 (line 314), and its conclusion is now inverted.**
+> It argues that *"no prosody result is family-wise significant"* — reasoning from the old
+> *p* = 0.0166 that Holm stops immediately. With the corrected *p*-values of **0.0012** and
+> **0.0001**, the two pitch-range results **do** survive Bonferroni, Holm **and**
+> Benjamini–Hochberg at 5 %. If an examiner asks *"does your pitch-range result survive
+> multiple-comparison correction?"*, the answer is **yes, in both directions** — the opposite of
+> what this file trained you to say.
+>
+> One caution in the other direction: a **third** result also clears the Bonferroni threshold
+> (en-es F0 *level*, *p* = 0.0040) but its effect size is **−0.02 %**, a CI of about
+> [−0.0003, −0.0001] semitones. That is significance on a zero-sized effect. Do not present it as a
+> third win — say so yourself before the panel finds it.
+>
+> **What is still accurate here:** everything not about prosody prediction — speaker identity and
+> the human ceiling, BLEU/chrF and the fine-tune, WER, the cascade-error argument, the dubbing
+> defects, and the general examiner-handling strategy.
+>
+> Study instead from `docs/viva/ANSWER_CARD.md`, which is generated from `thesis/numbers.json`.
+
+---
+
 # Part 4 — Examiner question pack
 
 Fifty questions from five independent examiner perspectives, plus an adversarial pass on where

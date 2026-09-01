@@ -11,8 +11,10 @@ Two entry points, runnable without touching the existing CLI:
 Note on extraction: this module runs its own single-pass pyin extraction rather than
 calling prosody.extract_prosody, because the quality gate needs a voiced-frame ratio and
 the F0 targets need a true semitone-domain standard deviation -- neither of which that
-function returns. The pyin settings here mirror prosody.py exactly (C2-C7, sr=16 kHz), so
-a single extraction method can be described in the write-up.
+function returns. The pyin settings here mirror prosody.py exactly (search band
+F0_SEARCH_MIN..F0_SEARCH_MAX at sr=16 kHz, plausibility gate F0_PLAUSIBLE_MIN..F0_PLAUSIBLE_MAX),
+so a single extraction method can be described in the write-up and the human corpus study is
+directly comparable with the generated-speech measurement in metrics.py.
 """
 
 from __future__ import annotations
@@ -44,12 +46,24 @@ SIDE_FIELDS = (
 )
 
 
-# pyin search range. prosody.py inherited a MUSICAL range (C2-C7, 65-2093 Hz), which is far
-# wider than plausible speaking F0 and invites octave-doubling: measured on this corpus, the
-# 99th percentile of mean F0 reached 1284 Hz and the max 2048 Hz, which is not speech. Adult
-# conversational F0 means sit roughly 80-250 Hz, so the search is narrowed to a speech range.
-SPEECH_F0_MIN = 60.0
-SPEECH_F0_MAX = 400.0
+# F0 SEARCH band vs PLAUSIBILITY band. These are two different things and this module used to
+# conflate them, applying 60-400 Hz as the pyin search range. That is too narrow: pyin's
+# voiced/unvoiced decision depends on how many frequency candidates it has, so a narrow band
+# suppresses voicing detection on quiet recordings (see the measurements in prosody.py). The
+# search band is therefore taken from prosody.py -- one definition for the whole project, so the
+# corpus study and the pipeline measurement are directly comparable -- while 60-400 Hz stays as
+# the downstream data-quality gate, where an implausible median F0 is treated as a tracking
+# failure rather than a voice.
+from .prosody import (
+    F0_PLAUSIBLE_MAX,
+    F0_PLAUSIBLE_MIN,
+    F0_SEARCH_MAX,
+    F0_SEARCH_MIN,
+)
+
+# Retained names: everything downstream of extraction gates on the PLAUSIBILITY band.
+SPEECH_F0_MIN = F0_PLAUSIBLE_MIN
+SPEECH_F0_MAX = F0_PLAUSIBLE_MAX
 
 
 def _semitones(hz):
@@ -68,8 +82,8 @@ def _extract_side(path: str, transcript: str) -> dict[str, float]:
     duration = len(audio) / sample_rate if sample_rate else 0.0
     f0, _, _ = librosa.pyin(
         audio,
-        fmin=SPEECH_F0_MIN,
-        fmax=SPEECH_F0_MAX,
+        fmin=F0_SEARCH_MIN,
+        fmax=F0_SEARCH_MAX,
         sr=sample_rate,
     )
     voiced = f0[~np.isnan(f0)]
@@ -797,7 +811,8 @@ def _report(features_csv: Path, outdir: Path, feature_set: str) -> None:
         "directions": list(DIRECTIONS),
         "seed": 498,
         "lambda_grid": LAMBDAS,
-        "f0_search_hz": [SPEECH_F0_MIN, SPEECH_F0_MAX],
+        "f0_search_hz": [F0_SEARCH_MIN, F0_SEARCH_MAX],
+        "f0_plausible_hz": [F0_PLAUSIBLE_MIN, F0_PLAUSIBLE_MAX],
         "quality_gate": {
             "min_voiced_ratio": MIN_VOICED_RATIO,
             "min_duration_s": MIN_DURATION,

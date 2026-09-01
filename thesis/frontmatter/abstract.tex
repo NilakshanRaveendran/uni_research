@@ -1,0 +1,35 @@
+% ---------------------------------------------------------------------------------------
+% Abstract -- SECTION-H: maximum 300 words; states the problem, the method, the results and
+% the conclusions. Keywords: maximum five.
+% ---------------------------------------------------------------------------------------
+\frontsection{Abstract}
+
+{\singlespacing
+Cross-lingual speech synthesis can now clone a speaker's voice into a language that speaker never
+used, but whether it also carries their prosody --- the pitch, rhythm and timing that make speech
+expressive --- has rarely been measured, because most corpora contain no recording of what the same
+speaker actually sounds like in the target language. This study implements a cascaded
+English--Spanish speech-to-speech translation system (Whisper, MarianMT, XTTS-v2) and evaluates it
+on the Dialogs Re-enacted Across Languages corpus, in which one bilingual speaker performs matched
+content in both languages and therefore supplies a human cross-language reference for every
+generated utterance. Eight hundred and seventy held-out utterances were synthesised in both
+directions over a speaker-disjoint split, and speaker identity, intelligibility, translation
+quality and prosody were measured against that reference.
+
+Speaker identity reached 94.5\,\% (English to Spanish) and 86.1\,\% (Spanish to English) of the
+human cross-language ceiling, so most of the retainable identity survives. Prosody did not follow. Within a speaker, human pitch level transfers at $r=0.849$,
+whereas synthesised speech reaches only $0.311$ and $0.314$, and pitch range collapses from $0.214$
+to $0.035$--$0.040$. Duration transfers better ($0.352$--$0.610$ against $0.867$), but
+the median utterance runs $1.43\times$ longer than its human target, a quarter exceeding
+twice that, which a WORLD-based retiming stage corrects inside the accompanying dubbing
+application. A ridge model predicting target-language prosody from source-language prosody improved
+on a copy-plus-offset baseline only for pitch range, by 5.1\,\% and 3.9\,\% mean absolute error ---
+the only two effects of practical size that survive family-wise correction. Fine-tuning MarianMT on
+the corpus raised BLEU by 2.34 and 3.23, register adaptation rather than improved adequacy.
+The contribution is a calibrated measurement: zero-shot voice cloning preserves identity but not
+prosody, and the size of that gap is now quantified against a human ceiling.
+\par}
+
+\vspace{1.0\baselineskip}
+\noindent\textbf{\textit{Keywords:}} \textit{speech-to-speech translation; speaker identity;
+cross-lingual prosody; zero-shot voice cloning; automatic dubbing}

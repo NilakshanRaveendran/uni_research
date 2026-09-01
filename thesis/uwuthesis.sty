@@ -1,0 +1,196 @@
+% =======================================================================================
+% uwuthesis.sty -- formatting for the Uva Wellassa University final-year research
+% dissertation, Department of Computer Science and Informatics, Faculty of Applied Sciences.
+%
+% Implements, clause by clause, "SECTION-H DISSERTATION PREPARATION GUIDELINES AND FORMAT"
+% together with the department's "Thesis Format 2025-2026" template:
+%
+%   H:2(1) A4, single-sided                          -> a4paper, oneside
+%   H:2(2) 3.85 cm left; 2.5 cm right, top, bottom   -> geometry
+%   H:2(3) Times New Roman 12 pt throughout          -> mathptmx (Nimbus Roman, TNR metrics)
+%   H:2(4) 1.5 line spacing, blank line between paras-> setspace + parskip
+%   H:2(5) figures numbered, captioned, cited in text-> caption below float, chapter.number
+%   H:2(6) tables  numbered, captioned, cited in text-> caption above float
+%   H:2(6b) page numbers bottom centre; Roman for the
+%          prefatory pages, Arabic for the main body -> fancyhdr + \frontmatter/\mainmatter
+%   H:2(7) author-year citations, APA reference list -> apacite
+%
+% Thesis Guide 2.5: captions in 11 pt, no vertical rules, minimal horizontal rules.
+% =======================================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{uwuthesis}[2026/08/27 UWU final-year dissertation format]
+
+% ---------------------------------------------------------------- encoding and fonts
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{mathptmx}          % Times text and matching maths
+\RequirePackage[scaled=0.90]{helvet}
+\RequirePackage{courier}
+\RequirePackage{microtype}
+
+% ---------------------------------------------------------------- page geometry
+\RequirePackage[a4paper,
+                left=3.85cm, right=2.5cm, top=2.5cm, bottom=2.5cm,
+                footskip=1.0cm, headsep=0.6cm]{geometry}
+
+% ---------------------------------------------------------------- spacing
+\RequirePackage{setspace}
+\onehalfspacing                                  % H:2(4) 1.5 line spacing
+\setlength{\parskip}{\baselineskip}              % H:2(4) one blank line between paragraphs
+\setlength{\parindent}{0pt}
+\RequirePackage{ragged2e}
+\RequirePackage{needspace}
+
+% ---------------------------------------------------------------- graphics, tables, maths
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}                        % horizontal rules only
+\RequirePackage{array}
+\RequirePackage{tabularx}
+\RequirePackage{multirow}
+\RequirePackage{longtable}
+\RequirePackage{ltablex}
+\RequirePackage{threeparttable}
+\RequirePackage{pdflscape}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{siunitx}
+\RequirePackage{float}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, backgrounds}
+
+\setlist{topsep=0.3\baselineskip, itemsep=0.15\baselineskip, parsep=0pt}
+\renewcommand{\arraystretch}{1.15}
+\sisetup{detect-all, group-minimum-digits=4}
+
+% ---------------------------------------------------------------- captions
+% Thesis Guide 2.5: 11 pt, single-spaced, table caption ABOVE, figure caption BELOW,
+% numbered "chapter.number" (Method 2 of the guide).
+\RequirePackage[font={small,singlespacing}, labelfont=bf, labelsep=colon,
+                justification=justified, skip=6pt]{caption}
+\captionsetup[table]{position=above}
+\captionsetup[figure]{position=below}
+\counterwithin{figure}{chapter}
+\counterwithin{table}{chapter}
+\counterwithin{equation}{chapter}
+
+% ---------------------------------------------------------------- headings
+\RequirePackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\filcenter}
+  {\Large CHAPTER \thechapter}{0.6\baselineskip}{\Large\MakeUppercase}
+\titlespacing*{\chapter}{0pt}{0pt}{1.2\baselineskip}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{0.7em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\itshape}{\thesubsubsection}{0.7em}{}
+\titlespacing*{\section}{0pt}{1.2\baselineskip}{0.4\baselineskip}
+\titlespacing*{\subsection}{0pt}{1.0\baselineskip}{0.3\baselineskip}
+\titlespacing*{\subsubsection}{0pt}{0.8\baselineskip}{0.2\baselineskip}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% ---------------------------------------------------------------- page numbering
+% H:2(6): all page numbers at the bottom centre. No headers, no rules.
+\RequirePackage{fancyhdr}
+\fancypagestyle{uwu}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\normalfont\normalsize\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+}
+\pagestyle{uwu}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\normalfont\normalsize\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
+
+% ---------------------------------------------------------------- contents lists
+\RequirePackage{tocloft}
+\renewcommand{\cftchapfont}{\bfseries}
+\renewcommand{\cftchappagefont}{\bfseries}
+\setlength{\cftbeforechapskip}{0.4\baselineskip}
+\setlength{\cftbeforesecskip}{0.1\baselineskip}
+% The list titles are stored already upper-cased rather than wrapped in \MakeUppercase:
+% tocloft expands the title font inside \csname...\endcsname when hyperref builds the
+% bookmark, and the LaTeX3 case-changing machinery cannot survive that expansion.
+\renewcommand{\contentsname}{CONTENTS}
+\renewcommand{\listfigurename}{LIST OF FIGURES}
+\renewcommand{\listtablename}{LIST OF TABLES}
+\renewcommand{\cfttoctitlefont}{\hfill\Large\bfseries}
+\renewcommand{\cftaftertoctitle}{\hfill}
+\renewcommand{\cftloftitlefont}{\hfill\Large\bfseries}
+\renewcommand{\cftafterloftitle}{\hfill}
+\renewcommand{\cftlottitlefont}{\hfill\Large\bfseries}
+\renewcommand{\cftafterlottitle}{\hfill}
+\setlength{\cftfignumwidth}{3.2em}
+\setlength{\cfttabnumwidth}{3.2em}
+
+% ---------------------------------------------------------------- hyperlinks
+% hyperref must come BEFORE apacite: apacite patches the citation commands that hyperref
+% redefines, and loading it first leaves \hyper@@link undefined at every \cite.
+\RequirePackage[hidelinks, breaklinks=true, bookmarksnumbered=true]{hyperref}
+\RequirePackage{url}
+\urlstyle{same}
+
+% ---------------------------------------------------------------- citations (APA)
+\RequirePackage{apacite}
+
+% ---------------------------------------------------------------- front/main matter switch
+% \frontmatter -> lower-case Roman page numbers (H:2(6)); the title page counts as "i"
+% but is not printed. \mainmatter restarts at Arabic 1 on the first page of Chapter 1.
+\newcommand{\frontmatterpages}{%
+  \pagenumbering{roman}%
+  \setcounter{page}{1}%
+  \pagestyle{uwu}%
+}
+\newcommand{\mainmatterpages}{%
+  \cleardoublepage
+  \pagenumbering{arabic}%
+  \setcounter{page}{1}%
+  \pagestyle{uwu}%
+}
+
+% ---------------------------------------------------------------- unnumbered front sections
+% Each appears in the Table of Contents, as the guideline requires, but carries no number.
+% The printed heading is upper-cased at the call site rather than by \MakeUppercase here,
+% because the same argument is written to the .toc file and into a hyperref bookmark, and the
+% LaTeX3 case-changing machinery is not safe in either expansion context.
+\newcommand{\frontsection}[1]{%
+  \cleardoublepage
+  \phantomsection
+  \addcontentsline{toc}{chapter}{#1}%
+  \begin{center}\Large\bfseries\uppercase{#1}\end{center}
+  \vspace{0.6\baselineskip}%
+}
+
+% ---------------------------------------------------------------- abbreviation list helper
+\newenvironment{abbreviations}
+  {\begin{list}{}{%
+     \setlength{\labelwidth}{3.4cm}%
+     \setlength{\leftmargin}{4.0cm}%
+     \setlength{\labelsep}{0.6cm}%
+     \setlength{\itemsep}{0.15\baselineskip}%
+     \setlength{\parsep}{0pt}%
+     \renewcommand{\makelabel}[1]{\textbf{##1}\hfill}}}
+  {\end{list}}
+
+% ---------------------------------------------------------------- small conveniences
+% \pth typesets a file path or model identifier in typewriter and, unlike \texttt, allows the
+% line to break after a slash or hyphen. Long identifiers otherwise overflow the text block.
+\newcommand{\pth}[1]{\path{#1}}
+\newcommand{\corr}{\ensuremath{r}}
+\newcommand{\ndir}[1]{\texttt{#1}}
+\newcommand{\ento}{EN\,$\rightarrow$\,ES}
+\newcommand{\esto}{ES\,$\rightarrow$\,EN}
+\newcommand{\enes}{EN\,$\leftrightarrow$\,ES}
+
+% A framed "note" block for the caveats the examiners will look for.
+\newenvironment{caveat}
+  {\par\vspace{0.3\baselineskip}\noindent
+   \begin{minipage}{\linewidth}\small\itshape\setlength{\parskip}{0.5\baselineskip}\rule{\linewidth}{0.4pt}\par}
+  {\par\rule{\linewidth}{0.4pt}\end{minipage}\par\vspace{0.3\baselineskip}}
+
+\endinput

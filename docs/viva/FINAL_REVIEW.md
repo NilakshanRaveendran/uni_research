@@ -1,3 +1,18 @@
+> **SUPERSEDED IN PART — read this first.**
+>
+> This document was written on 26 August 2026, before the F0 measurement was corrected
+> (commits `312b42d` and `ea7542c`) and before the corpus study and the pipeline measurement were
+> put on a single F0 search band. Every prosody-transfer number below that reads
+> *r* = 0.09 or similar is a **metrics artefact**: F0 was correlated in hertz with no plausibility
+> gate. Everything else — identity, BLEU/chrF, WER, fine-tuning, the dubbing bug — is unchanged.
+>
+> The corrected figures are in the dissertation (`thesis/main.pdf`, Chapter 4) and regenerate from
+> `thesis/numbers.json`. In short: generated-versus-human F0 level is *r* = 0.698 / 0.754 pooled and
+> **0.311 / 0.314 within-speaker**, against a human within-speaker ceiling of **0.849** — a real gap,
+> but far smaller than this document says. Section 4.9 of the dissertation explains the correction.
+
+---
+
 # Final review — answers, the dubbing bug, and what to do next
 
 ---

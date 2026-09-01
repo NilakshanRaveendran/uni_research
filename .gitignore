@@ -47,16 +47,21 @@ data/processed/*
 !data/processed/.gitkeep
 data/splits/*
 !data/splits/.gitkeep
+!data/splits/dral_manifest_with_text.csv
 models/
 outputs/
 results/*.csv
 results/*.json
+!results/synthesis_final.csv
 plots/*.png
 plots/*.pdf
 
 
 # Web app
-webapp/jobs/
+webapp/jobs/*
+!webapp/jobs/*/
+webapp/jobs/*/*
+!webapp/jobs/*/result.json
 webapp/.runtime/
 webapp/frontend/node_modules/
 webapp/frontend/.next/
@@ -66,3 +71,21 @@ webapp/frontend/tsconfig.tsbuildinfo
 # Fine-tuned model weights are regenerable from finetune.py (~300 MB each) -- keep the
 # curves, comparison JSONs and hypotheses, which are the actual results.
 artifacts/finetune/best-*/
+
+# LaTeX build products. The .tex sources, figures and numbers.json are tracked; the compiled
+# PDFs and the auxiliary files pdflatex/bibtex regenerate are not.
+thesis/*.aux
+thesis/*.bbl
+thesis/*.blg
+thesis/*.log
+thesis/*.out
+thesis/*.toc
+thesis/*.lof
+thesis/*.lot
+thesis/*.pdf
+journal/*.aux
+journal/*.bbl
+journal/*.blg
+journal/*.log
+journal/*.out
+journal/*.pdf

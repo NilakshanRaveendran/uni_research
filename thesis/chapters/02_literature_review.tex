@@ -1,0 +1,141 @@
+% =======================================================================================
+% Chapter 2 -- Literature Review
+% SECTION-H(11): theoretical background, previous work, gaps in knowledge.
+% =======================================================================================
+\chapter{Literature Review}
+\label{ch:literature}
+
+\section{Cascaded and Direct Speech-to-Speech Translation}
+\label{sec:lit_s2st}
+
+Speech-to-speech translation has been approached in two ways. The \emph{cascaded} approach chains
+automatic speech recognition, machine translation and speech synthesis, so that each stage can be
+built, replaced and measured independently. The \emph{direct} approach trains a single model to map
+source speech to target speech, either through an intermediate spectrogram
+\cite{jia2022translatotron2} or through discrete acoustic units learned without text
+\cite{lee2022discreteunits,inaguma2023unity}.
+
+The trade-off is well documented. Direct models avoid the propagation of recognition errors into
+translation and can, in principle, carry paralinguistic information that text discards; cascades
+remain competitive in translation quality, are far cheaper to assemble, and are interpretable at
+every stage. \citeA{sperber2020endtoend} argue that most of the theoretical advantages claimed for
+end-to-end systems have yet to be realised in practice, and \citeA{bentivogli2021cascade} find the
+remaining quality difference on standard benchmarks to be small. For a study whose object is
+\emph{measurement} rather than architecture, the cascade has a decisive advantage: the intermediate
+text makes it possible to attribute an observed error to a specific stage, and to quantify what
+each stage costs. That is the argument for the design adopted here.
+
+\section{Automatic Speech Recognition}
+\label{sec:lit_asr}
+
+\citeA{radford2023whisper} trained the Whisper family on approximately 680{,}000 hours of weakly
+supervised multilingual audio, showing that scale alone yields zero-shot robustness competitive
+with supervised systems. Whisper also emits segment-level timestamps, which matters here: dubbing
+continuous video requires knowing where each utterance sits on the timeline, not merely what was
+said. Its known weaknesses --- disfluency, overlapping talk, short backchannels --- are exactly the
+conditions of the conversational corpus used here, and the resulting error rate is reported rather
+than suppressed.
+
+\section{Neural Machine Translation and Length Control}
+\label{sec:lit_mt}
+
+Transformer-based translation \cite{vaswani2017attention} is standard. The Marian toolkit
+\cite{junczysdowmunt2018marian} and the OPUS-MT release \cite{tiedemann2020opusmt} provide small,
+fast, openly licensed bilingual models trained on OPUS --- books, subtitles and institutional
+documents. Their register is written text, a documented mismatch for spontaneous dialogue;
+in-domain fine-tuning is the standard remedy and is examined empirically in
+Chapter~\ref{ch:results}.
+
+For dubbing specifically, translation quality is not the only requirement: the translated utterance
+must also be \emph{speakable in the time available}. \citeA{federico2020dubbing} decompose automatic
+dubbing into translation, prosodic alignment and audio rendering, and \citeA{lakew2021verbosity}
+show that verbosity can be controlled at translation time by conditioning on a desired length
+class. This literature anticipates the duration problem reported in
+Section~\ref{sec:duration_result} and points to its proper solution.
+
+\section{Speaker-Identity-Preserving Speech Synthesis}
+\label{sec:lit_tts}
+
+Neural text-to-speech moved from Tacotron~2 with a neural vocoder
+\cite{shen2018tacotron2,kong2020hifigan} to fully end-to-end variational models
+\cite{kim2021vits}. Multi-speaker synthesis was made zero-shot by conditioning the synthesiser on
+an embedding produced by a separately trained speaker-verification network
+\cite{jia2018sv2tts}: because the encoder generalises to unseen speakers, a few seconds of reference
+audio is enough to clone a voice. YourTTS \cite{casanova2022yourtts} extended this to the
+multilingual case, and XTTS-v2 \cite{casanova2024xtts} scales the idea to seventeen languages with
+short reference clips. Voice conversion research reaches similar capability from another direction,
+by disentangling content from speaker information in an autoencoder \cite{qian2019autovc}.
+
+Two properties of this family matter for the present study. First, conditioning is on
+\emph{timbre}: the speaker embedding is trained for verification, and it deliberately discards
+utterance-level variation. Second, nothing in the architecture supplies the source utterance's pitch
+contour to the decoder. The synthesiser must therefore infer intonation from the target text alone.
+This is the mechanism behind the result reported in Section~\ref{sec:prosody_gap}, and it is a
+property of the design rather than a defect of the implementation.
+
+\section{Prosody Modelling and Cross-Lingual Prosody Transfer}
+\label{sec:lit_prosody}
+
+Within a single language, prosody transfer is comparatively mature.
+\citeA{skerryryan2018prosody} learn a latent prosody embedding from a reference recording and show
+that conditioning Tacotron on it reproduces the reference's prosody with fine time detail, even
+across speakers. Global Style Tokens \cite{wang2018gst} obtain interpretable style control without
+prosody labels, and \citeA{yang2025emotional} surveys emotional synthesis and voice conversion in
+the same tradition. Reviews of multilingual voice-to-voice translation
+\cite{ambadekar2025review} and of multi-feature multilingual synthesis
+\cite{nuthakki2023multilingual} converge on the same conclusion: translation, synthesis and
+speaker-preserving components must be integrated, and prosody is the component most often lost.
+
+Cross-lingual prosody transfer is markedly harder, and the obstacle is data. Transferring prosody
+from a source-language recording to target-language speech requires supervision about what the
+target-language rendition should sound like, and parallel expressive recordings of the same content
+in two languages are rare. \citeA{song2023styles2st} address this with zero-shot style transfer
+inside a direct S2ST model. \citeA{peng2024mslm} preserve speaker style in a textless speech
+language model. The Seamless system \cite{seamless2023} adds explicit expressivity and streaming to
+large-scale multilingual translation. Closest to the present work,
+\citeA{swiatkowski2023dubbing} build a prosody representation for machine dubbing that is
+transferable across both language and speaker, using a variational reference encoder with a noise
+modelling module for field recordings --- a design necessitated precisely by the absence of clean
+parallel expressive data.
+
+The corpus used in this dissertation removes that obstacle for measurement purposes.
+\citeA{ward2023dral} designed DRAL to support ``machine learning of cross-language prosodic
+mappings'': participants re-enact their own utterances in the other language, so both sides of a
+pair come from the same speaker performing the same communicative act. What is a scarcity problem
+for \emph{training} an expressive dubbing model is not a scarcity problem for \emph{evaluating} one.
+
+\section{Evaluation of Cross-Lingual Speech Generation}
+\label{sec:lit_eval}
+
+Translation quality is measured with BLEU \cite{papineni2002bleu} and chrF
+\cite{popovic2015chrf} through a standardised implementation \cite{post2018sacrebleu}, and
+recognition with word error rate. Speaker similarity is a cosine between speaker-verification
+embeddings; ECAPA-TDNN \cite{desplanques2020ecapa}, trained on VoxCeleb \cite{nagrani2017voxceleb}
+and distributed through SpeechBrain \cite{ravanelli2021speechbrain}, is the current standard.
+Prosody is described with fundamental frequency, energy, duration and speaking rate, F0 being
+estimated by pitch trackers such as pYIN \cite{mauch2014pyin} in librosa \cite{mcfee2015librosa}.
+
+Three methodological weaknesses recur and are addressed explicitly in
+Chapter~\ref{ch:methodology}. Speaker-similarity cosines are reported without a same-speaker
+cross-language ceiling, so their scale is undefined. Intrusive signal metrics such as PESQ and STOI
+are proposed although they require a time-aligned reference of \emph{the same utterance}, which
+cannot exist when the output is in another language. And correlations are reported pooled across
+speakers, counting stable between-speaker differences as evidence of transfer; reporting the
+within-speaker component alongside is the standard correction, adopted here.
+
+\section{Research Gap}
+\label{sec:gap}
+
+The literature establishes that zero-shot cloning preserves timbre, that within-language prosody
+transfer is achievable, and that cross-lingual prosody transfer is limited chiefly by parallel
+expressive data. What it does not establish is a calibrated statement of \emph{how much} identity
+and \emph{how much} prosody a standard, openly available cascade actually carries when the human
+answer for the same speaker and the same content is available for comparison.
+
+This dissertation fills that gap. It uses a same-speaker parallel corpus as a measuring instrument:
+identity is expressed as a fraction of the human cross-language ceiling; prosody transfer is
+expressed against the human within-speaker correspondence for the same features; and the
+predictable component of cross-lingual prosody is isolated by testing a supervised mapping against
+baselines that a useful model must beat. The contribution is therefore methodological and
+empirical rather than architectural, and its value is that it states, in reusable units, the size
+of the gap that expressive dubbing systems set out to close.

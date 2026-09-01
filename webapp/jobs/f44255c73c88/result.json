@@ -1,0 +1,53 @@
+{
+  "job_id": "f44255c73c88",
+  "direction": "es-en",
+  "video_out": "webapp/jobs/f44255c73c88/dubbed.mp4",
+  "audio_out": "webapp/jobs/f44255c73c88/dubbed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 6.3,
+      "source_text": "\u00bfEn qu\u00e9 \u00e9poca est\u00e1... \u00bfEn qu\u00e9 \u00e9poca sucedi\u00f3 despu\u00e9s del imperio, durante el imperio?",
+      "translated_text": "At what time is it... at what time did it happen after the empire, during the empire?",
+      "original_duration": 6.3,
+      "raw_tts_duration": 5.942,
+      "final_duration": 6.305,
+      "scale_applied": 1.0602490743857287,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 1,
+      "start": 6.3,
+      "end": 12.120000000000001,
+      "source_text": "Digo, la verdad, pues reservamos el siguiente d\u00eda y pude ir el d\u00eda despu\u00e9s.",
+      "translated_text": "I mean, actually, we booked the next day and I could go the day after.",
+      "original_duration": 5.820000000000001,
+      "raw_tts_duration": 3.9366666666666665,
+      "final_duration": 5.825,
+      "scale_applied": 1.4784081287044881,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 2,
+      "start": 12.120000000000001,
+      "end": 15.3,
+      "source_text": "Eso fue mi aventura de Disney.",
+      "translated_text": "That was my Disney adventure.",
+      "original_duration": 3.1799999999999997,
+      "raw_tts_duration": 2.134,
+      "final_duration": 3.18,
+      "scale_applied": 1.4901593252108716,
+      "clamped": false,
+      "error": ""
+    }
+  ],
+  "speaker_similarity": 0.4219539165496826,
+  "duration_match_ratio": 1.0006535947712416,
+  "raw_duration_ratio": 0.7851416122004358,
+  "clamped_segments": 0,
+  "failed_segments": 0,
+  "elapsed_s": 553.0
+}

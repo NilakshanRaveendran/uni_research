@@ -1,0 +1,162 @@
+% =======================================================================================
+% Chapter 5 -- Conclusions
+% SECTION-H(14): a detailed evaluation of results and an overall assessment of the outcomes.
+% =======================================================================================
+\chapter{Conclusions}
+\label{ch:conclusions}
+
+\section{Overall Assessment}
+\label{sec:assessment}
+
+This study set out to build a bilingual English--Spanish voice transcription and synthesis system
+that preserves the speaker's identity, and to establish how much of the speaker's prosody it
+carries. Both were achieved, and the second produced a result that is more informative than the
+first.
+
+The system works and is reliable: 868 of 870 held-out utterances completed, the two failures having
+a single identified cause, and the synthesised speech is easy to re-recognise (corpus
+intelligibility WER 0.081 and 0.087). Speaker identity is preserved well --- 94.5\,\% and 86.1\,\%
+of the human cross-language ceiling. Prosody is not: within a speaker, pitch level transfers at
+$0.31$ against a human $0.85$, and pitch range essentially not at all.
+
+The strength of the study lies less in the system than in what the corpus permitted. Because one
+bilingual speaker performs both sides of every pair, each measurement has a human answer beside it.
+That turns two uninterpretable numbers into calibrated ones and separates two properties that are
+routinely conflated: a pipeline can preserve \emph{who is speaking} very well while preserving
+\emph{how they spoke} very poorly, and only a same-speaker reference makes that visible.
+
+\section{Conclusions Against the Objectives}
+\label{sec:objectives_met}
+
+\textbf{Objective 1 --- bidirectional voice-preserving translation framework: achieved.} A cascade
+of Whisper, MarianMT and XTTS-v2 was implemented and evaluated in both directions on a
+speaker-disjoint split, with deterministic per-utterance seeding and every failure retained in the
+results. Identity preservation was measured against a human cross-language anchor rather than
+reported as an unanchored cosine, and reaches 94.5\,\% (\ento{}) and 86.1\,\% (\esto{}) of that
+ceiling. The asymmetry between directions is a property of the synthesiser, since the two ceilings
+are identical to three decimal places.
+
+\textbf{Objective 2 --- prosody analysis, transfer measurement and prediction: achieved, with a
+negative result.} The human cross-lingual prosodic relationship was characterised over 2{,}304
+same-speaker pairs, decomposed into within- and between-speaker components, and used as the
+reference for the system. The transfer gap was quantified feature by feature. A supervised mapping
+from source to target prosody improved on a copy-plus-offset baseline only for pitch range, by
+5.1\,\% and 3.9\,\% of mean absolute error, surviving family-wise correction in both directions;
+pitch level and timing were not predictable beyond the baseline. The learned coefficient on source
+pitch range is negative, which supplies the mechanism: utterance-level variation regresses towards
+the speaker's typical range rather than transferring one for one.
+
+\textbf{Objective 3 --- integration with video: achieved, with a stated limit.} A web application
+extracts audio, transcribes with timestamps, translates and synthesises each segment in the
+original speaker's voice, retimes each segment to its slot with WORLD analysis and resynthesis, and
+remuxes without re-encoding the picture. On five real jobs the dubbed track lands within 7\,\% of
+the original length when the raw length ratio is at or below about $1.6\times$. Where it reaches
+$2.17\times$, the scaling clamp binds on 59\,\% of segments and the result degrades. The cause was
+diagnosed as unconstrained translation length rather than a fault in the retiming.
+
+\textbf{Additional activity --- in-domain fine-tuning: completed, and correctly qualified.}
+Fine-tuning raised BLEU by 2.34 and 3.23 with proper development-set checkpoint selection and a
+single scored pass over the test split. The gain is register adaptation to the corpus's
+conversational style, not improved translation adequacy, and is reported as such.
+
+\section{Answers to the Research Questions}
+\label{sec:answers}
+
+\begin{description}[leftmargin=3.2em, style=nextline]
+\item[\textbf{RQ1}] \textbf{86--95\,\% of the achievable speaker identity survives.} Measured
+      against the same speaker's real recording in the other language, the system retains 94.5\,\%
+      of the ceiling into Spanish and 86.1\,\% into English. The ceiling itself is only 0.445 under
+      an ECAPA cosine, which is the fact that makes the raw score interpretable.
+
+\item[\textbf{RQ2}] \textbf{Humans transfer prosody strongly; the system transfers a fraction of
+      it.} Within-speaker, human cross-language correspondence is 0.849 for pitch level, 0.867 for
+      duration, 0.601 for speaking rate and 0.214 for pitch range. The system reaches 0.311/0.314,
+      0.352/0.610, 0.372/0.346 and 0.035/0.040 respectively. Pooled correlations are much higher
+      but are largely between-speaker variance carried by voice cloning, and must not be quoted
+      alone.
+
+\item[\textbf{RQ3}] \textbf{Only partly.} Target-language pitch range is predictable from
+      source-language prosody beyond a copy-plus-offset baseline, in both directions and under
+      family-wise correction, but the effect is small (3.9--5.1\,\% of mean absolute error). Pitch
+      level and duration ratio are not. For pitch level the regulariser selected
+      $\lambda = 10^{6}$ and the model reduced itself to the baseline, which is the correct
+      response to an absent signal.
+
+\item[\textbf{RQ4}] \textbf{Recognition errors cost 1.84 and 3.34 BLEU}, in proportion to the
+      recognition error rate in each direction. In-domain fine-tuning of the translation model
+      recovers a comparable magnitude ($+2.34$ and $+3.23$ BLEU), but it does so by matching the
+      corpus's register rather than by translating better, so the two effects should not be netted
+      against each other.
+\end{description}
+
+\section{Contributions}
+\label{sec:final_contributions}
+
+\begin{enumerate}
+  \item \textbf{A calibrated identity measurement.} Speaker similarity expressed as a percentage of
+        a human same-speaker cross-language ceiling, rather than as an unanchored cosine.
+  \item \textbf{A quantified prosody transfer gap}, reported within-speaker so that the identity
+        result is not counted twice, with a demonstration that the pooled figure overstates
+        transfer by roughly a factor of two for pitch level.
+  \item \textbf{A negative result with a mechanism.} Cross-lingual prosody is predictable in pitch
+        range and not in pitch level or timing, and the sign of the learned coefficient explains
+        why.
+  \item \textbf{A measured cost for the cascade}, 1.8--3.3 BLEU, obtained from the project's own
+        data rather than cited.
+  \item \textbf{A methodological correction} showing that correlating pitch in hertz without a
+        plausibility gate understated F0 correspondence by roughly a factor of seven, together with
+        evidence that the intuitive remedy --- narrowing the pitch tracker's search band --- makes
+        the measurement worse.
+  \item \textbf{A working, reproducible artefact}: a command-line research pipeline in which every
+        reported number regenerates from committed result files, and a dubbing application that
+        shares its model instances so that the two cannot drift apart.
+\end{enumerate}
+
+\section{Recommendations and Future Work}
+\label{sec:future}
+
+The following are ordered by the ratio of value to effort, as judged from the results above.
+
+\begin{enumerate}
+  \item \textbf{Conduct a listening study.} Twenty clips spanning good and poor cases, five to ten
+        bilingual listeners, rating naturalness, speaker similarity and prosodic appropriateness on
+        a five-point scale, with the automatic speaker-similarity scores correlated against the
+        human similarity ratings. This validates the instrument as well as the system and closes
+        the most significant gap in the present study.
+  \item \textbf{Train a length-controlled translation model.} Prepend a length-class token to each
+        source sentence during fine-tuning, derived from the target-to-source character ratio, and
+        request a short rendition when the available slot is tight. This is the same twelve-minute
+        fine-tune already performed, it attacks the $1.5\times$ duration inflation at its source
+        rather than in post-processing, and it is measurable in four ways: BLEU,
+        length-compliance rate, clamp rate, and final duration match.
+  \item \textbf{Repair the two application defects identified in
+        Section~\ref{sec:dubbing_result}}: truncate an overflowing segment at the next segment's
+        start instead of summing overlapping audio, and fill stretches where no speech was detected
+        with the ducked original audio instead of digital silence.
+  \item \textbf{Compare F0 contours frame by frame under dynamic time warping.} Utterance-level
+        mean and standard deviation cannot capture contour shape; a warped frame-level comparison
+        would be a stronger instrument and would make these results directly comparable with
+        published expressive-dubbing scores.
+  \item \textbf{Close the loop on the prosody model.} The pitch-range relationship is real but
+        currently only descriptive. Using the prediction to condition synthesis --- and measuring
+        whether within-speaker correspondence improves --- would convert an analysis into an
+        intervention.
+  \item \textbf{Merge short recogniser segments before translation.} Sub-second slots produce
+        impossible scaling demands in the dubbing application; merging adjacent short segments
+        would remove a large share of the clamped cases at low cost.
+  \item \textbf{Extend beyond one corpus and one language pair.} Replicating the ceiling
+        methodology on a second same-speaker parallel corpus, or a typologically different language
+        pair, would establish how far these figures generalise.
+\end{enumerate}
+
+\section{Closing Statement}
+\label{sec:closing}
+
+The most durable outcome of this project is not the pipeline, which is assembled from openly
+available components, but the measurement it makes possible. A same-speaker parallel corpus turns
+speech synthesis evaluation from a set of uncalibrated similarity scores into a comparison against
+what the same person actually did. Under that comparison, the answer is specific: current zero-shot
+cross-lingual synthesis carries the speaker, not the speech act. Identity survives at 86--95\,\% of
+what is achievable; utterance-level prosody survives at roughly a third for pitch level and not at
+all for pitch range. Stating that gap in reusable units is what this dissertation contributes, and
+it is the quantity that the next generation of expressive dubbing systems will have to move.

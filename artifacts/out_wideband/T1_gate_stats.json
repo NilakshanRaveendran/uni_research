@@ -1,0 +1,29 @@
+{
+  "rows_extracted": 2893,
+  "dropped_extraction_error": 0,
+  "dropped_by_criterion_either_side": {
+    "nan_f0": 229,
+    "voiced_ratio": 524,
+    "duration": 97,
+    "f0_implausible": 386
+  },
+  "retained_but_f0_near_search_bound": 11,
+  "same_speaker_pairs": 2304,
+  "different_speaker_pairs": 49,
+  "restricted_to_same_speaker": true,
+  "rows_after_same_speaker_filter": 2304,
+  "kept_by_split": {
+    "train": 1634,
+    "test": 348,
+    "dev": 322
+  },
+  "dropped_quality_gate": 589,
+  "rows_kept": 2304,
+  "drop_rate": 0.2036,
+  "same_speaker_kept": 2304,
+  "gate": {
+    "min_voiced_ratio": 0.3,
+    "min_duration_s": 0.4,
+    "max_duration_s": 20.0
+  }
+}

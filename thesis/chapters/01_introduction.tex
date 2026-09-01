@@ -1,0 +1,175 @@
+% =======================================================================================
+% Chapter 1 -- Introduction
+% SECTION-H(10): rationale, problem identification, objectives, expected outcomes.
+% Chapters 1 and 2 together must not exceed ten pages.
+% =======================================================================================
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Rationale of the Research}
+\label{sec:rationale}
+
+Speech carries two kinds of information at once. It carries \emph{what} was said, and it carries
+\emph{how} it was said --- who the speaker is, how fast they talk, where they place emphasis, how
+their pitch rises at the end of a question. Machine translation systems have become very good at
+the first and have historically discarded the second. A translated utterance played back in a flat,
+unfamiliar synthetic voice is understandable, but it is no longer recognisably the same person
+speaking.
+
+Two developments have changed this. Zero-shot voice cloning systems such as
+YourTTS \cite{casanova2022yourtts} and XTTS-v2 \cite{casanova2024xtts} synthesise speech in a
+target language from a few seconds of reference audio by a speaker who never spoke that language;
+and robust multilingual recognition \cite{radford2023whisper} together with openly released
+translation models \cite{tiedemann2020opusmt} make a complete speech-to-speech translation (S2ST)
+pipeline assemblable on ordinary hardware. The applications are immediate: automatic dubbing of
+film and educational video, cross-lingual conferencing, and assistive communication.
+
+The claim usually made for such systems is that they \emph{preserve speaker identity across
+languages}. That claim is normally supported with a cosine similarity between speaker embeddings of
+the source recording and the synthesised output. The difficulty is that such a number has no natural
+scale. A cosine of $0.42$ could indicate excellent preservation or poor preservation; nothing in the
+measurement says which, because there is no reference point for how similar the \emph{same person}
+sounds to themselves when they switch language. Human speakers do not sound identical across
+languages either --- phonetic inventory, rhythm class and habitual pitch range all shift --- so
+part of the loss attributed to the synthesiser may simply be the cost of changing language at all.
+
+A second and larger difficulty concerns prosody. Identity and prosody are routinely conflated
+under the single heading of ``naturalness'', yet they are separate properties with separate
+mechanisms. A voice-cloning synthesiser is conditioned on the reference recording for
+\emph{timbre}. It is not, in general, given the source speaker's pitch contour, and it therefore
+invents its own intonation from the text it is asked to read. Whether the resulting prosody bears
+any relation to what the speaker would actually have done in the target language is an empirical
+question, and it can only be answered if a recording of that speaker doing precisely that exists.
+
+This dissertation is built around a corpus for which such recordings do exist. The Dialogs
+Re-enacted Across Languages (DRAL) corpus \cite{ward2023dral} asks bilingual participants to hold a
+natural conversation in one language and then to re-enact the same exchange, fragment by fragment,
+in the other. The result is a set of utterance-aligned pairs in which \emph{one} speaker produces
+both sides. That design turns two otherwise unanswerable questions into measurements: how similar
+does a speaker sound to themselves across languages, and how much of their prosody carries across.
+Both become calibrated ceilings against which a synthesis pipeline can be judged.
+
+\section{Problem Identification}
+\label{sec:problem}
+
+Existing bilingual and multilingual speech synthesis systems produce intelligible cross-lingual
+speech, but the extent to which they preserve the speaker's individuality and expressive behaviour
+remains poorly quantified. Three specific gaps motivate this study.
+
+\textbf{Uncalibrated identity metrics.} Speaker-similarity scores are reported as bare cosines
+against the source recording. Without a same-speaker cross-language anchor, it is impossible to say
+what fraction of the achievable similarity a system actually attains, or how much of the shortfall
+is attributable to the synthesiser rather than to the language change itself.
+
+\textbf{Unmeasured prosody transfer.} Cross-lingual prosody transfer is an active research area
+\cite{swiatkowski2023dubbing,song2023styles2st}, but progress is impeded by the scarcity of parallel
+expressive data. Work in this area consequently reports perceptual scores or within-language
+proxies rather than a direct comparison against what the same speaker did in the target language.
+The size of the gap between human and synthetic cross-lingual prosody has therefore not been stated
+in units that a subsequent system can be measured against.
+
+\textbf{Confounded reporting.} Correlations computed over a pooled set of utterances from many
+speakers conflate two different things: the tendency of a low-pitched person to remain low-pitched
+in either language, and the transfer of utterance-level expressive variation. The first is speaker
+identity; only the second is prosody transfer. Pooled statistics that do not separate them
+systematically overstate how much prosody a system carries.
+
+A fourth, practical problem emerged during the study and is reported alongside the others.
+Synthesised utterances are systematically longer than the speech they replace, so a dubbed
+recording drifts out of synchronisation with the picture within a few utterances unless the
+generated audio is retimed.
+
+\section{Research Questions}
+\label{sec:questions}
+
+\begin{enumerate}[label=RQ\arabic*., leftmargin=3.2em]
+  \item How much of a speaker's identity, measured against a same-speaker cross-language ceiling,
+        survives zero-shot voice cloning in an English--Spanish S2ST cascade?
+  \item How much of a speaker's prosody --- pitch level, pitch range, duration and speaking rate
+        --- transfers across languages when a human does it, and how much when the system does it?
+  \item Is the target-language prosody of an utterance predictable from its source-language
+        prosody beyond a trivial copy-plus-offset baseline?
+  \item What is the cost, in translation quality, of placing an automatic recogniser in front of
+        the translation model, and does in-domain fine-tuning of the translation model recover it?
+\end{enumerate}
+
+\section{Aim and Objectives}
+\label{sec:objectives}
+
+\textbf{Aim.} To develop and rigorously evaluate a bilingual (English--Spanish) voice transcription
+and synthesis system that translates speech between the two languages while preserving the
+speaker's vocal identity, and to quantify how much of the speaker's prosody the system carries,
+using a same-speaker parallel corpus as the reference standard.
+
+\textbf{Objectives.} The three objectives registered in the approved research proposal, restated
+in the terms in which they were finally executed, are:
+
+\begin{enumerate}[label=\textbf{O\arabic*.}, leftmargin=3.0em]
+  \item To design and implement a bidirectional voice-to-voice translation framework for English
+        and Spanish that preserves the speaker's voice characteristics, using pre-trained ASR, NMT
+        and voice-cloning TTS components, and to measure identity preservation against a human
+        cross-language reference.
+  \item To analyse the prosodic relationship between the two languages for the same speaker, to
+        measure how much of that relationship the system reproduces, and to test whether
+        target-language prosody can be predicted from source-language prosody.
+  \item To integrate the synthesised speech with the original video, applying temporal alignment
+        so that the dubbed track keeps the timing of the original, and to deliver this as a working
+        application.
+\end{enumerate}
+
+A fourth activity, not registered as an objective but required to answer RQ4, was the fine-tuning
+of the translation component on the in-domain conversational data and its comparison against the
+pre-trained baseline.
+
+\section{Scope and Delimitations}
+\label{sec:scope}
+
+The study is deliberately bounded, and the boundaries are stated here so that the results are read
+correctly.
+
+\begin{itemize}
+  \item \textbf{Two languages, both directions.} English and Spanish only, evaluated in both
+        \ento{} and \esto{}.
+  \item \textbf{One corpus.} All experimental data come from DRAL. The pre-trained components
+        carry knowledge from their own training corpora, which were not modified.
+  \item \textbf{Objective evaluation only.} No listening study was conducted. Every result in
+        Chapter~\ref{ch:results} is an instrumental measurement. Mean opinion scores, and the
+        PESQ and STOI metrics named in the proposal, are not reported; Section~\ref{sec:limitations}
+        explains why the latter two are not defined for this task.
+  \item \textbf{Analysis, not control.} The prosody model developed in this study
+        \emph{predicts} target-language prosody; it does not condition the synthesiser. Closing the
+        loop is identified as future work.
+  \item \textbf{Duration-matched dubbing, not lip synchronisation.} The application aligns each
+        synthesised segment to the duration of the segment it replaces. It does not perform
+        phoneme-level lip synchronisation, speaker diarisation, or separation of background music.
+\end{itemize}
+
+\section{Expected Outcomes and Contributions}
+\label{sec:contributions}
+
+The dissertation delivers:
+
+\begin{enumerate}
+  \item A reproducible bidirectional English--Spanish S2ST pipeline with zero-shot voice cloning,
+        evaluated on 870 held-out utterances over a speaker-disjoint split, every failure retained.
+  \item A \emph{calibrated} identity result --- speaker similarity as a percentage of the human
+        same-speaker cross-language ceiling --- and a quantification of the prosody transfer gap
+        reported within-speaker, so that identity is not counted twice as prosody.
+  \item A negative result with a stated mechanism: target-language prosody is predictable beyond a
+        copy-plus-offset baseline only for pitch \emph{range}, and the learned coefficient explains
+        why.
+  \item A methodological finding: correlating pitch in hertz without a plausibility gate understated
+        the correspondence by roughly a factor of seven (Section~\ref{sec:f0correction}).
+  \item A working web application that dubs an uploaded video into the other language in the
+        original speaker's voice, with each segment retimed to its original slot.
+\end{enumerate}
+
+\section{Structure of the Dissertation}
+\label{sec:structure}
+
+Chapter~\ref{ch:literature} reviews cascaded and direct S2ST, identity-preserving synthesis,
+cross-lingual prosody transfer and the evaluation methodology on which this study depends, and
+identifies the gap it addresses. Chapter~\ref{ch:methodology} describes the corpus, the
+partitioning, the architecture, every measurement instrument and each experiment.
+Chapter~\ref{ch:results} reports and discusses the results in the same order, and
+Chapter~\ref{ch:conclusions} evaluates them against the objectives and sets out the next steps.
