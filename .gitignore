@@ -91,3 +91,12 @@ journal/*.log
 journal/*.out
 journal/*.pdf
 !journal/IEEE_manuscript.pdf
+
+# Large intermediate outputs - regenerable from src/, excluded 2026-09-02.
+# artifacts/ladder is 882 MB / 5563 files; artifacts/contours is 20 MB / 2893 files.
+# The summary CSVs, history JSONs and plots derived from them ARE tracked.
+artifacts/ladder/
+artifacts/contours/
+
+# Local agent/editor state
+.claude/

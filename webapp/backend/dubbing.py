@@ -22,6 +22,8 @@ import wave
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from . import background
+
 TARGET_SR = 16000  # Whisper / ECAPA operate at 16 kHz
 MIN_SEGMENT_S = 0.30
 # Bounds on how far a segment may be stretched or compressed. Beyond this the audio degrades
@@ -59,6 +61,9 @@ class DubResult:
     raw_duration_ratio: float | None = None
     clamped_segments: int = 0
     failed_segments: int = 0
+    background_mode: str = "none"
+    background_model: str = ""
+    mix_info: dict = field(default_factory=dict)
     elapsed_s: float = 0.0
 
     def to_dict(self) -> dict:
@@ -279,8 +284,41 @@ def dub(
     source_wav = extract_audio(video_path, job_dir / "source.wav")
     total_duration = ffprobe_duration(source_wav)
 
+    # Full-quality stereo copy, kept for separation and for the final mix. The 16 kHz mono file
+    # above is what Whisper and ECAPA want; mixing music at 16 kHz mono would discard most of
+    # what the background-preservation step exists to save.
+    background_mode = background.requested_mode()
+    separated = None
+    full_wav = None
+    if background_mode != "none":
+        try:
+            full_wav = background.extract_full_audio(video_path, job_dir / "source_full.wav")
+        except Exception as exc:  # noqa: BLE001 - fall back to speech-only rather than fail
+            note(4, f"Full-quality extraction failed ({type(exc).__name__}); speech only")
+            background_mode = "none"
+
+    if background_mode == "separate" and full_wav is not None:
+        note(5, "Separating voice from music and effects")
+        separated = background.separate(
+            full_wav, job_dir / "stems", progress=lambda message: note(6, message)
+        )
+        if separated is None:
+            # Not an error: ducking still returns the music and effects, at the cost of leaving
+            # the original voice faintly audible underneath.
+            note(8, "Separation unavailable; keeping the original audio ducked underneath")
+            background_mode = "duck"
+
+    # Transcribe the isolated voice when we have it: Whisper on a track with the music and
+    # gunfire removed makes fewer errors than Whisper on the full mix.
+    asr_wav = source_wav
+    if separated is not None:
+        try:
+            asr_wav = extract_audio(separated["vocals"], job_dir / "vocals_16k.wav")
+        except Exception:  # noqa: BLE001 - the original mix is a fine fallback
+            asr_wav = source_wav
+
     note(10, f"Transcribing {LANGUAGES[source_lang]} speech")
-    segments = transcribe_segments(models, source_wav, source_lang)
+    segments = transcribe_segments(models, asr_wav, source_lang)
     if not segments:
         raise RuntimeError("No speech detected in the uploaded file")
     note(20, f"Found {len(segments)} speech segments")
@@ -348,20 +386,47 @@ def dub(
     if peak > 1.0:
         timeline = timeline / peak * 0.97
     dubbed_wav = job_dir / "dubbed.wav"
-    _write_wav(dubbed_wav, timeline, timeline_sr)
+    _write_wav(dubbed_wav, timeline, timeline_sr)  # speech only, kept for inspection
+
+    mix_info: dict = {}
+    background_model = ""
+    final_wav = dubbed_wav
+    if background_mode != "none" and full_wav is not None:
+        note(89, "Mixing music and effects back in")
+        try:
+            if separated is not None:
+                bed, bed_sr = background.read_stereo(separated["background"])
+                reference, _ref_sr = background.read_stereo(separated["vocals"])
+                background_model = separated["model"]
+            else:
+                bed, bed_sr = background.read_stereo(full_wav)
+                bed = background.duck(bed, bed_sr, segments)
+                reference = None
+                background_model = "ducked original (no separation)"
+            mixed, mix_sr, mix_info = background.mix(
+                timeline, timeline_sr, bed, bed_sr, reference=reference
+            )
+            final_wav = background.write_stereo(job_dir / "dubbed_mixed.wav", mixed, mix_sr)
+        except Exception as exc:  # noqa: BLE001 - a failed mix must not lose the dub
+            mix_info = {"error": f"{type(exc).__name__}: {exc}"[:200]}
+            background_mode = "none"
+            final_wav = dubbed_wav
 
     note(92, "Measuring speaker similarity")
     similarity = None
     try:
-        similarity = models.speaker_similarity(source_wav, dubbed_wav)
+        # Compare against the isolated voice when we have it: measuring against the full mix would
+        # charge the dub for music it was never supposed to reproduce.
+        reference_wav = separated["vocals"] if separated is not None else source_wav
+        similarity = models.speaker_similarity(reference_wav, dubbed_wav)
     except Exception:  # noqa: BLE001 - metric is informative, not load-bearing
         similarity = None
 
     note(95, "Merging audio back into video")
     if has_video_stream(video_path):
-        out_video = merge_audio_into_video(video_path, dubbed_wav, job_dir / "dubbed.mp4")
+        out_video = merge_audio_into_video(video_path, final_wav, job_dir / "dubbed.mp4")
     else:
-        out_video = dubbed_wav  # audio-only upload: the dubbed track *is* the deliverable
+        out_video = final_wav  # audio-only upload: the dubbed track *is* the deliverable
 
     ok = [r for r in results if not r.error]
     raw_total = sum(r.raw_tts_duration for r in ok)
@@ -372,13 +437,16 @@ def dub(
         job_id=job_dir.name,
         direction=direction,
         video_out=str(out_video),
-        audio_out=str(dubbed_wav),
+        audio_out=str(final_wav),
         segments=results,
         speaker_similarity=similarity,
         duration_match_ratio=(final_total / original_total) if original_total else None,
         raw_duration_ratio=(raw_total / original_total) if original_total else None,
         clamped_segments=sum(1 for r in results if r.clamped),
         failed_segments=sum(1 for r in results if r.error),
+        background_mode=background_mode,
+        background_model=background_model,
+        mix_info=mix_info,
         elapsed_s=round(time.time() - started, 1),
     )
     (job_dir / "result.json").write_text(json.dumps(result.to_dict(), indent=2) + "\n")

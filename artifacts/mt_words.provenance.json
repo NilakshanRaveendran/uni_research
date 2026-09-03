@@ -1,0 +1,8 @@
+{
+  "rows_written": 5752,
+  "output": "/private/tmp/claude-501/-Users-nilakshanraveendran-Documents-research/79f7892d-0c12-4621-b145-bf78f6e87dd0/scratchpad/mt_smoke.csv",
+  "models": {
+    "en-es": "finetuned:artifacts/finetune/best-en-es",
+    "es-en": "finetuned:artifacts/finetune/best-es-en"
+  }
+}
