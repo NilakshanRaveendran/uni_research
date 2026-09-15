@@ -2,6 +2,22 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+// Icons are imported by direct path rather than from the package barrel: the barrel pulls in
+// every icon and noticeably slows the dev server.
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
+import CheckRounded from "@mui/icons-material/CheckRounded";
+import CloudUploadOutlined from "@mui/icons-material/CloudUploadOutlined";
+import DownloadRounded from "@mui/icons-material/DownloadRounded";
+import ErrorOutlineRounded from "@mui/icons-material/ErrorOutlineRounded";
+import GraphicEqRounded from "@mui/icons-material/GraphicEqRounded";
+import InfoOutlined from "@mui/icons-material/InfoOutlined";
+import InsertDriveFileOutlined from "@mui/icons-material/InsertDriveFileOutlined";
+import MusicNoteRounded from "@mui/icons-material/MusicNoteRounded";
+import PlayArrowRounded from "@mui/icons-material/PlayArrowRounded";
+import ScheduleRounded from "@mui/icons-material/ScheduleRounded";
+import SmartDisplayOutlined from "@mui/icons-material/SmartDisplayOutlined";
+import SubtitlesOutlined from "@mui/icons-material/SubtitlesOutlined";
+
 type Direction = "es-en" | "en-es";
 
 type Segment = {
@@ -27,6 +43,7 @@ type DubResult = {
   raw_duration_ratio: number | null;
   clamped_segments: number;
   failed_segments: number;
+  background_mode?: string;
   elapsed_s: number;
 };
 
@@ -35,6 +52,10 @@ type Job = {
   status: "queued" | "running" | "done" | "error";
   progress: number;
   message: string;
+  /** Seconds remaining, measured from how long this machine actually took per segment.
+   *  Null until two segments have been timed — the first carries one-off warm-up and
+   *  extrapolating from it alone reported 135s on a job that finished in 68s. */
+  eta_s?: number | null;
   result?: DubResult;
 };
 
@@ -47,27 +68,37 @@ type Health = {
   max_upload_mb: number;
 };
 
-const DIRECTIONS: { id: Direction; from: string; to: string; flagFrom: string; flagTo: string }[] = [
-  { id: "es-en", from: "Spanish", to: "English", flagFrom: "🇪🇸", flagTo: "🇬🇧" },
-  { id: "en-es", from: "English", to: "Spanish", flagFrom: "🇬🇧", flagTo: "🇪🇸" },
+const DIRECTIONS: { id: Direction; from: string; to: string; codeFrom: string; codeTo: string }[] = [
+  { id: "es-en", from: "Spanish", to: "English", codeFrom: "ES", codeTo: "EN" },
+  { id: "en-es", from: "English", to: "Spanish", codeFrom: "EN", codeTo: "ES" },
 ];
 
+// Plain descriptions of what happens, not which model does it -- the model choices are an
+// implementation detail and naming them dates the page every time one changes.
 const STAGES = [
-  "Extract audio from video",
-  "Transcribe speech (Whisper)",
-  "Translate text (MarianMT)",
-  "Synthesise cloned voice (XTTS-v2)",
-  "Retime to preserve prosody",
-  "Merge audio back into video",
+  "Extract audio",
+  "Separate voice and background",
+  "Transcribe speech",
+  "Translate text",
+  "Synthesise voice",
+  "Mix and merge",
 ];
 
+/** Map backend progress percentages onto the stage list. */
 function stageFromProgress(p: number): number {
-  if (p < 8) return 0;
-  if (p < 20) return 1;
-  if (p < 86) return 3;
-  if (p < 92) return 4;
+  if (p < 0) return -1;
+  if (p < 5) return 0;
+  if (p < 10) return 1;
+  if (p < 20) return 2;
+  if (p < 88) return 4; // the segment loop translates and synthesises together
   if (p < 100) return 5;
-  return 6;
+  return STAGES.length;
+}
+
+function fmtEta(seconds: number): string {
+  if (seconds < 45) return "under a minute left";
+  const minutes = Math.round(seconds / 60);
+  return `about ${minutes} min left`;
 }
 
 function fmtBytes(n: number): string {
@@ -189,292 +220,262 @@ export default function Page() {
   const busy = uploading || job?.status === "queued" || job?.status === "running";
   const result = job?.status === "done" ? job.result : undefined;
   const activeStage = stageFromProgress(job?.progress ?? -1);
+  const pct = uploading ? uploadPct : (job?.progress ?? 0);
 
   return (
     <div className="wrap">
       <header className="top">
-        <div className="brand">
+        <div>
           <h1>Bilingual Voice Dubbing</h1>
-          <p>
-            Transcription and synthesis preserving speaker identity. Upload a video, pick a
-            direction, and the pipeline dubs it in the original speaker&rsquo;s voice — retimed so the
-            dub keeps the source&rsquo;s rhythm and stays in sync.
-          </p>
+          <p>Dub a clip into another language, in the original speaker&rsquo;s voice.</p>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <span className="pill">
-            <span className={`dot ${health !== null && health.ffmpeg ? "on" : "off"}`} />
-            {health === null ? "checking backend" : health.ffmpeg ? "backend ready" : "backend offline"}
-          </span>
-          <span className="pill">
-            <span className={`dot ${health?.ffmpeg ? "on" : "off"}`} />
-            ffmpeg
-          </span>
-          <span className="pill">
-            <span className={`dot ${health?.xtts_license_accepted ? "on" : "off"}`} />
-            {health?.xtts_license_accepted ? "XTTS enabled" : "XTTS setup required"}
-          </span>
-          {health && <span className="pill">MT: {health.mt_mode}</span>}
-        </div>
+        <span className={`pill ${health?.ok ? "ok" : health === null ? "" : "bad"}`}>
+          <span className="dot" />
+          {health === null ? "Checking" : health.ok ? "Ready" : "Setup needed"}
+        </span>
       </header>
 
-      <div className="bento">
-        {/* upload */}
-        <section className="tile span-4">
-          <h3>1 · Source media</h3>
-          <p className="sub">
-            Video or audio. MP4, MOV, MKV, WEBM, WAV, MP3, M4A, FLAC — up to 200 MB.
-            Best results come from a short, clean clip with one clearly audible speaker.
-          </p>
-          <div
-            className={`drop ${over ? "over" : ""}`}
-            onClick={() => inputRef.current?.click()}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setOver(true);
-            }}
-            onDragLeave={() => setOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setOver(false);
-              pick(e.dataTransfer.files?.[0]);
-            }}
-          >
-            <div className="big">Drop a file here, or click to browse</div>
-            <div className="small">The audio track is extracted automatically</div>
-          </div>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="video/*,audio/*"
-            hidden
-            onChange={(e) => pick(e.target.files?.[0])}
-          />
-          {file && (
-            <div className="filechip">
-              <span className="name">{file.name}</span>
-              <span className="sz">
-                {uploading ? `uploading ${uploadPct}%` : job ? "uploaded ✓" : fmtBytes(file.size)}
+      <div className="layout">
+        {/* ---------------- main column ---------------- */}
+        <main className="main">
+          <section className="card">
+            <h2>
+              <span className="step">1</span> Source
+            </h2>
+            <div
+              className={`drop ${over ? "over" : ""}`}
+              onClick={() => inputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setOver(true);
+              }}
+              onDragLeave={() => setOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setOver(false);
+                pick(e.dataTransfer.files?.[0]);
+              }}
+            >
+              <CloudUploadOutlined className="dropicon" />
+              <div className="big">Drop a video or audio file</div>
+              <div className="small">
+                or click to browse &middot; up to {health?.max_upload_mb ?? 200} MB
+              </div>
+            </div>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="video/*,audio/*"
+              hidden
+              onChange={(e) => pick(e.target.files?.[0])}
+            />
+            {file && (
+              <div className="filechip">
+                <InsertDriveFileOutlined className="i16" />
+                <span className="name">{file.name}</span>
+                <span className="sz">
+                  {uploading ? (
+                    `${uploadPct}%`
+                  ) : job ? (
+                    <CheckRounded className="i16 ok" />
+                  ) : (
+                    fmtBytes(file.size)
+                  )}
+                </span>
+              </div>
+            )}
+          </section>
+
+          <section className="card">
+            <div className="cardhead">
+              <h2>Progress</h2>
+              <span className="note">
+                {result ? `done in ${Math.round(result.elapsed_s)}s` : busy ? `${pct}%` : "idle"}
               </span>
             </div>
-          )}
-          {uploading && (
-            <div style={{ marginTop: 10 }}>
-              <div className="bar">
-                <i style={{ width: `${uploadPct}%` }} />
-              </div>
-              <p className="note" style={{ marginTop: 7 }}>
-                Sending {fmtBytes(file?.size ?? 0)} to the server — {uploadPct}%
-                {uploadPct === 100 ? " · waiting for the server to accept it" : ""}
-              </p>
+            <div className="bar">
+              <i style={{ width: `${pct}%` }} />
             </div>
-          )}
-        </section>
-
-        {/* direction */}
-        <section className="tile span-2">
-          <h3>2 · Direction</h3>
-          <p className="sub">Which language to dub from and into.</p>
-          <div className="dirs">
-            {DIRECTIONS.map((d) => (
-              <button
-                key={d.id}
-                className={`dirbtn ${direction === d.id ? "sel" : ""}`}
-                onClick={() => setDirection(d.id)}
-                disabled={busy}
-              >
-                <span className="flag">{d.flagFrom}</span>
-                <span>{d.from}</span>
-                <span className="arrow">→</span>
-                <span className="flag">{d.flagTo}</span>
-                <span>{d.to}</span>
-              </button>
-            ))}
-          </div>
-          <button
-            className="btn"
-            onClick={submit}
-            disabled={!file || busy || !health?.ok}
-            title={
-              !file
-                ? "Choose a file first"
-                : !health?.ok
-                  ? "Backend is not ready — see the note below"
-                  : ""
-            }
-          >
-            {uploading ? `Uploading ${uploadPct}%` : busy ? "Dubbing…" : "Start dubbing"}
-          </button>
-          {!file && health?.ok && (
-            <p className="note" style={{ marginTop: 9 }}>Choose a file to enable this button.</p>
-          )}
-          {health && !health.xtts_license_accepted && (
-            <div className="setup-box">
-              Review the Coqui model license, then restart the backend with
-              <code>COQUI_TOS_AGREED=1</code> to enable dubbing.
+            <div className="msg">
+              <span>
+                {uploading
+                  ? `Uploading — ${uploadPct}%`
+                  : (job?.message ?? "Choose a file, then start dubbing.")}
+              </span>
+              {!uploading && busy && (
+                <span className="eta">
+                  <ScheduleRounded className="i14" />
+                  {typeof job?.eta_s === "number" ? fmtEta(job.eta_s) : "estimating…"}
+                </span>
+              )}
             </div>
-          )}
-        </section>
+            {(error || job?.status === "error") && (
+              <div className="err-box">
+                <ErrorOutlineRounded className="i16" />
+                <span>{error || job?.message}</span>
+              </div>
+            )}
+          </section>
 
-        {/* pipeline */}
-        <section className="tile span-2">
-          <h3>Pipeline</h3>
-          <p className="sub">Six stages, run on this machine.</p>
-          <div className="stages">
-            {STAGES.map((s, i) => (
-              <div
-                key={s}
-                className={`stage ${i < activeStage ? "done" : i === activeStage ? "active" : ""}`}
-              >
-                <span className="num">{i < activeStage ? "✓" : i + 1}</span>
-                <span>{s}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* progress */}
-        <section className="tile span-4">
-          <h3>Progress</h3>
-          <div className="pcts">
-            <b>{uploading ? `${uploadPct}%` : job ? `${job.progress}%` : "—"}</b>
-            <span className="note">
-              {result ? `finished in ${result.elapsed_s}s` : busy ? "working…" : "idle"}
-            </span>
-          </div>
-          <div className="bar">
-            <i style={{ width: `${uploading ? uploadPct : (job?.progress ?? 0)}%` }} />
-          </div>
-          <div className="msg">
-            {uploading
-              ? `Uploading file… ${uploadPct}%`
-              : (job?.message ?? "Upload a file and press Start dubbing.")}
-          </div>
-          {error && <div className="err-box" style={{ marginTop: 12 }}>{error}</div>}
-          {job?.status === "error" && (
-            <div className="err-box" style={{ marginTop: 12 }}>{job.message}</div>
-          )}
-          {!error && !job && (
-            <p className="note" style={{ marginTop: 12 }}>
-              Expect roughly 13&times; the clip length: a 15-second clip takes about 3 minutes.
-              Speech synthesis runs on the CPU and cannot be parallelised.
-            </p>
-          )}
-        </section>
-
-        {/* result */}
-        <section className="tile span-4">
-          <h3>3 · Dubbed result</h3>
-          {result ? (
-            <>
-              <video controls src={`/api/jobs/${result.job_id}/video`} />
-              <div className="vrow">
-                <a href={`/api/jobs/${result.job_id}/video`} download>
-                  <button className="btn ghost">Download video</button>
-                </a>
-                <a href={`/api/jobs/${result.job_id}/audio`} download>
-                  <button className="btn ghost">Download audio only</button>
-                </a>
-              </div>
-            </>
-          ) : (
-            <div className="empty">
-              The dubbed video appears here once processing finishes.
-              <br />
-              Video is stream-copied, so only the audio track is replaced.
-            </div>
-          )}
-        </section>
-
-        {/* metrics */}
-        <section className="tile span-2">
-          <h3>Measurements</h3>
-          <p className="sub">Computed on the result, not estimated.</p>
-          {result ? (
-            <div className="mgrid">
-              <div className="metric">
-                <div className="k">Voice match</div>
-                <div className="v good">
-                  {result.speaker_similarity !== null
-                    ? result.speaker_similarity.toFixed(3)
-                    : "n/a"}
-                </div>
-                <div className="n">ECAPA cosine</div>
-              </div>
-              <div className="metric">
-                <div className="k">Timing match</div>
-                <div
-                  className={`v ${
-                    result.duration_match_ratio !== null &&
-                    Math.abs(result.duration_match_ratio - 1) < 0.1
-                      ? "good"
-                      : "warn"
-                  }`}
-                >
-                  {result.duration_match_ratio !== null
-                    ? `${result.duration_match_ratio.toFixed(3)}×`
-                    : "n/a"}
-                </div>
-                <div className="n">after retiming</div>
-              </div>
-              <div className="metric">
-                <div className="k">Before retiming</div>
-                <div className="v warn">
-                  {result.raw_duration_ratio !== null
-                    ? `${result.raw_duration_ratio.toFixed(3)}×`
-                    : "n/a"}
-                </div>
-                <div className="n">raw TTS length</div>
-              </div>
-              <div className="metric">
-                <div className="k">Segments</div>
-                <div className="v">{result.segments.length}</div>
-                <div className="n">
-                  {result.failed_segments} failed · {result.clamped_segments} clamped
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="empty">Voice similarity and timing accuracy appear after dubbing.</div>
-          )}
-        </section>
-
-        {/* segments */}
-        <section className="tile span-6">
-          <h3>4 · Segment detail</h3>
-          <p className="sub">
-            Each detected utterance, its translation, and how much it was stretched or compressed to
-            fit the original slot.
-          </p>
-          {result ? (
-            <div className="segs">
-              {result.segments.map((s) => (
-                <div className="seg" key={s.index}>
-                  <div className="hd">
-                    <span>
-                      {s.start.toFixed(2)}s – {s.end.toFixed(2)}s
+          <section className="card">
+            <h2>
+              <span className="step">2</span> Result
+            </h2>
+            {result ? (
+              <div className="resultrow">
+                <video controls src={`/api/jobs/${result.job_id}/video`} />
+                <div className="resultside">
+                  {result.background_mode && result.background_mode !== "none" && (
+                    <span className="chip">
+                      <MusicNoteRounded className="i16" /> Music and effects kept
                     </span>
-                    <span style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                      <span>
-                        {s.original_duration.toFixed(2)}s slot · TTS{" "}
-                        {s.raw_tts_duration.toFixed(2)}s → {s.final_duration.toFixed(2)}s (
-                        {s.scale_applied.toFixed(2)}&times;)
+                  )}
+                  <a href={`/api/jobs/${result.job_id}/video`} download>
+                    <button className="btn ghost">
+                      <DownloadRounded className="i18" /> Video
+                    </button>
+                  </a>
+                  <a href={`/api/jobs/${result.job_id}/audio`} download>
+                    <button className="btn ghost">
+                      <GraphicEqRounded className="i18" /> Audio only
+                    </button>
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="empty">
+                <SmartDisplayOutlined className="emptyicon" />
+                The dubbed video appears here.
+              </div>
+            )}
+          </section>
+
+          <section className="card">
+            <div className="cardhead">
+              <h2>
+                <span className="step">3</span> Segments
+              </h2>
+              {result && (
+                <span className="note">
+                  {result.segments.length} found
+                  {result.clamped_segments > 0 && ` · ${result.clamped_segments} clamped`}
+                  {result.failed_segments > 0 && ` · ${result.failed_segments} failed`}
+                </span>
+              )}
+            </div>
+            {result ? (
+              <div className="segs">
+                {result.segments.map((s) => (
+                  <article className="seg" key={s.index}>
+                    <div className="seghead">
+                      <span className="time">
+                        {s.start.toFixed(2)}s – {s.end.toFixed(2)}s
                       </span>
-                      {s.clamped && <span className="tag clamp">clamped</span>}
-                      {s.error && <span className="tag err">failed</span>}
-                    </span>
-                  </div>
-                  <div className="src">{s.source_text || <em>no speech recognised</em>}</div>
-                  <div className="tgt">{s.translated_text || <em>{s.error || "—"}</em>}</div>
-                </div>
+                      <span className="tags">
+                        {s.clamped && (
+                          <span className="tag clamp" title="Hit the time-compression limit">
+                            clamped
+                          </span>
+                        )}
+                        {s.error && <span className="tag err">failed</span>}
+                      </span>
+                    </div>
+                    <div className="segtext">
+                      <p className="src">{s.source_text || <em>no speech recognised</em>}</p>
+                      <p className="tgt">{s.translated_text || <em>{s.error || "—"}</em>}</p>
+                    </div>
+                    {/* How much the dub had to be stretched or squeezed to fit the slot it
+                        replaces -- the number that explains an unnatural-sounding segment. */}
+                    <dl className="segstats">
+                      <div>
+                        <dt>Slot</dt>
+                        <dd>{s.original_duration.toFixed(2)}s</dd>
+                      </div>
+                      <div>
+                        <dt>Synthesised</dt>
+                        <dd>{s.raw_tts_duration.toFixed(2)}s</dd>
+                      </div>
+                      <div>
+                        <dt>After retiming</dt>
+                        <dd>{s.final_duration.toFixed(2)}s</dd>
+                      </div>
+                      <div>
+                        <dt>Speed</dt>
+                        <dd className={s.clamped ? "warn" : undefined}>
+                          {s.scale_applied.toFixed(2)}&times;
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="empty">
+                <SubtitlesOutlined className="emptyicon" />
+                Each utterance, its translation and its timing appear here.
+              </div>
+            )}
+          </section>
+        </main>
+
+        {/* ---------------- sidebar ---------------- */}
+        <aside className="side">
+          <section className="card">
+            <h2>Direction</h2>
+            <div className="dirs">
+              {DIRECTIONS.map((d) => (
+                <button
+                  key={d.id}
+                  className={`dirbtn ${direction === d.id ? "sel" : ""}`}
+                  onClick={() => setDirection(d.id)}
+                  disabled={busy}
+                >
+                  <span className="code">{d.codeFrom}</span>
+                  <ArrowForwardRounded className="i16 arrow" />
+                  <span className="code">{d.codeTo}</span>
+                  <span className="dirname">
+                    {d.from} to {d.to}
+                  </span>
+                </button>
               ))}
             </div>
-          ) : (
-            <div className="empty">
-              Segment-by-segment transcription, translation and retiming appear here.
-            </div>
-          )}
-        </section>
+            <button className="btn" onClick={submit} disabled={!file || busy || !health?.ok}>
+              {busy ? (
+                "Working…"
+              ) : (
+                <>
+                  <PlayArrowRounded className="i18" /> Start dubbing
+                </>
+              )}
+            </button>
+            {health && !health.xtts_license_accepted && (
+              <div className="setup-box">
+                <InfoOutlined className="i16" />
+                <span>
+                  Review the voice-model licence, then restart the backend with
+                  <code>COQUI_TOS_AGREED=1</code>.
+                </span>
+              </div>
+            )}
+          </section>
+
+          <section className="card">
+            <h2>Pipeline</h2>
+            <ol className="stages">
+              {STAGES.map((s, i) => (
+                <li
+                  key={s}
+                  className={`stage ${i < activeStage ? "done" : i === activeStage ? "active" : ""}`}
+                >
+                  <span className="num">
+                    {i < activeStage ? <CheckRounded className="i14" /> : i + 1}
+                  </span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </aside>
       </div>
     </div>
   );

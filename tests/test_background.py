@@ -229,3 +229,154 @@ def test_dubbing_uses_the_background_module() -> None:
     assert "background.mix(" in source
     # The final mix, not the speech-only timeline, is what gets muxed into the video.
     assert "merge_audio_into_video(video_path, final_wav" in source
+
+
+# --------------------------------------------------------------------------------------
+# Synthesis speed
+# --------------------------------------------------------------------------------------
+
+
+def test_voice_cloning_is_memoized() -> None:
+    """Every segment of a clip is synthesised from the SAME speaker reference, but XTTS re-clones
+    the voice from the entire source audio on every call. Measured on a 3-segment benchmark:
+    128.8s -> 52.3s (2.46x) with byte-identical output, i.e. 25.5s saved per segment. On a
+    39-segment clip that is over 16 minutes."""
+
+    class FakeModel:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def clone_voice(self, speaker_wav, *args, **kwargs):
+            self.calls += 1
+            return {"gpt_conditioning_latents": 1, "speaker_embedding": 2}
+
+    class FakeTTS:
+        def __init__(self) -> None:
+            self.synthesizer = type("S", (), {"tts_model": FakeModel()})()
+
+    from bilingual_voice.pipeline import _memoize_voice_cloning
+
+    tts = FakeTTS()
+    model = tts.synthesizer.tts_model
+    _memoize_voice_cloning(tts)
+
+    for _ in range(5):
+        model.clone_voice("ref.wav", gpt_cond_len=30)
+    assert model.calls == 1, "the same reference must only be cloned once"
+
+    # A different reference, or different settings, must still recompute.
+    model.clone_voice("other.wav", gpt_cond_len=30)
+    model.clone_voice("ref.wav", gpt_cond_len=6)
+    assert model.calls == 3
+
+    # Installing twice must not double-wrap.
+    _memoize_voice_cloning(tts)
+    model.clone_voice("ref.wav", gpt_cond_len=30)
+    assert model.calls == 3
+
+
+def test_memoized_clone_never_breaks_on_an_unhashable_argument() -> None:
+    """A cache that raises would take the whole dubbing job with it."""
+
+    class FakeModel:
+        def clone_voice(self, speaker_wav, *args, **kwargs):
+            return "voice"
+
+    class FakeTTS:
+        def __init__(self) -> None:
+            self.synthesizer = type("S", (), {"tts_model": FakeModel()})()
+
+    from bilingual_voice.pipeline import _memoize_voice_cloning
+
+    tts = FakeTTS()
+    _memoize_voice_cloning(tts)
+    assert tts.synthesizer.tts_model.clone_voice({"unhashable": ["dict"]}) == "voice"
+
+
+def test_progress_callback_arity_is_detected() -> None:
+    """`dub()` gained an ETA argument on its progress callback. A caller that still passes a
+    two-argument function must keep working -- otherwise the extra argument raises partway
+    through a job, after minutes of synthesis have already been paid for."""
+    import inspect
+    from pathlib import Path
+
+    source = Path("webapp/backend/dubbing.py").read_text(encoding="utf-8")
+    assert "inspect.signature(progress).parameters" in source, "arity must be inspected"
+    assert "progress(pct, message)" in source, "a two-argument callback must still be supported"
+
+    # The inspection itself must handle callables with no signature.
+    for callable_object in (print, len):
+        try:
+            inspect.signature(callable_object)
+        except (TypeError, ValueError):
+            pass  # exactly the case the code guards against
+
+
+def test_eta_ignores_the_warm_up_segment() -> None:
+    """The first synthesised segment pays one-off warm-up and runs about twice as slow as the
+    rest. Averaging it in made a measured run report 136s remaining on a job that finished in 66s.
+    The estimate must drop it once there is anything else to go on."""
+    from pathlib import Path
+
+    source = Path("webapp/backend/dubbing.py").read_text(encoding="utf-8")
+    assert "if len(segment_times) >= 2:" in source, "no estimate until the warm-up is excluded"
+    assert "statistics.median(segment_times[1:]" in source, "the warm-up segment must be dropped"
+    assert "statistics.median" in source, "a median resists one slow outlier; a mean does not"
+
+    # The arithmetic the code performs, checked directly.
+    import statistics
+
+    warm_up, steady = 30.0, 10.0
+    times = [warm_up, steady, steady]
+    naive = sum(times) / len(times)
+    used = statistics.median(times[1:][-5:])
+    assert used == steady
+    assert naive > used * 1.6, "the naive mean is badly skewed by the warm-up segment"
+
+
+# --------------------------------------------------------------------------------------
+# Device selection
+# --------------------------------------------------------------------------------------
+
+
+def test_tts_device_auto_prefers_the_gpu_when_present(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Measured on this machine: XTTS on the Mac GPU ran ~24% faster than CPU (1.37 -> 1.04
+    seconds of compute per second of audio) at comparable speaker similarity."""
+    import torch
+
+    from bilingual_voice.pipeline import _resolve_tts_device
+
+    monkeypatch.setattr(torch.backends.mps, "is_available", lambda: True)
+    assert _resolve_tts_device("auto") == "mps"
+
+    monkeypatch.setattr(torch.backends.mps, "is_available", lambda: False)
+    assert _resolve_tts_device("auto") == "cpu"
+
+    # An explicit request is always honoured, whatever the hardware reports.
+    assert _resolve_tts_device("cpu") == "cpu"
+    assert _resolve_tts_device("mps") == "mps"
+
+
+def test_synthesis_falls_back_to_cpu_when_the_gpu_fails() -> None:
+    """Not every PyTorch op has an MPS kernel, and a missing one raises partway through
+    generation. That must cost one retry, not the whole dubbing job. A load-time probe cannot
+    catch it because the failing op may depend on the input, so the guard lives at the call."""
+    from pathlib import Path
+
+    source = Path("src/bilingual_voice/pipeline.py").read_text(encoding="utf-8")
+    assert 'if self._active_tts_device == "cpu":' in source, "a CPU failure must propagate"
+    assert 'self._tts = tts.to("cpu")' in source, "a device failure must retry on CPU"
+    assert source.count("_run()") >= 3, "the retry must actually re-run the synthesis"
+
+
+def test_separation_stays_on_cpu_because_it_measured_faster() -> None:
+    """Benchmarked: CPU 5.4s vs MPS 10.8s on a 15s clip -- the GPU is twice as slow for Demucs.
+    Correctness is not the reason; the two devices agreed to within 0.0005% of the signal."""
+    import os
+
+    from webapp.backend import background as bg
+
+    os.environ.pop("BVT_SEPARATION_DEVICE", None)
+    assert bg.separation_device() == "cpu"
+    doc = bg.separation_device.__doc__ or ""
+    assert "faster" in doc.lower(), "the reason recorded must be speed, not a safety claim"

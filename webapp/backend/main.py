@@ -101,11 +101,18 @@ def _worker(job_id: str, video: Path, direction: str) -> None:
         _set(job_id, status="running", progress=1, message="Waiting for a free worker")
         with _RUN_LOCK:
 
-            def progress(pct: int, message: str) -> None:
-                _set(job_id, progress=pct, message=message)
+            def progress(pct: int, message: str, eta: float | None = None) -> None:
+                _set(job_id, progress=pct, message=message, eta_s=eta)
 
             result = dub(video, direction, job_dir, get_models(), progress)
-        _set(job_id, status="done", progress=100, message="Complete", result=result.to_dict())
+        _set(
+            job_id,
+            status="done",
+            progress=100,
+            message="Complete",
+            eta_s=None,
+            result=result.to_dict(),
+        )
     except Exception as exc:  # noqa: BLE001 - surface the failure to the client
         _set(job_id, status="error", message=f"{type(exc).__name__}: {exc}"[:400])
 

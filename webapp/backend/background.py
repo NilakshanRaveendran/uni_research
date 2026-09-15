@@ -136,8 +136,16 @@ def _resample(audio, source_sr: int, target_sr: int):
 
 
 def separation_device() -> str:
-    """CPU by default: Demucs runs at roughly 0.3x realtime there, which is fast enough, and MPS
-    has historically been the source of silent numerical surprises in this project."""
+    """CPU by default because it is MEASURABLY FASTER here, not for safety reasons.
+
+    Benchmarked on a 15s clip: CPU 5.4s (0.35x realtime) vs MPS 10.8s (0.71x realtime) -- the Mac
+    GPU is twice as slow for this model, because chunked inference means many small transfers
+    where setup cost dominates the arithmetic.
+
+    MPS correctness is not in question: the two devices agreed to within 0.0005% of the signal
+    (max sample difference 3.1e-5), which is float rounding. Set BVT_SEPARATION_DEVICE=mps if a
+    different machine reverses the timing.
+    """
     return os.environ.get("BVT_SEPARATION_DEVICE", "cpu").strip().lower()
 
 

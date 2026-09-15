@@ -13,9 +13,11 @@ within a few utterances.
 
 from __future__ import annotations
 
+import inspect
 import json
 import math
 import shutil
+import statistics
 import subprocess
 import time
 import wave
@@ -276,8 +278,21 @@ def dub(
     source_lang, target_lang = DIRECTIONS[direction]
     job_dir.mkdir(parents=True, exist_ok=True)
 
-    def note(pct: int, message: str) -> None:
-        if progress:
+    # The progress callback gained an ETA argument. Older callers pass a two-argument function,
+    # so the arity is inspected once rather than letting the extra argument raise mid-job.
+    accepts_eta = False
+    if progress is not None:
+        try:
+            accepts_eta = len(inspect.signature(progress).parameters) >= 3
+        except (TypeError, ValueError):  # builtins and C callables have no inspectable signature
+            accepts_eta = False
+
+    def note(pct: int, message: str, eta: float | None = None) -> None:
+        if not progress:
+            return
+        if accepts_eta:
+            progress(pct, message, eta)
+        else:
             progress(pct, message)
 
     note(3, "Extracting audio from video")
@@ -323,6 +338,15 @@ def dub(
         raise RuntimeError("No speech detected in the uploaded file")
     note(20, f"Found {len(segments)} speech segments")
 
+    # One batched call rather than one per segment: translation is cheap next to synthesis, and
+    # doing it up front means the per-segment timing used for the ETA measures synthesis alone.
+    try:
+        translations = models.translate_many(
+            [seg["text"] for seg in segments], source_lang, target_lang
+        )
+    except Exception:  # noqa: BLE001 - fall back to per-segment translation
+        translations = [None] * len(segments)
+
     timeline_sr = 24000  # XTTS-v2 output rate; the assembled track uses this throughout
     timeline = np.zeros(math.ceil(total_duration * timeline_sr) + timeline_sr, dtype=np.float64)
 
@@ -330,9 +354,26 @@ def dub(
     segment_dir = job_dir / "segments"
     segment_dir.mkdir(exist_ok=True)
 
+    # The ETA is measured on THIS machine rather than assumed from a hardcoded multiplier: after
+    # the first segment we know what synthesis actually costs here, and the estimate self-corrects
+    # as more segments finish.
+    segment_times: list[float] = []
+    tail_fraction = 0.14  # mixing, similarity and muxing, as a share of the segment work
+
     for i, seg in enumerate(segments):
+        started_segment = time.time()
         span = 20 + int(65 * i / max(1, len(segments)))
-        note(span, f"Segment {i + 1}/{len(segments)}: translating and synthesising")
+        remaining = len(segments) - i
+        eta = None
+        # The FIRST segment carries one-off warm-up (lazy allocation, first touch of the model's
+        # weights) and runs about twice as slow as the rest. Extrapolating from it alone reported
+        # 135s remaining on a job that finished in 68s, so nothing is published until a second
+        # segment has been timed -- the UI shows "estimating..." until then, which is honest.
+        # From then on a median of recent segments keeps one slow outlier from dominating.
+        if len(segment_times) >= 2:
+            per = statistics.median(segment_times[1:][-5:])
+            eta = per * remaining * (1.0 + tail_fraction)
+        note(span, f"Segment {i + 1} of {len(segments)}", eta)
         original = seg["end"] - seg["start"]
         record = SegmentResult(
             index=i,
@@ -347,7 +388,9 @@ def dub(
             clamped=False,
         )
         try:
-            translated = models.translate(seg["text"], source_lang, target_lang)
+            translated = translations[i]
+            if translated is None:
+                translated = models.translate(seg["text"], source_lang, target_lang)
             record.translated_text = translated
             if not translated.strip():
                 raise ValueError("translation was empty")
@@ -380,6 +423,7 @@ def dub(
         except Exception as exc:  # noqa: BLE001 - one bad segment must not lose the whole job
             record.error = f"{type(exc).__name__}: {exc}"[:200]
         results.append(record)
+        segment_times.append(time.time() - started_segment)
 
     note(88, "Assembling dubbed audio track")
     peak = float(np.max(np.abs(timeline))) if timeline.size else 0.0

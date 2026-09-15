@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
+import { Urbanist } from "next/font/google";
 import "./globals.css";
+
+// next/font self-hosts the files at build time, so there is no runtime request to Google and no
+// flash of unstyled text.
+const urbanist = Urbanist({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-urbanist",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
@@ -21,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={urbanist.variable}>
       <body>{children}</body>
     </html>
   );

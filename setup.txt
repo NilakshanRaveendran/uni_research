@@ -1,0 +1,8 @@
+How to run?
+
+Backend:
+cd ~/Documents/research && COQUI_TOS_AGREED=1 .venv/bin/python -m uvicorn webapp.backend.main:app --port 8000
+
+Frontend:
+cd /Users/nilakshanraveendran/Documents/research/webapp/frontend 
+npm run dev
