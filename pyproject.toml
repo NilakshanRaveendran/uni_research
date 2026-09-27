@@ -41,6 +41,7 @@ web = [
   "python-multipart>=0.0.20,<1",
   "pyworld>=0.3.5,<1",
   "uvicorn>=0.34,<1",
+  "yt-dlp[default]>=2025.1",
 ]
 
 [project.scripts]

@@ -1,0 +1,75 @@
+{
+  "job_id": "d7fb8ee23ac4",
+  "direction": "es-en",
+  "video_out": "/Users/janukshan/research/uni_research/webapp/jobs/d7fb8ee23ac4/dubbed.mp4",
+  "audio_out": "/Users/janukshan/research/uni_research/webapp/jobs/d7fb8ee23ac4/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 4.86,
+      "source_text": "Hola, como est\u00e1s? Bien y t\u00fa? Bien, gracias.",
+      "translated_text": "Hello, how are you?",
+      "original_duration": 4.86,
+      "raw_tts_duration": 2.219333333333333,
+      "final_duration": 4.44,
+      "scale_applied": 2.0,
+      "clamped": true,
+      "error": ""
+    },
+    {
+      "index": 1,
+      "start": 4.86,
+      "end": 9.040000000000001,
+      "source_text": "Que te gusta? Me gusta f\u00fatbol. F\u00fatbol? Muy bien.",
+      "translated_text": "What do you like? I like football. Football? All right.",
+      "original_duration": 4.180000000000001,
+      "raw_tts_duration": 19.810666666666666,
+      "final_duration": 9.91,
+      "scale_applied": 0.5,
+      "clamped": true,
+      "error": ""
+    },
+    {
+      "index": 2,
+      "start": 9.040000000000001,
+      "end": 14.64,
+      "source_text": "Y que no te gusta? No me gusta f\u00fatbol.",
+      "translated_text": "I don't like football.",
+      "original_duration": 5.6,
+      "raw_tts_duration": 3.1473333333333335,
+      "final_duration": 5.605,
+      "scale_applied": 1.7792840499894087,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 3,
+      "start": 14.64,
+      "end": 15.14,
+      "source_text": "Gracias.",
+      "translated_text": "Thank you.",
+      "original_duration": 0.5,
+      "raw_tts_duration": 4.267333333333333,
+      "final_duration": 2.135,
+      "scale_applied": 0.5,
+      "clamped": true,
+      "error": ""
+    }
+  ],
+  "speaker_similarity": 0.36723592877388,
+  "duration_match_ratio": 1.4590488771466317,
+  "raw_duration_ratio": 1.9448260678115368,
+  "clamped_segments": 3,
+  "failed_segments": 0,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "detected_language": "es",
+  "language_confidence": 0.94,
+  "mix_info": {
+    "speech_gain": 0.6336,
+    "limiter_gain": 1.0,
+    "peak": 0.6152
+  },
+  "elapsed_s": 40.5
+}

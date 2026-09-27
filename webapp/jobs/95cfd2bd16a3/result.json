@@ -1,0 +1,73 @@
+{
+  "job_id": "95cfd2bd16a3",
+  "direction": "es-en",
+  "video_out": "/Users/janukshan/research/uni_research/webapp/jobs/95cfd2bd16a3/dubbed.mp4",
+  "audio_out": "/Users/janukshan/research/uni_research/webapp/jobs/95cfd2bd16a3/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 2.56,
+      "source_text": "cada mujer necesita ser financiera independiente",
+      "translated_text": "every woman needs to be independent financial",
+      "original_duration": 2.56,
+      "raw_tts_duration": 3.894,
+      "final_duration": 2.56,
+      "scale_applied": 0.6574216743708269,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 1,
+      "start": 2.56,
+      "end": 6.5600000000000005,
+      "source_text": "no solo eres alguien su esposa o alguien su hija o alguien su esposa",
+      "translated_text": "not only are you someone his wife or someone his daughter or someone his wife",
+      "original_duration": 4.0,
+      "raw_tts_duration": 5.099333333333333,
+      "final_duration": 4.0,
+      "scale_applied": 0.7844162635638646,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 2,
+      "start": 6.5600000000000005,
+      "end": 11.6,
+      "source_text": "tu identidad ser\u00e1 definida por tu habilidad de ser independiente",
+      "translated_text": "your identity will be defined by your ability to be independent",
+      "original_duration": 5.039999999999999,
+      "raw_tts_duration": 4.363333333333333,
+      "final_duration": 5.04,
+      "scale_applied": 1.155080213903743,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 3,
+      "start": 11.6,
+      "end": 13.84,
+      "source_text": "y eso se trata de financiamiento en el mundo que vivimos hoy",
+      "translated_text": "And that's about financing in the world we live in today.",
+      "original_duration": 2.24,
+      "raw_tts_duration": 3.99,
+      "final_duration": 2.245,
+      "scale_applied": 0.5614035087719298,
+      "clamped": false,
+      "error": ""
+    }
+  ],
+  "speaker_similarity": 0.37170934677124023,
+  "duration_match_ratio": 1.0003612716763008,
+  "raw_duration_ratio": 1.2533718689788051,
+  "clamped_segments": 0,
+  "failed_segments": 0,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "mix_info": {
+    "speech_gain": 0.7485,
+    "limiter_gain": 1.0,
+    "peak": 0.9224
+  },
+  "elapsed_s": 415.0
+}

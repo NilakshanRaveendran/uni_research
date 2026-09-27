@@ -1,0 +1,60 @@
+{
+  "job_id": "30306a3d1bf1",
+  "direction": "en-es",
+  "video_out": "/Users/janukshan/research/uni_research/webapp/jobs/30306a3d1bf1/dubbed.mp4",
+  "audio_out": "/Users/janukshan/research/uni_research/webapp/jobs/30306a3d1bf1/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 4.0,
+      "source_text": "See, I have a lot of personal problems, so I can't get out of it.",
+      "translated_text": "Mira, tengo muchos problemas personales, as\u00ed que no puedo salir de esto.",
+      "original_duration": 4.0,
+      "raw_tts_duration": 11.328666666666667,
+      "final_duration": 5.665,
+      "scale_applied": 0.5,
+      "clamped": true,
+      "error": ""
+    },
+    {
+      "index": 1,
+      "start": 5.0,
+      "end": 8.0,
+      "source_text": "Because I can't cry.",
+      "translated_text": "Porque no puedo llorar.",
+      "original_duration": 3.0,
+      "raw_tts_duration": 8.214,
+      "final_duration": 4.11,
+      "scale_applied": 0.5,
+      "clamped": true,
+      "error": ""
+    },
+    {
+      "index": 2,
+      "start": 9.0,
+      "end": 11.0,
+      "source_text": "I can't cry at night.",
+      "translated_text": "No puedo llorar de noche.",
+      "original_duration": 2.0,
+      "raw_tts_duration": 6.123333333333333,
+      "final_duration": 3.06,
+      "scale_applied": 0.5,
+      "clamped": true,
+      "error": ""
+    }
+  ],
+  "speaker_similarity": 0.6356428861618042,
+  "duration_match_ratio": 1.426111111111111,
+  "raw_duration_ratio": 2.8517777777777784,
+  "clamped_segments": 3,
+  "failed_segments": 0,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "mix_info": {
+    "speech_gain": 0.7676,
+    "limiter_gain": 1.0,
+    "peak": 0.9602
+  },
+  "elapsed_s": 17.7
+}

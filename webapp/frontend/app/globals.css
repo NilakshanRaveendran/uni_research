@@ -7,8 +7,9 @@
   --text: #16191f;
   --text-2: #3d434d;
   --muted: #6b7280;
-  --accent: #2f6bff;
-  --accent-soft: #eaf0ff;
+  --accent: #111317;
+  --accent-hover: #2d3139;
+  --accent-soft: #eceef1;
   --good: #12864f;
   --good-soft: #e6f5ee;
   --warn: #a45c07;
@@ -107,6 +108,31 @@ header.top p { margin: 0; color: var(--muted); font-size: 14px; font-weight: 400
 }
 .filechip .sz { display: flex; align-items: center; font-size: 12.5px; white-space: nowrap; }
 
+/* ---------- source tabs + link ---------- */
+.tabs {
+  display: inline-flex; gap: 2px; padding: 3px; border-radius: 9px;
+  background: var(--surface-2); border: 1px solid var(--line);
+}
+.tabs button {
+  border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 13px;
+  font-weight: 600; padding: 6px 12px; border-radius: 7px; cursor: pointer;
+}
+.tabs button.sel { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.tabs button:disabled { cursor: not-allowed; opacity: .6; }
+.cardhead .tabs { margin-bottom: 16px; }
+.linkbox { display: grid; gap: 8px; }
+.linkbox .small { color: var(--muted); font-size: 13px; }
+.linkfield {
+  display: flex; align-items: center; gap: 9px; padding: 12px 14px;
+  border: 1.5px solid var(--line-2); border-radius: 10px; background: var(--surface-2);
+  color: var(--muted); transition: border-color .15s, background .15s;
+}
+.linkfield:focus-within { border-color: var(--accent); background: var(--accent-soft); }
+.linkfield input {
+  flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+  color: var(--text); font: inherit; font-size: 14.5px;
+}
+
 /* ---------- direction ---------- */
 .dirs { display: grid; gap: 8px; }
 .dirbtn {
@@ -130,7 +156,7 @@ header.top p { margin: 0; color: var(--muted); font-size: 14px; font-weight: 400
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   transition: filter .15s;
 }
-.btn:hover:not(:disabled) { filter: brightness(1.08); }
+.btn:hover:not(:disabled) { background: var(--accent-hover); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn.ghost {
   margin-top: 0; background: var(--surface); border: 1px solid var(--line-2);
@@ -148,10 +174,25 @@ header.top p { margin: 0; color: var(--muted); font-size: 14px; font-weight: 400
 }
 .stage.done { color: var(--text-2); }
 .stage.done .num { background: var(--good-soft); border-color: #bfe3d1; color: var(--good); }
-.stage.active { color: var(--text); font-weight: 600; }
-.stage.active .num {
-  background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
+.stage {
+  margin: -5px -8px; padding: 5px 8px; border-radius: 9px;
+  transition: background .2s, color .2s;
 }
+.stagebody { display: grid; gap: 1px; min-width: 0; }
+.stagebody .sub {
+  font-size: 12px; font-weight: 500; color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.stage.active { color: var(--text); font-weight: 600; background: var(--accent-soft); }
+.stage.active .num { background: var(--accent); border-color: var(--accent); color: #fff; }
+.stage.failed { color: var(--bad); font-weight: 600; background: var(--bad-soft); }
+.stage.failed .num { background: var(--bad); border-color: var(--bad); color: #fff; }
+.spin {
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid currentColor; border-right-color: transparent;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------- progress ---------- */
 .bar {
@@ -159,6 +200,17 @@ header.top p { margin: 0; color: var(--muted); font-size: 14px; font-weight: 400
   overflow: hidden; border: 1px solid var(--line);
 }
 .bar > i { display: block; height: 100%; background: var(--accent); transition: width .35s ease; }
+/* A moving sheen while work is under way, so a bar that sits at one percentage for a long
+   synthesis step still reads as alive rather than stuck. */
+.bar.live > i {
+  background-image: linear-gradient(90deg, transparent 0, rgba(255, 255, 255, .38) 50%, transparent 100%);
+  background-size: 60% 100%; background-repeat: no-repeat;
+  animation: sheen 1.3s ease-in-out infinite;
+}
+@keyframes sheen { from { background-position: -120% 0; } to { background-position: 220% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .spin, .bar.live > i { animation: none; }
+}
 .msg {
   margin-top: 11px; font-size: 13.5px; color: var(--muted); min-height: 19px;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -242,6 +294,10 @@ video {
 .err-box { background: var(--bad-soft); border: 1px solid #f4c9c6; color: #8f1f1f; }
 .setup-box { background: var(--warn-soft); border: 1px solid #f0d9b4; color: #7a4506; }
 .setup-box code { margin-left: 4px; }
+.setup-box a { color: inherit; font-weight: 600; }
+.setup-box.col { flex-direction: column; align-items: stretch; gap: 11px; }
+.setup-row { display: flex; align-items: flex-start; gap: 8px; }
+.setup-box .btn { margin-top: 0; }
 .empty {
   display: flex; flex-direction: column; align-items: center; gap: 9px;
   color: var(--muted); font-size: 13.5px; padding: 34px 10px;
@@ -259,4 +315,26 @@ code {
   .side { position: static; }
   .segstats { grid-template-columns: repeat(2, 1fr); }
   .resultside { flex: 1 1 100%; grid-auto-flow: column; }
+}
+
+/* ---------- synced words ---------- */
+.hint { margin: -6px 0 12px; font-size: 13px; color: var(--muted); }
+.segs { position: relative; } /* so a card's offsetTop is measured inside the list */
+.seg { transition: border-color .2s, box-shadow .2s; }
+.seg.active { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.seghead button.time { border: 0; font-family: inherit; cursor: pointer; }
+.seghead button.time:hover { background: var(--line); }
+.w {
+  border-radius: 4px; padding: 1px 2px; margin: 0 -2px; cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.w:hover { background: var(--surface-2); }
+/* While a segment plays: upcoming words dim, spoken words solid, the current word inverted. */
+.seg.active .tgt .w { color: var(--muted); }
+.seg.active .tgt .w.past { color: var(--text); }
+.seg.active .src .w.past { color: var(--text-2); }
+.seg.active .tgt .w.now { background: var(--accent); color: #fff; }
+.seg.active .src .w.now { background: var(--accent-soft); color: var(--text); }
+@media (prefers-reduced-motion: reduce) {
+  .w, .seg { transition: none; }
 }
