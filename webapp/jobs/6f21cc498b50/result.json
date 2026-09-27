@@ -1,0 +1,60 @@
+{
+  "job_id": "6f21cc498b50",
+  "direction": "en-es",
+  "video_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/6f21cc498b50/dubbed.mp4",
+  "audio_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/6f21cc498b50/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 4.0,
+      "source_text": "Oh my god, I love your accent. Where are you from?",
+      "translated_text": "Oh, Dios m\u00edo, me encanta tu acento. \u00bfDe d\u00f3nde eres?",
+      "original_duration": 4.0,
+      "raw_tts_duration": 6.017333333333333,
+      "final_duration": 4.0,
+      "scale_applied": 0.6647462884998893,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 1,
+      "start": 4.0,
+      "end": 7.12,
+      "source_text": "Thank you, I'm from Spain. I really like your accent too.",
+      "translated_text": "Gracias, soy de Espa\u00f1a. Me gusta tu acento tambi\u00e9n.",
+      "original_duration": 3.12,
+      "raw_tts_duration": 4.268,
+      "final_duration": 3.12,
+      "scale_applied": 0.7310215557638239,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 2,
+      "start": 7.12,
+      "end": 9.68,
+      "source_text": "Accent? I don't have an accent.",
+      "translated_text": "Accent, no tengo acento.",
+      "original_duration": 2.5599999999999996,
+      "raw_tts_duration": 3.062,
+      "final_duration": 2.565,
+      "scale_applied": 0.8360548661005878,
+      "clamped": false,
+      "error": ""
+    }
+  ],
+  "speaker_similarity": 0.29662543535232544,
+  "duration_match_ratio": 1.00051652892562,
+  "raw_duration_ratio": 1.3788567493112949,
+  "clamped_segments": 0,
+  "failed_segments": 0,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "mix_info": {
+    "speech_gain": 0.7271,
+    "limiter_gain": 1.0,
+    "peak": 0.7045
+  },
+  "elapsed_s": 45.2
+}

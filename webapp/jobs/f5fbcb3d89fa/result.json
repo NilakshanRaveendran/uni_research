@@ -1,0 +1,60 @@
+{
+  "job_id": "f5fbcb3d89fa",
+  "direction": "es-en",
+  "video_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/f5fbcb3d89fa/dubbed.mp4",
+  "audio_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/f5fbcb3d89fa/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 3.92,
+      "source_text": "Oh my god, I love your accent. Where are you from?",
+      "translated_text": "Oh my god, I love your access. Where are you from?",
+      "original_duration": 3.92,
+      "raw_tts_duration": 4.172,
+      "final_duration": 3.925,
+      "scale_applied": 0.9395973154362417,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 1,
+      "start": 3.92,
+      "end": 7.0600000000000005,
+      "source_text": "Thank you, I'm from Spain. I really like your accent too.",
+      "translated_text": "Thank you, I'm from Spain. I really like your access too.",
+      "original_duration": 3.1400000000000006,
+      "raw_tts_duration": 5.089333333333333,
+      "final_duration": 3.14,
+      "scale_applied": 0.6169766832591042,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 2,
+      "start": 7.0600000000000005,
+      "end": 9.66,
+      "source_text": "Accent? I don't have an accent.",
+      "translated_text": "Accent? I don't have an access.",
+      "original_duration": 2.5999999999999996,
+      "raw_tts_duration": 3.3826666666666667,
+      "final_duration": 2.6,
+      "scale_applied": 0.7686243594797003,
+      "clamped": false,
+      "error": ""
+    }
+  ],
+  "speaker_similarity": 0.45362934470176697,
+  "duration_match_ratio": 1.0005175983436851,
+  "raw_duration_ratio": 1.308902691511387,
+  "clamped_segments": 0,
+  "failed_segments": 0,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "mix_info": {
+    "speech_gain": 0.6704,
+    "limiter_gain": 1.0,
+    "peak": 0.7051
+  },
+  "elapsed_s": 100.5
+}
