@@ -21,6 +21,6 @@ fi
 
 echo "Website: http://localhost:3000"
 echo "API health: http://localhost:8000/api/health"
-if [[ "${COQUI_TOS_AGREED:-}" != "1" ]]; then
-  echo "XTTS jobs remain disabled until you review the Coqui license and export COQUI_TOS_AGREED=1."
+if [[ "${COQUI_TOS_AGREED:-}" != "1" && ! -f "$RUNTIME_DIR/xtts_license_accepted" ]]; then
+  echo "Open the website and accept the voice-model licence once to enable dubbing."
 fi

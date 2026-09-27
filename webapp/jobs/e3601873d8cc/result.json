@@ -1,0 +1,88 @@
+{
+  "job_id": "e3601873d8cc",
+  "direction": "en-es",
+  "video_out": "/Users/janukshan/research/uni_research/webapp/jobs/e3601873d8cc/dubbed.mp4",
+  "audio_out": "/Users/janukshan/research/uni_research/webapp/jobs/e3601873d8cc/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 5.04,
+      "source_text": "Hi, Max. I'm Justin and this is Lucas. Yeah, I know the stalkers",
+      "translated_text": "Hola, Max, soy Justin y este es Lucas.",
+      "original_duration": 5.04,
+      "raw_tts_duration": 6.955333333333333,
+      "final_duration": 5.045,
+      "scale_applied": 0.7246237898974408,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 1,
+      "start": 7.68,
+      "end": 14.0,
+      "source_text": "We were we were just concerned because you know you're new and all yeah, yeah, yeah for your safety",
+      "translated_text": "Est\u00e1bamos preocupados porque sabes que eres nuevo y todo s\u00ed, s\u00ed, s\u00ed por tu seguridad",
+      "original_duration": 6.32,
+      "raw_tts_duration": 10.763333333333334,
+      "final_duration": 6.32,
+      "scale_applied": 0.5871786930938371,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 2,
+      "start": 14.4,
+      "end": 22.32,
+      "source_text": "That there are a lot of bullies. Is that why you're wearing proton packs? Well these don't function, but I do",
+      "translated_text": "Que hay un mont\u00f3n de matones. \u00bfEs por eso que est\u00e1s usando paquetes de protones? Bueno, estos no funcionan, pero lo hago",
+      "original_duration": 7.92,
+      "raw_tts_duration": 19.767333333333333,
+      "final_duration": 9.885,
+      "scale_applied": 0.5,
+      "clamped": true,
+      "error": ""
+    },
+    {
+      "index": 3,
+      "start": 22.88,
+      "end": 28.900000000000002,
+      "source_text": "Have this handy-dandy little trap here and look it even opens and close",
+      "translated_text": "Ten esta peque\u00f1a trampa aqu\u00ed y mira hasta se abre y se cierra.",
+      "original_duration": 6.020000000000003,
+      "raw_tts_duration": 12.160666666666666,
+      "final_duration": 6.08,
+      "scale_applied": 0.5,
+      "clamped": true,
+      "error": ""
+    },
+    {
+      "index": 4,
+      "start": 30.0,
+      "end": 33.92,
+      "source_text": "What ah cool, right? No, okay",
+      "translated_text": "No, est\u00e1 bien.",
+      "original_duration": 3.9200000000000017,
+      "raw_tts_duration": 4.171333333333333,
+      "final_duration": 3.925,
+      "scale_applied": 0.9397474828192429,
+      "clamped": false,
+      "error": ""
+    }
+  ],
+  "speaker_similarity": 0.27412351965904236,
+  "duration_match_ratio": 1.0696440793976725,
+  "raw_duration_ratio": 1.8418206707734424,
+  "clamped_segments": 2,
+  "failed_segments": 0,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "detected_language": "en",
+  "language_confidence": 0.992,
+  "mix_info": {
+    "speech_gain": 2.3859,
+    "limiter_gain": 0.4164,
+    "peak": 2.3776
+  },
+  "elapsed_s": 35.4
+}

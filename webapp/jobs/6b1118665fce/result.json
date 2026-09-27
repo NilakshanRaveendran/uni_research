@@ -1,0 +1,88 @@
+{
+  "job_id": "6b1118665fce",
+  "direction": "en-es",
+  "video_out": "/Users/janukshan/research/uni_research/webapp/jobs/6b1118665fce/dubbed.mp4",
+  "audio_out": "/Users/janukshan/research/uni_research/webapp/jobs/6b1118665fce/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 5.0,
+      "source_text": "You may have arms and legs, but unless you know three things.",
+      "translated_text": "Puede que tengas brazos y piernas, pero a menos que sepas tres cosas.",
+      "original_duration": 5.0,
+      "raw_tts_duration": 11.371333333333334,
+      "final_duration": 5.69,
+      "scale_applied": 0.5,
+      "clamped": true,
+      "error": ""
+    },
+    {
+      "index": 1,
+      "start": 5.0,
+      "end": 8.0,
+      "source_text": "Number one, who are you and what your value is?",
+      "translated_text": "N\u00famero uno, \u00bfqui\u00e9n eres y cu\u00e1l es tu valor?",
+      "original_duration": 3.0,
+      "raw_tts_duration": 4.224666666666667,
+      "final_duration": 3.0,
+      "scale_applied": 0.7101151964652044,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 2,
+      "start": 8.0,
+      "end": 11.0,
+      "source_text": "Number two, what is your purpose here in life?",
+      "translated_text": "N\u00famero dos, \u00bfcu\u00e1l es tu prop\u00f3sito aqu\u00ed en la vida?",
+      "original_duration": 3.0,
+      "raw_tts_duration": 3.3393333333333333,
+      "final_duration": 3.0,
+      "scale_applied": 0.8983829107606309,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 3,
+      "start": 11.0,
+      "end": 15.0,
+      "source_text": "And number three, what is your destiny when you're done here?",
+      "translated_text": "Y n\u00famero tres, \u00bfcu\u00e1l es tu destino cuando termines aqu\u00ed?",
+      "original_duration": 4.0,
+      "raw_tts_duration": 7.9366666666666665,
+      "final_duration": 4.0,
+      "scale_applied": 0.5039899202015959,
+      "clamped": false,
+      "error": ""
+    },
+    {
+      "index": 4,
+      "start": 15.0,
+      "end": 20.0,
+      "source_text": "If you don't know the answers of any of those three questions, you're more disabled than I.",
+      "translated_text": "Si no sabes las respuestas de ninguna de esas tres preguntas, est\u00e1s m\u00e1s discapacitado que yo.",
+      "original_duration": 5.0,
+      "raw_tts_duration": 9.835333333333333,
+      "final_duration": 5.0,
+      "scale_applied": 0.5083711787433065,
+      "clamped": false,
+      "error": ""
+    }
+  ],
+  "speaker_similarity": 0.20717757940292358,
+  "duration_match_ratio": 1.0345,
+  "raw_duration_ratio": 1.8353666666666666,
+  "clamped_segments": 1,
+  "failed_segments": 0,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "detected_language": "en",
+  "language_confidence": 0.97,
+  "mix_info": {
+    "speech_gain": 1.1153,
+    "limiter_gain": 0.9031,
+    "peak": 1.0962
+  },
+  "elapsed_s": 44.7
+}

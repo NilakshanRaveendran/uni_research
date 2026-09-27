@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
 // Icons are imported by direct path rather than from the package barrel: the barrel pulls in
 // every icon and noticeably slows the dev server.
 import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
 import CheckRounded from "@mui/icons-material/CheckRounded";
+import CloseRounded from "@mui/icons-material/CloseRounded";
 import CloudUploadOutlined from "@mui/icons-material/CloudUploadOutlined";
 import DownloadRounded from "@mui/icons-material/DownloadRounded";
 import ErrorOutlineRounded from "@mui/icons-material/ErrorOutlineRounded";
 import GraphicEqRounded from "@mui/icons-material/GraphicEqRounded";
 import InfoOutlined from "@mui/icons-material/InfoOutlined";
 import InsertDriveFileOutlined from "@mui/icons-material/InsertDriveFileOutlined";
+import LinkRounded from "@mui/icons-material/LinkRounded";
 import MusicNoteRounded from "@mui/icons-material/MusicNoteRounded";
 import PlayArrowRounded from "@mui/icons-material/PlayArrowRounded";
 import ScheduleRounded from "@mui/icons-material/ScheduleRounded";
@@ -19,6 +21,62 @@ import SmartDisplayOutlined from "@mui/icons-material/SmartDisplayOutlined";
 import SubtitlesOutlined from "@mui/icons-material/SubtitlesOutlined";
 
 type Direction = "es-en" | "en-es";
+type SourceMode = "file" | "link";
+
+function isUrl(text: string): boolean {
+  try {
+    const u = new URL(text.trim());
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+type Word = { word: string; start: number; end: number };
+
+/** Fallback for jobs made before words were aligned: spread the words over the span in
+ *  proportion to their length, plus a little for the pause after punctuation. */
+function estimateWords(text: string, start: number, end: number): Word[] {
+  const tokens = text.trim().split(/\s+/).filter(Boolean);
+  if (!tokens.length || end <= start) return [];
+  const weights = tokens.map(
+    (t) => t.replace(/[^\p{L}\p{N}]/gu, "").length + 1 + (/[.,!?;:]$/.test(t) ? 2 : 0),
+  );
+  const total = weights.reduce((a, b) => a + b, 0);
+  let t = start;
+  return tokens.map((word, i) => {
+    const d = ((end - start) * weights[i]) / total;
+    const w = { word, start: t, end: t + d };
+    t += d;
+    return w;
+  });
+}
+
+/** Words that light up as they are spoken; clicking one seeks the video there. */
+function Words({
+  words,
+  now,
+  onSeek,
+}: {
+  words: Word[];
+  now: number | null;
+  onSeek: (t: number) => void;
+}) {
+  return (
+    <>
+      {words.map((w, k) => {
+        const state = now === null ? "" : now >= w.end ? "past" : now >= w.start ? "now" : "";
+        return (
+          <Fragment key={k}>
+            <span className={`w ${state}`} onClick={() => onSeek(w.start)}>
+              {w.word}
+            </span>{" "}
+          </Fragment>
+        );
+      })}
+    </>
+  );
+}
 
 type Segment = {
   index: number;
@@ -32,6 +90,9 @@ type Segment = {
   scale_applied: number;
   clamped: boolean;
   error: string;
+  /** Aligned timings of the dubbed words, on the output timeline. Absent on older jobs. */
+  words?: Word[];
+  source_words?: Word[];
 };
 
 type DubResult = {
@@ -110,6 +171,8 @@ function fmtBytes(n: number): string {
 export default function Page() {
   const [health, setHealth] = useState<Health | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [mode, setMode] = useState<SourceMode>("file");
+  const [link, setLink] = useState("");
   const [direction, setDirection] = useState<Direction>("es-en");
   const [job, setJob] = useState<Job | null>(null);
   const [error, setError] = useState<string>("");
@@ -118,22 +181,55 @@ export default function Page() {
   const [uploadPct, setUploadPct] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const segsRef = useRef<HTMLDivElement>(null);
+  // Playback position of the result video; null until it has been played or seeked.
+  const [now, setNow] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetch("/api/health")
-      .then((r) => r.json())
-      .then(setHealth)
-      .catch(() =>
-        setHealth({
-          ok: false,
-          ffmpeg: false,
-          xtts_license_accepted: false,
-          mt_mode: "unavailable",
-          models_loaded: false,
-          max_upload_mb: 200,
-        }),
-      );
+  const [offline, setOffline] = useState(false);
+  const [accepting, setAccepting] = useState(false);
+
+  const checkHealth = useCallback(async () => {
+    try {
+      const res = await fetch("/api/health");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setHealth(await res.json());
+      setOffline(false);
+    } catch {
+      setOffline(true);
+      setHealth({
+        ok: false,
+        ffmpeg: false,
+        xtts_license_accepted: false,
+        mt_mode: "unavailable",
+        models_loaded: false,
+        max_upload_mb: 200,
+      });
+    }
   }, []);
+
+  // Keep checking until the backend is reachable and ready, so the page connects by itself
+  // the moment the backend comes up -- no manual refresh.
+  const healthOk = health?.ok ?? false;
+  useEffect(() => {
+    checkHealth();
+    if (healthOk) return;
+    const id = setInterval(checkHealth, 3000);
+    return () => clearInterval(id);
+  }, [checkHealth, healthOk]);
+
+  async function acceptLicense() {
+    setAccepting(true);
+    try {
+      const res = await fetch("/api/license/accept", { method: "POST" });
+      if (res.ok) setHealth(await res.json());
+      else setError(`Could not enable the voice model (HTTP ${res.status})`);
+    } catch {
+      setError("Could not reach the backend. Is it running on port 8000?");
+    } finally {
+      setAccepting(false);
+    }
+  }
 
   const stopPolling = useCallback(() => {
     if (pollRef.current) {
@@ -162,7 +258,28 @@ export default function Page() {
     [stopPolling],
   );
 
+  async function submitLink() {
+    setError("");
+    setJob(null);
+    const body = new FormData();
+    body.append("url", link.trim());
+    body.append("direction", direction);
+    try {
+      const res = await fetch("/api/jobs/url", { method: "POST", body });
+      const data: { job_id?: string; detail?: string } = await res.json().catch(() => ({}));
+      if (res.ok && data.job_id) {
+        setJob({ job_id: data.job_id, status: "queued", progress: 0, message: "Queued" });
+        poll(data.job_id);
+      } else {
+        setError(data.detail ?? `Request failed (HTTP ${res.status})`);
+      }
+    } catch {
+      setError("Could not reach the backend. Is it running on port 8000?");
+    }
+  }
+
   async function submit() {
+    if (mode === "link") return submitLink();
     if (!file) return;
     setError("");
     setJob(null);
@@ -219,8 +336,71 @@ export default function Page() {
   const uploading = uploadPct >= 0;
   const busy = uploading || job?.status === "queued" || job?.status === "running";
   const result = job?.status === "done" ? job.result : undefined;
-  const activeStage = stageFromProgress(job?.progress ?? -1);
+  // During the upload there is no job yet, but the first stage is effectively under way.
+  const activeStage = uploading ? 0 : stageFromProgress(job?.progress ?? -1);
+  const failed = job?.status === "error";
+  const liveMessage = uploading ? `Uploading — ${uploadPct}%` : job?.message;
+  function stageState(i: number): "done" | "active" | "failed" | "" {
+    if (i < activeStage) return "done";
+    if (i !== activeStage) return "";
+    if (failed) return "failed";
+    return busy ? "active" : "";
+  }
   const pct = uploading ? uploadPct : (job?.progress ?? 0);
+  const ready = mode === "file" ? !!file : isUrl(link);
+
+  // Follow playback frame by frame while playing: `timeupdate` fires only ~4 times a second,
+  // too coarse for word-level highlighting. Rounding lets React skip identical updates.
+  const resultId = result?.job_id;
+  useEffect(() => {
+    setNow(null);
+    const v = videoRef.current;
+    if (!v) return;
+    let raf = 0;
+    const sync = () => setNow(Math.round(v.currentTime * 50) / 50);
+    const tick = () => {
+      sync();
+      if (!v.paused && !v.ended) raf = requestAnimationFrame(tick);
+    };
+    const onPlay = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(tick);
+    };
+    v.addEventListener("play", onPlay);
+    v.addEventListener("seeked", sync);
+    v.addEventListener("pause", sync);
+    return () => {
+      cancelAnimationFrame(raf);
+      v.removeEventListener("play", onPlay);
+      v.removeEventListener("seeked", sync);
+      v.removeEventListener("pause", sync);
+    };
+  }, [resultId]);
+
+  const segEnd = (s: Segment) => s.start + (s.final_duration || s.original_duration);
+  const activeSeg =
+    result && now !== null
+      ? result.segments.findIndex((s) => now >= s.start && now < segEnd(s))
+      : -1;
+
+  // Keep the segment being spoken in view inside the scrolling list (not the whole page).
+  useEffect(() => {
+    const box = segsRef.current;
+    const card = box?.children[activeSeg] as HTMLElement | undefined;
+    if (!box || !card || videoRef.current?.paused) return;
+    const top = card.offsetTop;
+    if (top < box.scrollTop || top + card.offsetHeight > box.scrollTop + box.clientHeight) {
+      box.scrollTo({ top: top - 8, behavior: "smooth" });
+    }
+  }, [activeSeg]);
+
+  function seek(t: number) {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = t;
+    setNow(Math.round(t * 50) / 50);
+    v.play().catch(() => {});
+  }
 
   return (
     <div className="wrap">
@@ -231,7 +411,13 @@ export default function Page() {
         </div>
         <span className={`pill ${health?.ok ? "ok" : health === null ? "" : "bad"}`}>
           <span className="dot" />
-          {health === null ? "Checking" : health.ok ? "Ready" : "Setup needed"}
+          {health === null
+            ? "Checking"
+            : health.ok
+              ? "Ready"
+              : offline
+                ? "Connecting…"
+                : "Setup needed"}
         </span>
       </header>
 
@@ -239,50 +425,94 @@ export default function Page() {
         {/* ---------------- main column ---------------- */}
         <main className="main">
           <section className="card">
-            <h2>
-              <span className="step">1</span> Source
-            </h2>
-            <div
-              className={`drop ${over ? "over" : ""}`}
-              onClick={() => inputRef.current?.click()}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setOver(true);
-              }}
-              onDragLeave={() => setOver(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setOver(false);
-                pick(e.dataTransfer.files?.[0]);
-              }}
-            >
-              <CloudUploadOutlined className="dropicon" />
-              <div className="big">Drop a video or audio file</div>
-              <div className="small">
-                or click to browse &middot; up to {health?.max_upload_mb ?? 200} MB
+            <div className="cardhead">
+              <h2>
+                <span className="step">1</span> Source
+              </h2>
+              <div className="tabs" role="tablist">
+                {(["file", "link"] as const).map((m) => (
+                  <button
+                    key={m}
+                    role="tab"
+                    aria-selected={mode === m}
+                    className={mode === m ? "sel" : ""}
+                    onClick={() => {
+                      setMode(m);
+                      setError("");
+                    }}
+                    disabled={busy}
+                  >
+                    {m === "file" ? "Upload file" : "Paste link"}
+                  </button>
+                ))}
               </div>
             </div>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="video/*,audio/*"
-              hidden
-              onChange={(e) => pick(e.target.files?.[0])}
-            />
-            {file && (
-              <div className="filechip">
-                <InsertDriveFileOutlined className="i16" />
-                <span className="name">{file.name}</span>
-                <span className="sz">
-                  {uploading ? (
-                    `${uploadPct}%`
-                  ) : job ? (
-                    <CheckRounded className="i16 ok" />
-                  ) : (
-                    fmtBytes(file.size)
-                  )}
-                </span>
+            {mode === "link" ? (
+              <div className="linkbox">
+                <label className="linkfield">
+                  <LinkRounded className="i18" />
+                  <input
+                    type="url"
+                    inputMode="url"
+                    placeholder="https://www.youtube.com/watch?v=…"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && ready && !busy && health?.ok) submit();
+                    }}
+                    disabled={busy}
+                  />
+                </label>
+                <div className="small">
+                  YouTube, TikTok, Instagram, Facebook and most video sites &middot; up to 10
+                  min. Private or login-only videos can&rsquo;t be fetched.
+                </div>
               </div>
+            ) : (
+              <>
+                <div
+                  className={`drop ${over ? "over" : ""}`}
+                  onClick={() => inputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setOver(true);
+                  }}
+                  onDragLeave={() => setOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setOver(false);
+                    pick(e.dataTransfer.files?.[0]);
+                  }}
+                >
+                  <CloudUploadOutlined className="dropicon" />
+                  <div className="big">Drop a video or audio file</div>
+                  <div className="small">
+                    or click to browse &middot; up to {health?.max_upload_mb ?? 200} MB
+                  </div>
+                </div>
+                <input
+                  ref={inputRef}
+                  type="file"
+                  accept="video/*,audio/*"
+                  hidden
+                  onChange={(e) => pick(e.target.files?.[0])}
+                />
+                {file && (
+                  <div className="filechip">
+                    <InsertDriveFileOutlined className="i16" />
+                    <span className="name">{file.name}</span>
+                    <span className="sz">
+                      {uploading ? (
+                        `${uploadPct}%`
+                      ) : job ? (
+                        <CheckRounded className="i16 ok" />
+                      ) : (
+                        fmtBytes(file.size)
+                      )}
+                    </span>
+                  </div>
+                )}
+              </>
             )}
           </section>
 
@@ -293,14 +523,19 @@ export default function Page() {
                 {result ? `done in ${Math.round(result.elapsed_s)}s` : busy ? `${pct}%` : "idle"}
               </span>
             </div>
-            <div className="bar">
+            <div className={`bar ${busy ? "live" : ""}`}>
               <i style={{ width: `${pct}%` }} />
             </div>
             <div className="msg">
               <span>
                 {uploading
                   ? `Uploading — ${uploadPct}%`
-                  : (job?.message ?? "Choose a file, then start dubbing.")}
+                  : (job?.message ??
+                    (ready
+                      ? "Ready — press Start dubbing."
+                      : mode === "file"
+                        ? "Choose a file, then start dubbing."
+                        : "Paste a video link, then start dubbing."))}
               </span>
               {!uploading && busy && (
                 <span className="eta">
@@ -323,7 +558,7 @@ export default function Page() {
             </h2>
             {result ? (
               <div className="resultrow">
-                <video controls src={`/api/jobs/${result.job_id}/video`} />
+                <video ref={videoRef} controls src={`/api/jobs/${result.job_id}/video`} />
                 <div className="resultside">
                   {result.background_mode && result.background_mode !== "none" && (
                     <span className="chip">
@@ -363,51 +598,82 @@ export default function Page() {
                 </span>
               )}
             </div>
+            {result && (
+              <p className="hint">
+                Play the video and the words light up as they&rsquo;re spoken. Click a word to
+                jump there.
+              </p>
+            )}
             {result ? (
-              <div className="segs">
-                {result.segments.map((s) => (
-                  <article className="seg" key={s.index}>
-                    <div className="seghead">
-                      <span className="time">
-                        {s.start.toFixed(2)}s – {s.end.toFixed(2)}s
-                      </span>
-                      <span className="tags">
-                        {s.clamped && (
-                          <span className="tag clamp" title="Hit the time-compression limit">
-                            clamped
-                          </span>
-                        )}
-                        {s.error && <span className="tag err">failed</span>}
-                      </span>
-                    </div>
-                    <div className="segtext">
-                      <p className="src">{s.source_text || <em>no speech recognised</em>}</p>
-                      <p className="tgt">{s.translated_text || <em>{s.error || "—"}</em>}</p>
-                    </div>
-                    {/* How much the dub had to be stretched or squeezed to fit the slot it
-                        replaces -- the number that explains an unnatural-sounding segment. */}
-                    <dl className="segstats">
-                      <div>
-                        <dt>Slot</dt>
-                        <dd>{s.original_duration.toFixed(2)}s</dd>
+              <div className="segs" ref={segsRef}>
+                {result.segments.map((s, i) => {
+                  const active = i === activeSeg;
+                  const dubWords = s.words?.length
+                    ? s.words
+                    : estimateWords(s.translated_text, s.start, segEnd(s));
+                  const srcWords = s.source_words?.length
+                    ? s.source_words
+                    : estimateWords(s.source_text, s.start, s.end);
+                  return (
+                    <article className={`seg ${active ? "active" : ""}`} key={s.index}>
+                      <div className="seghead">
+                        <button
+                          className="time"
+                          onClick={() => seek(s.start)}
+                          title="Play from here"
+                        >
+                          {s.start.toFixed(2)}s – {s.end.toFixed(2)}s
+                        </button>
+                        <span className="tags">
+                          {s.clamped && (
+                            <span className="tag clamp" title="Hit the time-compression limit">
+                              clamped
+                            </span>
+                          )}
+                          {s.error && <span className="tag err">failed</span>}
+                        </span>
                       </div>
-                      <div>
-                        <dt>Synthesised</dt>
-                        <dd>{s.raw_tts_duration.toFixed(2)}s</dd>
+                      <div className="segtext">
+                        <p className="src">
+                          {s.source_text ? (
+                            <Words words={srcWords} now={active ? now : null} onSeek={seek} />
+                          ) : (
+                            <em>no speech recognised</em>
+                          )}
+                        </p>
+                        <p className="tgt">
+                          {s.translated_text ? (
+                            <Words words={dubWords} now={active ? now : null} onSeek={seek} />
+                          ) : (
+                            <em>{s.error || "—"}</em>
+                          )}
+                        </p>
                       </div>
-                      <div>
-                        <dt>After retiming</dt>
-                        <dd>{s.final_duration.toFixed(2)}s</dd>
-                      </div>
-                      <div>
-                        <dt>Speed</dt>
-                        <dd className={s.clamped ? "warn" : undefined}>
-                          {s.scale_applied.toFixed(2)}&times;
-                        </dd>
-                      </div>
-                    </dl>
-                  </article>
-                ))}
+                      {/* How much the dub had to be stretched or squeezed to fit the slot it
+                          replaces -- the number that explains an unnatural-sounding segment. */}
+                      <dl className="segstats">
+                        <div>
+                          <dt>Slot</dt>
+                          <dd>{s.original_duration.toFixed(2)}s</dd>
+                        </div>
+                        <div>
+                          <dt>Synthesised</dt>
+                          <dd>{s.raw_tts_duration.toFixed(2)}s</dd>
+                        </div>
+                        <div>
+                          <dt>After retiming</dt>
+                          <dd>{s.final_duration.toFixed(2)}s</dd>
+                        </div>
+                        <div>
+                          <dt>Speed</dt>
+                          <dd className={s.clamped ? "warn" : undefined}>
+                            {s.scale_applied.toFixed(2)}&times;
+                          </dd>
+                        </div>
+                      </dl>
+                    </article>
+                  );
+                })}
               </div>
             ) : (
               <div className="empty">
@@ -439,7 +705,7 @@ export default function Page() {
                 </button>
               ))}
             </div>
-            <button className="btn" onClick={submit} disabled={!file || busy || !health?.ok}>
+            <button className="btn" onClick={submit} disabled={!ready || busy || !health?.ok}>
               {busy ? (
                 "Working…"
               ) : (
@@ -448,13 +714,31 @@ export default function Page() {
                 </>
               )}
             </button>
-            {health && !health.xtts_license_accepted && (
+            {offline && (
               <div className="setup-box">
                 <InfoOutlined className="i16" />
                 <span>
-                  Review the voice-model licence, then restart the backend with
-                  <code>COQUI_TOS_AGREED=1</code>.
+                  The backend isn&rsquo;t running. Start it with
+                  <code>./webapp/start_local.sh</code> &mdash; this page connects automatically.
                 </span>
+              </div>
+            )}
+            {health && !offline && !health.xtts_license_accepted && (
+              <div className="setup-box col">
+                <div className="setup-row">
+                  <InfoOutlined className="i16" />
+                  <span>
+                    The voice model (XTTS-v2) is free for non-commercial use under the{" "}
+                    <a href="https://coqui.ai/cpml" target="_blank" rel="noreferrer">
+                      Coqui Public Model License
+                    </a>
+                    . Accept it once to enable dubbing.
+                  </span>
+                </div>
+                <button className="btn" onClick={acceptLicense} disabled={accepting}>
+                  <CheckRounded className="i18" />
+                  {accepting ? "Enabling…" : "Accept licence & enable"}
+                </button>
               </div>
             )}
           </section>
@@ -462,17 +746,35 @@ export default function Page() {
           <section className="card">
             <h2>Pipeline</h2>
             <ol className="stages">
-              {STAGES.map((s, i) => (
-                <li
-                  key={s}
-                  className={`stage ${i < activeStage ? "done" : i === activeStage ? "active" : ""}`}
-                >
-                  <span className="num">
-                    {i < activeStage ? <CheckRounded className="i14" /> : i + 1}
-                  </span>
-                  <span>{s}</span>
-                </li>
-              ))}
+              {STAGES.map((s, i) => {
+                const state = stageState(i);
+                return (
+                  <li
+                    key={s}
+                    className={`stage ${state}`}
+                    aria-current={state === "active" ? "step" : undefined}
+                  >
+                    <span className="num">
+                      {state === "done" ? (
+                        <CheckRounded className="i14" />
+                      ) : state === "failed" ? (
+                        <CloseRounded className="i14" />
+                      ) : state === "active" ? (
+                        <span className="spin" aria-label="in progress" />
+                      ) : (
+                        i + 1
+                      )}
+                    </span>
+                    <span className="stagebody">
+                      <span>{s}</span>
+                      {state === "active" && liveMessage && (
+                        <span className="sub">{liveMessage}</span>
+                      )}
+                      {state === "failed" && <span className="sub">Stopped here</span>}
+                    </span>
+                  </li>
+                );
+              })}
             </ol>
           </section>
         </aside>

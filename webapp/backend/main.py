@@ -24,10 +24,16 @@ from fastapi.responses import FileResponse, JSONResponse
 ROOT = Path(__file__).resolve().parents[2]
 from bilingual_voice.pipeline import LocalModels
 
-from .dubbing import DIRECTIONS, dub, ffmpeg_available
+from .dubbing import DIRECTIONS, UnsupportedLanguageError, dub, ffmpeg_available
+from .fetch import LinkError, download, valid_url
 
 JOBS_DIR = ROOT / "webapp" / "jobs"
 JOBS_DIR.mkdir(parents=True, exist_ok=True)
+# Accepting the XTTS licence from the website is remembered here, so it survives restarts and
+# nobody has to remember `export COQUI_TOS_AGREED=1` before starting the backend.
+LICENSE_FILE = ROOT / "webapp" / ".runtime" / "xtts_license_accepted"
+if LICENSE_FILE.is_file():
+    os.environ["COQUI_TOS_AGREED"] = "1"
 MAX_UPLOAD_MB = 200
 ALLOWED_SUFFIXES = {
     ".mp4",
@@ -95,9 +101,20 @@ def _set(job_id: str, **fields) -> None:
         _JOBS.setdefault(job_id, {}).update(fields)
 
 
-def _worker(job_id: str, video: Path, direction: str) -> None:
+def _worker(job_id: str, video: Path | None, direction: str, url: str | None = None) -> None:
     job_dir = JOBS_DIR / job_id
     try:
+        if url is not None:
+            # Downloads run outside the run lock: fetching the next video while another dubs
+            # costs nothing, and a bad link fails immediately instead of after the queue.
+            _set(job_id, status="running", progress=0, message="Downloading video")
+            video, title = download(
+                url,
+                job_dir,
+                MAX_UPLOAD_MB * 1024 * 1024,
+                lambda pct: _set(job_id, message=f"Downloading video — {pct}%"),
+            )
+            _set(job_id, filename=title, size_bytes=video.stat().st_size)
         _set(job_id, status="running", progress=1, message="Waiting for a free worker")
         with _RUN_LOCK:
 
@@ -113,6 +130,8 @@ def _worker(job_id: str, video: Path, direction: str) -> None:
             eta_s=None,
             result=result.to_dict(),
         )
+    except (UnsupportedLanguageError, LinkError) as exc:  # user-facing messages, not crashes
+        _set(job_id, status="error", message=str(exc), eta_s=None)
     except Exception as exc:  # noqa: BLE001 - surface the failure to the client
         _set(job_id, status="error", message=f"{type(exc).__name__}: {exc}"[:400])
 
@@ -133,11 +152,7 @@ def health() -> dict:
     }
 
 
-@app.post("/api/jobs")
-async def create_job(
-    file: Annotated[UploadFile, File()],
-    direction: Annotated[str, Form()] = "es-en",
-) -> JSONResponse:
+def _check_ready(direction: str) -> None:
     if direction not in DIRECTIONS:
         raise HTTPException(400, f"direction must be one of {list(DIRECTIONS)}")
     if not ffmpeg_available():
@@ -148,6 +163,14 @@ async def create_job(
             "XTTS is disabled until the Coqui model license is reviewed and "
             "COQUI_TOS_AGREED=1 is set for the backend",
         )
+
+
+@app.post("/api/jobs")
+async def create_job(
+    file: Annotated[UploadFile, File()],
+    direction: Annotated[str, Form()] = "es-en",
+) -> JSONResponse:
+    _check_ready(direction)
 
     suffix = Path(file.filename or "upload.mp4").suffix.lower()
     if suffix not in ALLOWED_SUFFIXES:
@@ -217,3 +240,40 @@ def job_audio(job_id: str) -> FileResponse:
     if not path.exists():
         raise HTTPException(404, "output missing")
     return FileResponse(path, media_type="audio/wav", filename=path.name)
+
+
+@app.post("/api/jobs/url")
+def create_job_from_url(
+    url: Annotated[str, Form()],
+    direction: Annotated[str, Form()] = "es-en",
+) -> JSONResponse:
+    """Same as an upload, but the worker downloads the video from a link first."""
+    _check_ready(direction)
+    url = url.strip()
+    if not valid_url(url):
+        raise HTTPException(400, "Paste a full link starting with http:// or https://")
+
+    job_id = uuid.uuid4().hex[:12]
+    (JOBS_DIR / job_id).mkdir(parents=True, exist_ok=True)
+    _set(
+        job_id,
+        status="queued",
+        progress=0,
+        message="Queued",
+        direction=direction,
+        filename=url,
+        source_url=url,
+    )
+    threading.Thread(target=_worker, args=(job_id, None, direction, url), daemon=True).start()
+    return JSONResponse({"job_id": job_id, "status": "queued"}, status_code=202)
+
+
+@app.post("/api/license/accept")
+def accept_license() -> dict:
+    """Record that the user reviewed and accepted the Coqui licence; takes effect immediately."""
+    LICENSE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    LICENSE_FILE.write_text("accepted via the web app\n")
+    # The pipeline and Coqui both read this variable when XTTS is first loaded, which happens
+    # lazily on the first job, so setting it in-process is enough -- no restart needed.
+    os.environ["COQUI_TOS_AGREED"] = "1"
+    return health()

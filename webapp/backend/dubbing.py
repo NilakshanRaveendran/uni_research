@@ -34,6 +34,14 @@ MIN_SCALE, MAX_SCALE = 0.5, 2.0
 
 LANGUAGES = {"en": "English", "es": "Spanish"}
 DIRECTIONS = {"en-es": ("en", "es"), "es-en": ("es", "en")}
+# Whisper is told the source language rather than asked, so a Tamil video submitted as Spanish
+# would otherwise be "transcribed" as Spanish gibberish and dubbed without complaint. Below this
+# confidence the detection is treated as inconclusive (silence, music intros) and the job proceeds.
+LANGUAGE_CONFIDENCE = 0.5
+
+
+class UnsupportedLanguageError(RuntimeError):
+    """The upload's spoken language does not match the selected direction."""
 
 
 @dataclass
@@ -49,6 +57,10 @@ class SegmentResult:
     scale_applied: float
     clamped: bool
     error: str = ""
+    # Per-word timings on the output timeline, for highlighting words as they are spoken.
+    # `words` is the dub (what the viewer hears); `source_words` is the original speech.
+    words: list[dict] = field(default_factory=list)
+    source_words: list[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -65,6 +77,8 @@ class DubResult:
     failed_segments: int = 0
     background_mode: str = "none"
     background_model: str = ""
+    detected_language: str = ""
+    language_confidence: float | None = None
     mix_info: dict = field(default_factory=dict)
     elapsed_s: float = 0.0
 
@@ -250,18 +264,110 @@ def time_scale(audio, sr: int, factor: float):
         )
 
 
+def detect_language(models, audio_path: Path) -> tuple[str, float]:
+    """Whisper's language ID on the first 30 s of audio: (language code, probability)."""
+    import whisper
+
+    model = models.asr
+    audio = whisper.pad_or_trim(whisper.load_audio(str(audio_path)))
+    mel = whisper.log_mel_spectrogram(audio, n_mels=model.dims.n_mels).to(model.device)
+    _, probs = model.detect_language(mel)
+    code = max(probs, key=probs.get)
+    return code, float(probs[code])
+
+
+def language_name(code: str) -> str:
+    if code in LANGUAGES:
+        return LANGUAGES[code]
+    try:
+        from whisper.tokenizer import LANGUAGES as WHISPER_LANGUAGES
+    except ImportError:
+        return code
+    return WHISPER_LANGUAGES.get(code, code).title()
+
+
+def check_language(detected: str, confidence: float, direction: str) -> None:
+    """Raise UnsupportedLanguageError when the speech confidently isn't the source language."""
+    source_lang, target_lang = DIRECTIONS[direction]
+    if detected == source_lang or confidence < LANGUAGE_CONFIDENCE:
+        return
+    heard = f"{language_name(detected)} ({confidence:.0%} confidence)"
+    if detected == target_lang:
+        raise UnsupportedLanguageError(
+            f"This video is in {heard}, but {LANGUAGES[source_lang]} → "
+            f"{LANGUAGES[target_lang]} was selected. Choose {LANGUAGES[target_lang]} → "
+            f"{LANGUAGES[source_lang]} and upload again."
+        )
+    raise UnsupportedLanguageError(
+        f"This video appears to be in {heard}. Only English and Spanish speech is supported."
+    )
+
+
+def _word_list(timings) -> list[dict]:
+    words = []
+    for w in timings:
+        text = (w["word"] if isinstance(w, dict) else w.word).strip()
+        start = w["start"] if isinstance(w, dict) else w.start
+        end = w["end"] if isinstance(w, dict) else w.end
+        if text:  # merged-away punctuation leaves empty entries
+            words.append(
+                {"word": text, "start": round(float(start), 3), "end": round(float(end), 3)}
+            )
+    return words
+
+
 def transcribe_segments(models, audio_path: Path, language: str) -> list[dict]:
     """Whisper transcription WITH timestamps, which is what makes timeline placement possible."""
     result = models.asr.transcribe(
-        str(audio_path), language=language, task="transcribe", verbose=False
+        str(audio_path),
+        language=language,
+        task="transcribe",
+        verbose=False,
+        word_timestamps=True,
     )
     segments = []
     for seg in result.get("segments", []):
         text = (seg.get("text") or "").strip()
         start, end = float(seg["start"]), float(seg["end"])
         if text and end - start >= MIN_SEGMENT_S:
-            segments.append({"start": start, "end": end, "text": text})
+            words = _word_list(seg.get("words") or [])
+            segments.append({"start": start, "end": end, "text": text, "words": words})
     return segments
+
+
+def align_words(models, audio_16k, text: str, language: str) -> list[dict]:
+    """Forced-align KNOWN text to audio: when is each word of the dub actually spoken?
+
+    Transcribing the dub again would return Whisper's words, which can differ from the text we
+    synthesised; aligning the exact text we sent to XTTS keeps the highlighted words identical to
+    the translation shown on the page. Times are seconds from the start of `audio_16k`.
+    """
+    import numpy as np
+    import torch
+    from whisper.audio import HOP_LENGTH, N_FRAMES, log_mel_spectrogram, pad_or_trim
+    from whisper.timing import find_alignment, merge_punctuations
+    from whisper.tokenizer import get_tokenizer
+
+    model = models.asr
+    tokenizer = get_tokenizer(
+        model.is_multilingual,
+        num_languages=model.num_languages,
+        language=language,
+        task="transcribe",
+    )
+    audio = torch.from_numpy(np.asarray(audio_16k, dtype=np.float32))
+    num_frames = min(len(audio) // HOP_LENGTH, N_FRAMES)
+    mel = log_mel_spectrogram(pad_or_trim(audio), n_mels=model.dims.n_mels).to(model.device)
+    alignment = find_alignment(
+        model, tokenizer, tokenizer.encode(" " + text.strip()), mel, num_frames
+    )
+    # Same punctuation sets Whisper's own word_timestamps uses, so "acento." is one word.
+    merge_punctuations(alignment, "\"'“¿([{-", "\"'.。,，!！?？:：”)]}、")
+    duration = len(audio) / TARGET_SR
+    words = _word_list(alignment)
+    for w in words:
+        w["start"], w["end"] = min(w["start"], duration), min(w["end"], duration)
+    return words
 
 
 def dub(
@@ -298,6 +404,13 @@ def dub(
     note(3, "Extracting audio from video")
     source_wav = extract_audio(video_path, job_dir / "source.wav")
     total_duration = ffprobe_duration(source_wav)
+
+    # Checked before separation and synthesis, which take minutes, so a wrong-language upload
+    # fails within seconds instead of producing a confidently nonsensical dub.
+    note(4, "Detecting spoken language")
+    detected_lang, lang_confidence = detect_language(models, source_wav)
+    check_language(detected_lang, lang_confidence, direction)
+    note(5, f"Detected {language_name(detected_lang)} speech")
 
     # Full-quality stereo copy, kept for separation and for the final mix. The 16 kHz mono file
     # above is what Whisper and ECAPA want; mixing music at 16 kHz mono would discard most of
@@ -386,6 +499,7 @@ def dub(
             final_duration=0.0,
             scale_applied=1.0,
             clamped=False,
+            source_words=seg.get("words", []),
         )
         try:
             translated = translations[i]
@@ -420,6 +534,23 @@ def dub(
             end = min(offset + len(retimed), len(timeline))
             timeline[offset:end] += retimed[: end - offset]
             _write_wav(segment_dir / f"seg_{i:04d}_retimed.wav", retimed, timeline_sr)
+
+            try:
+                import librosa
+
+                speech_16k = librosa.resample(
+                    np.asarray(retimed, dtype=float), orig_sr=timeline_sr, target_sr=TARGET_SR
+                )
+                record.words = [
+                    {
+                        **w,
+                        "start": round(seg["start"] + w["start"], 3),
+                        "end": round(seg["start"] + w["end"], 3),
+                    }
+                    for w in align_words(models, speech_16k, translated, target_lang)
+                ]
+            except Exception:  # noqa: BLE001 - highlighting is a nicety; the page estimates instead
+                record.words = []
         except Exception as exc:  # noqa: BLE001 - one bad segment must not lose the whole job
             record.error = f"{type(exc).__name__}: {exc}"[:200]
         results.append(record)
@@ -491,6 +622,8 @@ def dub(
         background_mode=background_mode,
         background_model=background_model,
         mix_info=mix_info,
+        detected_language=detected_lang,
+        language_confidence=round(lang_confidence, 3),
         elapsed_s=round(time.time() - started, 1),
     )
     (job_dir / "result.json").write_text(json.dumps(result.to_dict(), indent=2) + "\n")
