@@ -19,6 +19,7 @@ from typing import Annotated
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -48,13 +49,34 @@ ALLOWED_SUFFIXES = {
     ".flac",
 }
 
+ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
+# Every state-changing request must carry this header. A web page on another site can send a plain
+# form POST to localhost without asking (no CORS preflight), which would let any open tab accept the
+# licence or queue downloads; a custom header forces the browser to ask first, and CORS refuses.
+CLIENT_HEADER, CLIENT_VALUE = "x-bvt-client", "web"
+
 app = FastAPI(title="Bilingual Voice Dubbing", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Rejects requests whose Host is not this machine: a DNS-rebinding site cannot pose as localhost.
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1"])
+
+
+@app.middleware("http")
+async def reject_cross_site_writes(request, call_next):
+    if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        origin = request.headers.get("origin")
+        if (origin and origin not in ALLOWED_ORIGINS) or request.headers.get(
+            CLIENT_HEADER
+        ) != CLIENT_VALUE:
+            return JSONResponse(
+                {"detail": "Requests must come from the dubbing web page"}, status_code=403
+            )
+    return await call_next(request)
 
 _JOBS: dict[str, dict] = {}
 _LOCK = threading.Lock()
@@ -68,18 +90,28 @@ def xtts_license_accepted() -> bool:
 
 
 def mt_configuration() -> tuple[str, dict[str, Path] | None]:
-    """Select fine-tuned MarianMT when requested and both checkpoints are complete."""
-    requested = os.environ.get("BVT_MT_MODE", "finetuned").strip().lower()
-    if requested not in {"finetuned", "pretrained"}:
-        raise RuntimeError("BVT_MT_MODE must be 'finetuned' or 'pretrained'")
+    """Pick the MarianMT checkpoint for each direction.
+
+    The default, "mixed", translates English->Spanish with the pretrained model and Spanish->English
+    with the DRAL fine-tune. On the app's own jobs the fine-tune copies English words into Spanish
+    output ("¿Accent? No tengo acento.", "Intimate") where the pretrained model never did, while for
+    Spanish->English the fine-tune drops fewer sentences. `BVT_MT_MODE=finetuned` or `pretrained`
+    uses one kind of model in both directions.
+    """
+    requested = os.environ.get("BVT_MT_MODE", "mixed").strip().lower()
+    if requested not in {"mixed", "finetuned", "pretrained"}:
+        raise RuntimeError("BVT_MT_MODE must be 'mixed', 'finetuned' or 'pretrained'")
     if requested == "pretrained":
         return "pretrained", None
 
     root = ROOT / "artifacts" / "finetune"
-    checkpoints = {direction: root / f"best-{direction}" for direction in DIRECTIONS}
-    if all((path / "model.safetensors").is_file() for path in checkpoints.values()):
+    wanted = DIRECTIONS if requested == "finetuned" else ("es-en",)
+    checkpoints = {direction: root / f"best-{direction}" for direction in wanted}
+    if not all((path / "model.safetensors").is_file() for path in checkpoints.values()):
+        return "pretrained (fine-tuned checkpoints unavailable)", None
+    if requested == "finetuned":
         return "fine-tuned on DRAL", checkpoints
-    return "pretrained (fine-tuned checkpoints unavailable)", None
+    return "pretrained en-es, fine-tuned es-en", checkpoints
 
 
 def get_models() -> LocalModels:
@@ -92,6 +124,8 @@ def get_models() -> LocalModels:
                 mt_device="cpu",
                 model_root=ROOT / "models",
                 mt_model_dirs=mt_model_dirs,
+                # The Mac GPU measured ~24 % faster for XTTS; synthesis falls back to CPU on error.
+                tts_device=os.environ.get("BVT_TTS_DEVICE", "auto"),
             )
         return _MODELS
 

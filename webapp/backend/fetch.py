@@ -8,6 +8,7 @@ multi-gigabyte transfer.
 
 from __future__ import annotations
 
+import ipaddress
 import re
 from pathlib import Path
 from urllib.parse import urlparse
@@ -25,8 +26,18 @@ class LinkError(RuntimeError):
 
 
 def valid_url(url: str) -> bool:
+    """An http(s) link to a public host: never this machine or the local network."""
     parsed = urlparse(url.strip())
-    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        return False
+    host = parsed.hostname.lower()
+    if host == "localhost" or host.endswith((".localhost", ".local", ".internal")):
+        return False
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        return True  # a domain name
+    return address.is_global
 
 
 def _friendly(message: str) -> str:

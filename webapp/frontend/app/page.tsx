@@ -90,6 +90,8 @@ type Segment = {
   scale_applied: number;
   clamped: boolean;
   error: string;
+  /** Which detected speaker's voice this segment was cloned from, from 1. Absent on older jobs. */
+  speaker?: number;
   /** Aligned timings of the dubbed words, on the output timeline. Absent on older jobs. */
   words?: Word[];
   source_words?: Word[];
@@ -105,6 +107,16 @@ type DubResult = {
   clamped_segments: number;
   failed_segments: number;
   background_mode?: string;
+  /** One entry per detected speaker. Absent on jobs from before per-speaker cloning. */
+  speakers?: {
+    speaker: number;
+    segments: number;
+    voiced?: number;
+    reference_s: number | null;
+    similarity: number | null;
+  }[];
+  /** Set when speaker detection failed and every segment used one shared voice. */
+  speaker_detection_error?: string;
   elapsed_s: number;
 };
 
@@ -168,6 +180,19 @@ function fmtBytes(n: number): string {
   return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }
 
+// This page hot-reloads but the backend does not, so after a pull the page can POST to a route the
+// running backend does not have yet. None of the POST routes return 404 or 405 themselves, so
+// either status on a POST means exactly that -- say so instead of showing "Method Not Allowed".
+const STALE_BACKEND =
+  "The backend is running older code than this page. Restart it with ./webapp/start_local.sh, then try again.";
+
+// The backend refuses state-changing requests without this header, so other sites cannot drive it.
+const CLIENT_HEADERS = { "X-BVT-Client": "web" };
+
+function postFailure(status: number, fallback: string): string {
+  return status === 404 || status === 405 ? STALE_BACKEND : fallback;
+}
+
 export default function Page() {
   const [health, setHealth] = useState<Health | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -221,9 +246,9 @@ export default function Page() {
   async function acceptLicense() {
     setAccepting(true);
     try {
-      const res = await fetch("/api/license/accept", { method: "POST" });
+      const res = await fetch("/api/license/accept", { method: "POST", headers: CLIENT_HEADERS });
       if (res.ok) setHealth(await res.json());
-      else setError(`Could not enable the voice model (HTTP ${res.status})`);
+      else setError(postFailure(res.status, `Could not enable the voice model (HTTP ${res.status})`));
     } catch {
       setError("Could not reach the backend. Is it running on port 8000?");
     } finally {
@@ -265,13 +290,13 @@ export default function Page() {
     body.append("url", link.trim());
     body.append("direction", direction);
     try {
-      const res = await fetch("/api/jobs/url", { method: "POST", body });
+      const res = await fetch("/api/jobs/url", { method: "POST", body, headers: CLIENT_HEADERS });
       const data: { job_id?: string; detail?: string } = await res.json().catch(() => ({}));
       if (res.ok && data.job_id) {
         setJob({ job_id: data.job_id, status: "queued", progress: 0, message: "Queued" });
         poll(data.job_id);
       } else {
-        setError(data.detail ?? `Request failed (HTTP ${res.status})`);
+        setError(postFailure(res.status, data.detail ?? `Request failed (HTTP ${res.status})`));
       }
     } catch {
       setError("Could not reach the backend. Is it running on port 8000?");
@@ -292,6 +317,7 @@ export default function Page() {
     await new Promise<void>((resolve) => {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", "/api/jobs");
+      xhr.setRequestHeader("X-BVT-Client", CLIENT_HEADERS["X-BVT-Client"]);
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) setUploadPct(Math.round((e.loaded / e.total) * 100));
       };
@@ -309,7 +335,7 @@ export default function Page() {
           setJob({ job_id: data.job_id, status: "queued", progress: 0, message: "Queued" });
           poll(data.job_id);
         } else {
-          setError(data.detail ?? `Upload failed (HTTP ${xhr.status})`);
+          setError(postFailure(xhr.status, data.detail ?? `Upload failed (HTTP ${xhr.status})`));
         }
         resolve();
       };
@@ -593,6 +619,8 @@ export default function Page() {
               {result && (
                 <span className="note">
                   {result.segments.length} found
+                  {(result.speakers?.length ?? 0) > 1 && ` · ${result.speakers!.length} voices`}
+                  {result.speaker_detection_error && " · speaker detection failed, one voice used"}
                   {result.clamped_segments > 0 && ` · ${result.clamped_segments} clamped`}
                   {result.failed_segments > 0 && ` · ${result.failed_segments} failed`}
                 </span>
@@ -625,6 +653,11 @@ export default function Page() {
                           {s.start.toFixed(2)}s – {s.end.toFixed(2)}s
                         </button>
                         <span className="tags">
+                          {(result.speakers?.length ?? 0) > 1 && s.speaker && (
+                            <span className="tag" title="Voice cloned from this speaker's own speech">
+                              Speaker {s.speaker}
+                            </span>
+                          )}
                           {s.clamped && (
                             <span className="tag clamp" title="Hit the time-compression limit">
                               clamped

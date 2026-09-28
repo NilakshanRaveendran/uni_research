@@ -1,0 +1,364 @@
+{
+  "job_id": "97d43f12e04a",
+  "direction": "en-es",
+  "video_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/97d43f12e04a/dubbed.mp4",
+  "audio_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/97d43f12e04a/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 3.56,
+      "source_text": "Oh my god, I love your accent. Where are you from?",
+      "translated_text": "Dios m\u00edo, me encanta tu acento. \u00bfDe d\u00f3nde eres?",
+      "original_duration": 3.56,
+      "raw_tts_duration": 6.262666666666667,
+      "final_duration": 4.0,
+      "scale_applied": 0.7312614259597806,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.0,
+      "trimmed_duration": 5.47,
+      "truncated_s": 0.005,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Dios",
+          "start": 0.0,
+          "end": 0.24
+        },
+        {
+          "word": "m\u00edo,",
+          "start": 0.24,
+          "end": 0.9
+        },
+        {
+          "word": "me",
+          "start": 1.34,
+          "end": 1.42
+        },
+        {
+          "word": "encanta",
+          "start": 1.42,
+          "end": 1.68
+        },
+        {
+          "word": "tu",
+          "start": 1.68,
+          "end": 1.88
+        },
+        {
+          "word": "acento.",
+          "start": 1.88,
+          "end": 2.22
+        },
+        {
+          "word": "\u00bfDe",
+          "start": 2.74,
+          "end": 3.16
+        },
+        {
+          "word": "d\u00f3nde",
+          "start": 3.16,
+          "end": 3.36
+        },
+        {
+          "word": "eres?",
+          "start": 3.36,
+          "end": 3.78
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Oh",
+          "start": 0.0,
+          "end": 0.18
+        },
+        {
+          "word": "my",
+          "start": 0.18,
+          "end": 0.28
+        },
+        {
+          "word": "god,",
+          "start": 0.28,
+          "end": 0.6
+        },
+        {
+          "word": "I",
+          "start": 1.08,
+          "end": 1.38
+        },
+        {
+          "word": "love",
+          "start": 1.38,
+          "end": 1.88
+        },
+        {
+          "word": "your",
+          "start": 1.88,
+          "end": 2.06
+        },
+        {
+          "word": "accent.",
+          "start": 2.06,
+          "end": 2.5
+        },
+        {
+          "word": "Where",
+          "start": 2.86,
+          "end": 3.06
+        },
+        {
+          "word": "are",
+          "start": 3.06,
+          "end": 3.16
+        },
+        {
+          "word": "you",
+          "start": 3.16,
+          "end": 3.26
+        },
+        {
+          "word": "from?",
+          "start": 3.26,
+          "end": 3.56
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "start": 4.0,
+      "end": 6.9,
+      "source_text": "Thank you, I'm from Spain. I really like your accent too.",
+      "translated_text": "Gracias, soy de Espa\u00f1a. A m\u00ed tambi\u00e9n me gusta tu acento.",
+      "original_duration": 2.9000000000000004,
+      "raw_tts_duration": 5.1,
+      "final_duration": 3.16,
+      "scale_applied": 0.8423671583437001,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 3.751333333333333,
+      "truncated_s": 0.005,
+      "speaker": 2,
+      "words": [
+        {
+          "word": "Gracias,",
+          "start": 4.0,
+          "end": 4.22
+        },
+        {
+          "word": "soy",
+          "start": 4.62,
+          "end": 4.78
+        },
+        {
+          "word": "de",
+          "start": 4.78,
+          "end": 4.94
+        },
+        {
+          "word": "Espa\u00f1a.",
+          "start": 4.94,
+          "end": 5.24
+        },
+        {
+          "word": "A",
+          "start": 5.84,
+          "end": 5.96
+        },
+        {
+          "word": "m\u00ed",
+          "start": 5.96,
+          "end": 6.08
+        },
+        {
+          "word": "tambi\u00e9n",
+          "start": 6.08,
+          "end": 6.24
+        },
+        {
+          "word": "me",
+          "start": 6.24,
+          "end": 6.44
+        },
+        {
+          "word": "gusta",
+          "start": 6.44,
+          "end": 6.54
+        },
+        {
+          "word": "tu",
+          "start": 6.54,
+          "end": 6.7
+        },
+        {
+          "word": "acento.",
+          "start": 6.7,
+          "end": 6.96
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Thank",
+          "start": 4.0,
+          "end": 4.22
+        },
+        {
+          "word": "you,",
+          "start": 4.22,
+          "end": 4.52
+        },
+        {
+          "word": "I'm",
+          "start": 4.68,
+          "end": 4.84
+        },
+        {
+          "word": "from",
+          "start": 4.84,
+          "end": 4.92
+        },
+        {
+          "word": "Spain.",
+          "start": 4.92,
+          "end": 5.24
+        },
+        {
+          "word": "I",
+          "start": 5.68,
+          "end": 5.82
+        },
+        {
+          "word": "really",
+          "start": 5.82,
+          "end": 6.0
+        },
+        {
+          "word": "like",
+          "start": 6.0,
+          "end": 6.22
+        },
+        {
+          "word": "your",
+          "start": 6.22,
+          "end": 6.34
+        },
+        {
+          "word": "accent",
+          "start": 6.34,
+          "end": 6.68
+        },
+        {
+          "word": "too.",
+          "start": 6.68,
+          "end": 6.9
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "start": 7.16,
+      "end": 8.9,
+      "source_text": "Accent? I don't have an accent.",
+      "translated_text": "\u00bfAcento? No tengo acento.",
+      "original_duration": 1.7400000000000002,
+      "raw_tts_duration": 4.363333333333333,
+      "final_duration": 2.595,
+      "scale_applied": 0.6745577523413111,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.0,
+      "trimmed_duration": 3.844,
+      "truncated_s": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "\u00bfAcento?",
+          "start": 7.16,
+          "end": 7.7
+        },
+        {
+          "word": "No",
+          "start": 8.04,
+          "end": 8.22
+        },
+        {
+          "word": "tengo",
+          "start": 8.22,
+          "end": 8.42
+        },
+        {
+          "word": "acento.",
+          "start": 8.42,
+          "end": 8.8
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Accent?",
+          "start": 7.16,
+          "end": 7.6
+        },
+        {
+          "word": "I",
+          "start": 7.88,
+          "end": 8.08
+        },
+        {
+          "word": "don't",
+          "start": 8.08,
+          "end": 8.2
+        },
+        {
+          "word": "have",
+          "start": 8.2,
+          "end": 8.32
+        },
+        {
+          "word": "an",
+          "start": 8.32,
+          "end": 8.48
+        },
+        {
+          "word": "accent.",
+          "start": 8.48,
+          "end": 8.9
+        }
+      ]
+    }
+  ],
+  "speaker_similarity": 0.27111364404360455,
+  "duration_match_ratio": 1.1896341463414632,
+  "raw_duration_ratio": 1.9178048780487802,
+  "clamped_segments": 0,
+  "failed_segments": 0,
+  "truncated_segments": 2,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "detected_language": "en",
+  "language_confidence": 0.964,
+  "mix_info": {
+    "speech_gain": 0.7535,
+    "limiter_gain": 1.0,
+    "peak": 0.7325
+  },
+  "speakers": [
+    {
+      "speaker": 1,
+      "segments": 2,
+      "voiced": 2,
+      "reference_s": 4.9,
+      "similarity": 0.23526456952095032
+    },
+    {
+      "speaker": 2,
+      "segments": 1,
+      "voiced": 1,
+      "reference_s": 2.7,
+      "similarity": 0.34281179308891296
+    }
+  ],
+  "speaker_detection_error": "",
+  "elapsed_s": 137.9
+}

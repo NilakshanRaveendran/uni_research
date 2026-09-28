@@ -75,13 +75,13 @@ def _resolve_tts_device(requested: str) -> str:
     return "mps" if torch.backends.mps.is_available() else "cpu"
 
 
-def _memoize_voice_cloning(tts, keep: int = 4) -> None:
+def _memoize_voice_cloning(tts, keep: int = 16) -> None:
     """Cache the cloned XTTS voice so the same reference audio is only analysed once.
 
-    Every dubbed segment is synthesised from the SAME speaker reference -- the whole source
-    recording -- but `tts_to_file` re-clones the voice from that entire file on every call. On a
-    clip with 39 segments that is 39 identical passes over the full audio, and it is pure waste:
-    the voice does not change between segments.
+    A dubbed video has a handful of speakers but many segments per speaker, and `tts_to_file`
+    re-clones the voice from the reference file on every call: on a clip with 39 segments that is
+    39 passes over the same few references, and it is pure waste. `keep` bounds the cache at more
+    voices than a video realistically has, so alternating speakers never evict each other.
 
     `clone_voice` is the right seam rather than `get_conditioning_latents`: it is what
     `XTTS.synthesize` actually calls, and it wraps the reference-audio loading and resampling as
@@ -131,7 +131,17 @@ def _memoize_voice_cloning(tts, keep: int = 4) -> None:
         return cache[key]
 
     cached._memoized = True
+    cached._cache = cache
     setattr(model, name, cached)
+
+
+def _clear_voice_cache(tts) -> None:
+    """Forget cached cloned voices, e.g. after moving the model to another device."""
+    model = getattr(getattr(tts, "synthesizer", None), "tts_model", None)
+    for name in ("clone_voice", "get_conditioning_latents"):
+        cache = getattr(getattr(model, name, None), "_cache", None)
+        if cache is not None:
+            cache.clear()
 
 
 class LocalModels:
@@ -141,6 +151,7 @@ class LocalModels:
         mt_device: str = "cpu",
         model_root: Path = Path("models"),
         mt_model_dirs: dict[str, Path] | None = None,
+        tts_device: str | None = None,
     ) -> None:
         self.whisper_size = whisper_size
         self.mt_device = mt_device
@@ -150,7 +161,9 @@ class LocalModels:
         # rather than dramatic because generation is autoregressive: each audio token depends on
         # the last, which is close to a GPU's worst case. A probe below falls back to CPU when the
         # device cannot actually run the model, following the pattern finetune.py already uses.
-        self.tts_device = os.environ.get("BVT_TTS_DEVICE", "auto").strip().lower()
+        # The research pipeline defaults to CPU, the configuration every reported number was
+        # produced with (README section 1); the web app asks for "auto" explicitly.
+        self.tts_device = (tts_device or os.environ.get("BVT_TTS_DEVICE", "cpu")).strip().lower()
         self._active_tts_device = "cpu"
         self.model_root = model_root.resolve()
         self.model_root.mkdir(parents=True, exist_ok=True)
@@ -184,6 +197,25 @@ class LocalModels:
     def translate(self, text: str, source: str, target: str) -> str:
         return self.translate_many([text], source, target)[0]
 
+    def mt_model(self, source: str, target: str):
+        """The (tokenizer, model) MarianMT pair for a direction, loaded once and cached."""
+        from transformers import MarianMTModel, MarianTokenizer
+
+        key = f"{source}-{target}"
+        if key not in self._mt:
+            pretrained_name = {
+                "en-es": "Helsinki-NLP/opus-mt-en-es",
+                "es-en": "Helsinki-NLP/opus-mt-es-en",
+            }[key]
+            model_name = str(self.mt_model_dirs.get(key, pretrained_name))
+            cache_dir = self.model_root / "huggingface"
+            load_kwargs = {} if key in self.mt_model_dirs else {"cache_dir": cache_dir}
+            tokenizer = MarianTokenizer.from_pretrained(model_name, **load_kwargs)
+            model = MarianMTModel.from_pretrained(model_name, **load_kwargs).to(self.mt_device)
+            model.eval()
+            self._mt[key] = (tokenizer, model)
+        return self._mt[key]
+
     def translate_many(self, texts: list[str], source: str, target: str) -> list[str]:
         """Translate a batch in one forward pass.
 
@@ -191,22 +223,7 @@ class LocalModels:
         pays the per-call overhead once per segment for no reason. Empty strings are passed
         through untouched rather than sent to the model, which would produce spurious output.
         """
-        from transformers import MarianMTModel, MarianTokenizer
-
-        key = f"{source}-{target}"
-        pretrained_name = {
-            "en-es": "Helsinki-NLP/opus-mt-en-es",
-            "es-en": "Helsinki-NLP/opus-mt-es-en",
-        }[key]
-        model_name = str(self.mt_model_dirs.get(key, pretrained_name))
-        if key not in self._mt:
-            cache_dir = self.model_root / "huggingface"
-            load_kwargs = {} if key in self.mt_model_dirs else {"cache_dir": cache_dir}
-            tokenizer = MarianTokenizer.from_pretrained(model_name, **load_kwargs)
-            model = MarianMTModel.from_pretrained(model_name, **load_kwargs).to(self.mt_device)
-            model.eval()
-            self._mt[key] = (tokenizer, model)
-        tokenizer, model = self._mt[key]
+        tokenizer, model = self.mt_model(source, target)
 
         wanted = [i for i, text in enumerate(texts) if text and text.strip()]
         output = [""] * len(texts)
@@ -243,7 +260,14 @@ class LocalModels:
         return self._tts
 
     def synthesize(
-        self, text: str, speaker_wav: Path, language: str, output: Path, seed: int
+        self,
+        text: str,
+        speaker_wav: Path,
+        language: str,
+        output: Path,
+        seed: int,
+        speed: float = 1.0,
+        split_sentences: bool = True,
     ) -> None:
         if not text.strip():
             raise ValueError("XTTS input text is empty")
@@ -253,6 +277,11 @@ class LocalModels:
         # Resolve the lazy model before seeding so loading cannot consume the RNG stream.
         tts = self.tts
 
+        # XTTS's own speed control stretches its latent sequence before the vocoder, so pitch and
+        # voice are kept. Passed only when asked for, so default runs are byte-identical to the
+        # evaluated pipeline.
+        extra = {} if speed == 1.0 else {"speed": float(speed)}
+
         def _run() -> None:
             torch.manual_seed(seed)
             tts.tts_to_file(
@@ -260,7 +289,8 @@ class LocalModels:
                 speaker_wav=str(speaker_wav),
                 language=language,
                 file_path=str(output),
-                split_sentences=True,
+                split_sentences=split_sentences,
+                **extra,
             )
 
         try:
@@ -278,6 +308,8 @@ class LocalModels:
             )
             self._tts = tts.to("cpu")
             self._active_tts_device = "cpu"
+            # Cached voices hold tensors on the old device; reusing them on CPU fails every call.
+            _clear_voice_cache(self._tts)
             _memoize_voice_cloning(self._tts)
             tts = self._tts
             _run()

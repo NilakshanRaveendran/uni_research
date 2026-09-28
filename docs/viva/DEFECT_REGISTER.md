@@ -210,3 +210,88 @@ inverted. Both are bannered. Study from `docs/viva/ANSWER_CARD.md`.
 
 **Do not put `plots/viva/G*.png` or `plots/synthesis/*` on a slide.** They are pre-correction. Only
 `thesis/figures/` is safe.
+
+---
+
+## Addendum — review of 28 September 2026
+
+Everything below was re-measured on the committed data; scripts and outputs are listed with each
+item. Corrections to entries above come first.
+
+### Corrections to this register
+
+- **D2 — the rehearsed answer is wrong about the mechanism.** 0.787 is not "hertz, no gate". It
+  reproduces exactly (within-speaker, semitones, gated, n = 2,352) from the superseded feature table
+  `artifacts/features_speech.csv`, built with the narrow 60–400 Hz pitch-*search* band. **Answer:**
+  "0.787 came from the first feature table, where the pitch tracker searched only 60–400 Hz, which
+  suppresses voicing detection. With the 65–1000 Hz search band the human figure is 0.849, which is
+  what Chapter 4 reports; the abstract kept the old value."
+- **D6 — twelve cells, not ten.** Table B.1 has 12 double-rounded values (5 MAE, 2 MedAE, 5 RMSE);
+  the 5 MAE values repeat in Table 4.5, so 17 printed cells. Same mechanism, no conclusion changes.
+- **D10 — every numeral is transcribed.** No `.tex` file reads a generated value. The dubbing table
+  and the per-speaker ceiling range do reproduce from committed files; the band sweep, "ten voiced
+  frames to zero" and the 0.090 → 0.820 chain do not.
+- **Header** — D5, D8, D9, D14 and A2 need `results/synthesis_final.csv`, the job files or the
+  gitignored `results/synthesis_test.csv`, not only `numbers.json` and `T4_results.csv`.
+- **ANSWER_CARD question 2** has a wrong premise: §4.10 never contains 0.698.
+
+### New defects
+
+#### N1. The pitch-range "collapse" compares two different quantities 🔴
+| | |
+|---|---|
+| Printed | abstract: "pitch range collapses from 0.214 to 0.035–0.040"; Table 4.4; journal abstract, Table I, lines 74, 307, 327–329, 465 |
+| Problem | the system column is `12·log2(SD in Hz / 100)`, ungated (`thesis_numbers.py:148–162`); the human column is the SD of voiced frames in semitones, gated |
+| Like-for-like | `thesis/scripts/remeasure_f0_range.py`: within-speaker **0.088 / 0.112**, pooled 0.126 / 0.139 |
+| Consequence | 41–52 % of the human 0.214 — relatively *better* than pitch level (37 %), so "collapse" does not hold |
+
+**Answer:** "Table 4.4's system pitch-range row used a hertz standard deviation where the human row
+used semitones. Measured the same way, the system reaches 0.09 and 0.11 within speaker, about half
+the human value. Pitch range is weak, but it does not collapse; the contrast I drew between level
+and range was an artefact of the mismatch."
+
+#### N2. The human ceiling comes from a different population 🔴
+The human correlations use all 2,304 corpus pairs; the system's use the 14 test speakers. On the
+348 test-split pairs the human within-speaker values are **F0 level 0.640** (not 0.849), range 0.232,
+duration 0.860, speaking rate 0.541. The system's 0.311 / 0.314 is therefore **~49 %** of a
+like-for-like ceiling, not 37 %. **Answer:** "The ceiling should be computed on the same speakers.
+On the 14 test speakers the human value is 0.64, so the system reaches about half of it."
+
+#### N3. Eight "successful" syntheses are hallucinations of empty ASR
+8 of 870 rows in `results/synthesis_final.csv` have empty ASR text; MarianMT turned the empty string
+into "- No, no, no, no, no, no, no, no." (en-es) or "I'm sorry." (es-en), XTTS voiced it, and all
+metrics count them. Without them identity is **91.5 % / 84.7 %** (not 94.5 / 86.1) — the non-speech
+source clips ("mmm", "[noise]") have very low ceilings. Same sensitivity as G12.
+
+#### N4. "Median F0" gate in the text, mean F0 in the code
+`03_methodology.tex:279` and `04_results_discussion.tex:572` (journal line 209) say the gate is on
+median F0; `03_methodology.tex:316`, journal line 238 and `analysis.py:240–246` use the mean.
+
+#### N5. Which journal PDF was submitted? — settle before the viva
+The tag `submitted-2026-08` records md5 `af532226…` (288,014 bytes, title "Preserving Speaker
+Identity…"); commit `46161a6` replaced `journal/IEEE_manuscript.pdf` with `f5fedf37…` (287,851
+bytes, "Calibrated Measurement…") and calls that the submitted one. Only the submission portal can
+say which is right.
+
+#### N6. Journal-only wording
+Line 392 "1.52× … on average" (ratio of pooled means; median 1.43); line 410 blames translation
+length (A2 shows XTTS rate is the cause); line 45 footnote "scripts that regenerate every number";
+lines 75/122 "twofold" holds only for system pitch level; Table II has 5 double-rounded cells and
+overflows its column; BLEU is reported without citing BLEU or sacreBLEU.
+
+### New asset
+
+#### A4. Identity survives an impostor floor 🟢 (answers D14)
+Re-embedding all 1,738 test clips with the pipeline's own ECAPA (reproduces the stored scores to
+1e-16): a different-speaker floor is **0.077** (0.12 for a same-sex, F0-matched impostor), so
+floor-calibrated identity is **93.3 % / 83.2 %** (same-sex floor: 92.5 % / 81.0 %). Among the 14
+test speakers the clone is matched to the right speaker **77 % / 82 %** of the time, the real
+bilingual recording 87 % / 85 %, chance 7 %. **Answer:** "Identity is not only relative: against a
+different-speaker floor of 0.08 the clone keeps 93 and 83 percent of what is keepable, and it is
+identified as the right person four times out of five among fourteen."
+
+### The web app after submission
+§4.x (`04_results_discussion.tex:665`) states the app is single-speaker. Since submission it groups
+segments by speaker with ECAPA and clones each speaker from their own speech; on three two-speaker
+DRAL conversations every dubbed line was voiced as the right person (52 % before). If asked, present
+it as post-submission work, not as part of the evaluated system.

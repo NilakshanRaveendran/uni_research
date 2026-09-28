@@ -359,3 +359,54 @@ def test_injector_refuses_an_absurd_span_amplification() -> None:
     ceiling = float(np.std(shape)) * SPAN_SCALE_MAX
     assert got < ceiling + 0.4, f"span scale must be clamped ({got:.2f} vs ceiling {ceiling:.2f})"
     assert got < 3.0, "an absurd request must not produce an absurd contour"
+
+
+def test_injector_writes_the_level_asked_for_when_the_caller_measured_it_differently() -> None:
+    """The shift is measured against the caller's level estimate (pyin); it must be applied to that
+    same estimate. Applying it to WORLD's own median instead put the level up to several semitones
+    off whenever the two trackers disagreed."""
+    import pyworld
+
+    sr = 16000
+    audio = _vowel(150.0, 1.0, sr)
+
+    def median_st(signal):
+        contiguous = np.ascontiguousarray(signal, dtype=np.float64)
+        f0, t = pyworld.dio(contiguous, sr)
+        f0 = pyworld.stonemask(contiguous, f0, t, sr)
+        return _to_semitones(float(np.median(f0[f0 > 0])))
+
+    world_level = median_st(audio)
+    # The caller's tracker reads this voice 1.5 st higher than WORLD does, and asks to keep it
+    # where the caller measured it: the written level is the caller's, not WORLD's.
+    caller_level = world_level + 1.5
+    out = inject(audio, sr, target_level_st=caller_level, current_level_st=caller_level)
+    assert median_st(out) == pytest.approx(caller_level, abs=0.4)
+
+
+def test_level_only_injection_keeps_short_voiced_runs_at_their_pitch(monkeypatch) -> None:
+    """Unvoiced frames were -79.7 st placeholders inside the 5-frame median filter, so a voiced run
+    of one or two frames between unvoiced ones took the placeholder's value and was written at the
+    60 Hz floor. WORLD's analysis is replaced here so the track has exactly such runs."""
+    import pyworld
+
+    sr = 16000
+    frames = 60
+    f0 = np.zeros(frames)
+    f0[10:40] = 150.0  # a normal voiced stretch...
+    f0[45:47] = 150.0  # ...and a two-frame blip between unvoiced frames
+    t = np.arange(frames) * 0.005
+    monkeypatch.setattr(pyworld, "dio", lambda x, fs, *a, **k: (f0.copy(), t))
+    monkeypatch.setattr(pyworld, "stonemask", lambda x, f, tt, fs: f.copy())
+    written = {}
+    real = pyworld.synthesize
+
+    def spy(f, sp, ap, fs, *args, **kwargs):
+        written["f0"] = np.array(f)
+        return real(f, sp, ap, fs, *args, **kwargs)
+
+    monkeypatch.setattr(pyworld, "synthesize", spy)
+    audio = _vowel(150.0, frames * 0.005, sr)
+    inject(audio, sr, target_level_st=_to_semitones(150.0) + 1.0)
+    voiced = written["f0"][written["f0"] > 0]
+    assert voiced.min() > 140.0  # the blip keeps its pitch instead of dropping to 60 Hz

@@ -92,8 +92,8 @@ def within_between(x, y, groups):
         "pooled_r": pooled,
         "within_r": within,
         "between_r": between,
-        "n": int(len(x)),
-        "n_groups": int(len(gx)),
+        "n": len(x),
+        "n_groups": len(gx),
         "between_speaker_variance_share": (ss_between / total_ss) if total_ss > 0 else None,
     }
 
@@ -219,7 +219,7 @@ def human_numbers(path: Path) -> dict:
         "median": float(ratio.median()),
         "mean": float(ratio.mean()),
         "sd": float(ratio.std(ddof=1)),
-        "n": int(len(ratio)),
+        "n": len(ratio),
     }
     out["n_speakers"] = int(pd.unique(df["en_speaker"]).size)
     return out

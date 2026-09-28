@@ -28,9 +28,10 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from bilingual_voice.analysis import _extract_side  # noqa: E402
-from bilingual_voice.prosody import F0_PLAUSIBLE_MAX, F0_PLAUSIBLE_MIN  # noqa: E402
-from thesis_numbers import within_between  # noqa: E402
+from thesis_numbers import within_between
+
+from bilingual_voice.analysis import _extract_side
+from bilingual_voice.prosody import F0_PLAUSIBLE_MAX, F0_PLAUSIBLE_MIN
 
 SYNTHESIS = ROOT / "results" / "synthesis_final.csv"
 OUT_CSV = ROOT / "results" / "f0_range_remeasure.csv"

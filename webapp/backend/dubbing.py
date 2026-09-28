@@ -14,23 +14,77 @@ within a few utterances.
 from __future__ import annotations
 
 import inspect
+import itertools
 import json
 import math
+import re
 import shutil
 import statistics
 import subprocess
 import time
+import traceback
 import wave
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from . import background
+from . import background, shorten, speakers, wsola
 
 TARGET_SR = 16000  # Whisper / ECAPA operate at 16 kHz
 MIN_SEGMENT_S = 0.30
-# Bounds on how far a segment may be stretched or compressed. Beyond this the audio degrades
-# audibly, so we clamp and report the clamp rather than produce something unlistenable.
-MIN_SCALE, MAX_SCALE = 0.5, 2.0
+# What is left after XTTS's own speed is compressed with WSOLA (wsola.py), which copies the voice's
+# real waveform. WORLD, used before, rebuilt every sample through a vocoder and damaged the voice
+# even when it compressed nothing (at x0.999: ECAPA -0.033, 3 dB spectral distortion, 13.5 % of
+# frames an octave off) -- the "synthetic" sound. Measured on 48 real XTTS takes, WSOLA stays close
+# to the untouched take down to 0.75 and is near-transparent at 0.85 (similarity 0.96); below 0.67
+# words start to go, so 0.67 is the floor. Nothing is ever stretched: slowing speech down costs
+# naturalness for nothing.
+MIN_SCALE, MAX_SCALE = 0.67, 1.0
+WSOLA_TRANSPARENT = 0.85
+
+# XTTS pads every sentence with 0.417 s of digital silence (coqui's PAD_SILENCE_SAMPLES) and pauses
+# up to ~3.9 s between the sentences it synthesises separately. In a dub every such pause is time
+# taken from the next line. Measured on 309 past lines: trimming at 35 dB with pauses capped at
+# 0.25 s removes ~15 % of the audio and no words (Whisper check); 30 dB starts cutting soft speech.
+TRIM_TOP_DB = 35.0
+MAX_PAUSE_S = 0.25
+LEAD_KEEP_S, TAIL_KEEP_S = 0.05, 0.10  # air kept before and after speech
+# XTTS's own speed control is free up to 1.25x (17 lines: Whisper WER 0.034 vs 0.040 at 1.0,
+# speaker similarity -0.007, not significant). At 1.5x it starts dropping words ("me encanta tu
+# acento" -> "me encantan los acento") and above 1.75x it is worse than any time-scaling.
+MAX_XTTS_SPEED = 1.25
+# Compression that costs nothing audible: XTTS's free range times WSOLA's transparent range. A line
+# that would need more than this gets a shorter translation first (shorten.py).
+FREE_COMPRESSION = MAX_XTTS_SPEED / WSOLA_TRANSPARENT
+# XTTS speech per character at speed 1 (voiced seconds), measured per output language; a learned
+# per-speaker rate did not predict better than these.
+CHARS_PER_VOICED_S = {"es": 12.0, "en": 13.2}
+SENTENCE_BREAK_S = 0.25
+# XTTS synthesises each sentence separately, and a one- or two-word sentence on its own often comes
+# out hallucinated ("¿Acento? No tengo acento." -> "Acento. Acento. Acento. No tengo acento.";
+# Whisper WER 0.25 over 3 seeds, 0.08 synthesised in one piece). Lines holding such a sentence are
+# synthesised whole; others keep XTTS's split, which did better on longer sentences (0.07 vs 0.22).
+SHORT_SENTENCE_WORDS = 2
+# A take slower than this share of the language's rate is a runaway generation (e.g. "Algo es
+# difícil." rendered as 16 s): sample again with another seed and keep the fastest take.
+RUNAWAY_RATE_SHARE = 0.6
+RUNAWAY_RETRIES = 2
+# XTTS samples its speech, so a take can say something else ("¿Acento?" came out "¿Entonces?").
+# Each take is heard back with Whisper, which is loaded anyway, and one whose character error rate
+# against the text exceeds this is sampled again (sharing the retries above); the clearest wins.
+# Accents and punctuation are ignored, so a regional pronunciation Whisper spells "asento" for
+# "acento" costs one character, not a word.
+MAX_TAKE_CER = 0.2
+# The pause kept between lines. At a change of speaker 0.2 s: the lower quartile of natural silent
+# gaps between line-length turns in DRAL conversations (0.18 s) and what the actors in the app's
+# videos leave (median 0.24 s). Within one speaker 0.1 s. Without them a new voice started the
+# instant the last one stopped -- one character still talking while the other's lips move.
+TURN_GAP_S = 0.2
+SAME_SPEAKER_GAP_S = 0.1
+# How far a line may run past the end of the speech it replaces (Whisper's line end is itself a
+# little late, median +0.05 s). 1 s left a Short's last line sounding 0.6 s after the actor stopped.
+SPILL_S = 0.3
+MIN_WINDOW_S = 0.3
+FADE_S = 0.05
 
 LANGUAGES = {"en": "English", "es": "Spanish"}
 DIRECTIONS = {"en-es": ("en", "es"), "es-en": ("es", "en")}
@@ -38,6 +92,11 @@ DIRECTIONS = {"en-es": ("en", "es"), "es-en": ("es", "en")}
 # would otherwise be "transcribed" as Spanish gibberish and dubbed without complaint. Below this
 # confidence the detection is treated as inconclusive (silence, music intros) and the job proceeds.
 LANGUAGE_CONFIDENCE = 0.5
+# Before separation the language is heard through any music, and Whisper labels music as a
+# language too (a music intro came back as Norwegian Nynorsk at 76 %). So an unsupported language
+# only fails the job this early when it is near certain; otherwise it is checked again on the
+# separated vocals, where the music is gone.
+EARLY_UNSUPPORTED_CONFIDENCE = 0.9
 
 
 class UnsupportedLanguageError(RuntimeError):
@@ -57,6 +116,18 @@ class SegmentResult:
     scale_applied: float
     clamped: bool
     error: str = ""
+    # XTTS speed used, the synthesised length after silence was cut, and any seconds faded out
+    # because the line would otherwise have run into the next one.
+    tts_speed: float = 1.0
+    trimmed_duration: float = 0.0
+    truncated_s: float = 0.0
+    # Set when the translation was reworded to fit: the first, longer translation.
+    unshortened_text: str = ""
+    # How many XTTS takes were sampled, and the kept take's character error rate heard back.
+    takes: int = 1
+    take_cer: float = 0.0
+    # Which voice this segment was cloned from, numbered from 1 in order of first appearance.
+    speaker: int = 1
     # Per-word timings on the output timeline, for highlighting words as they are spoken.
     # `words` is the dub (what the viewer hears); `source_words` is the original speech.
     words: list[dict] = field(default_factory=list)
@@ -75,11 +146,16 @@ class DubResult:
     raw_duration_ratio: float | None = None
     clamped_segments: int = 0
     failed_segments: int = 0
+    truncated_segments: int = 0
     background_mode: str = "none"
     background_model: str = ""
     detected_language: str = ""
     language_confidence: float | None = None
     mix_info: dict = field(default_factory=dict)
+    # One entry per detected speaker: segments assigned and voiced, reference seconds, similarity.
+    speakers: list[dict] = field(default_factory=list)
+    # Set when speaker detection failed and every segment fell back to one shared voice.
+    speaker_detection_error: str = ""
     elapsed_s: float = 0.0
 
     def to_dict(self) -> dict:
@@ -212,58 +288,6 @@ def _write_wav(path: Path, audio, sr: int) -> None:
         handle.writeframes((clipped * 32767.0).astype("<i2").tobytes())
 
 
-def time_scale(audio, sr: int, factor: float):
-    """Stretch (factor>1) or compress (factor<1) without shifting pitch.
-
-    WORLD analysis/resynthesis: decompose into F0, spectral envelope and aperiodicity, resample the
-    frame sequence, resynthesise. This preserves formants, so a retimed voice still sounds like the
-    same person -- which matters because we measure speaker similarity on the result.
-    """
-    import numpy as np
-
-    if abs(factor - 1.0) < 1e-3 or len(audio) < sr // 20:
-        return audio
-    try:
-        import pyworld
-
-        contiguous = np.ascontiguousarray(audio, dtype=np.float64)
-        f0, t = pyworld.dio(contiguous, sr)
-        f0 = pyworld.stonemask(contiguous, f0, t, sr)
-        spectrum = pyworld.cheaptrick(contiguous, f0, t, sr)
-        aperiodicity = pyworld.d4c(contiguous, f0, t, sr)
-        frames = len(f0)
-        if frames < 4:
-            return audio
-        index = np.linspace(0, frames - 1, max(4, round(frames * factor)))
-        source = np.arange(frames)
-        # F0 must be resampled by NEAREST NEIGHBOUR, not linearly. WORLD stores unvoiced frames
-        # as f0 = 0, so linear interpolation between a voiced frame and an unvoiced one invents
-        # pitch values that were never in the signal and smears the voiced/unvoiced boundary.
-        # Measured effect of getting this wrong: a 3.5 semitone shift on a segment that was only
-        # supposed to be stretched in time.
-        f0_s = f0[np.clip(np.round(index).astype(int), 0, frames - 1)]
-        # Spectral envelope and aperiodicity are smooth and continuous, so linear is correct there.
-        sp_s = np.stack(
-            [np.interp(index, source, spectrum[:, k]) for k in range(spectrum.shape[1])], axis=1
-        )
-        ap_s = np.stack(
-            [np.interp(index, source, aperiodicity[:, k]) for k in range(aperiodicity.shape[1])],
-            axis=1,
-        )
-        return pyworld.synthesize(
-            np.ascontiguousarray(f0_s),
-            np.ascontiguousarray(sp_s),
-            np.ascontiguousarray(ap_s),
-            sr,
-        )
-    except Exception:  # noqa: BLE001 - fall back rather than fail the whole job
-        import librosa
-
-        return librosa.effects.time_stretch(
-            np.asarray(audio, dtype=float), rate=1.0 / max(factor, 1e-6)
-        )
-
-
 def detect_language(models, audio_path: Path) -> tuple[str, float]:
     """Whisper's language ID on the first 30 s of audio: (language code, probability)."""
     import whisper
@@ -286,11 +310,18 @@ def language_name(code: str) -> str:
     return WHISPER_LANGUAGES.get(code, code).title()
 
 
-def check_language(detected: str, confidence: float, direction: str) -> None:
-    """Raise UnsupportedLanguageError when the speech confidently isn't the source language."""
+def check_language(
+    detected: str, confidence: float, direction: str, final: bool = True
+) -> bool:
+    """Raise UnsupportedLanguageError when the speech confidently isn't the source language.
+
+    With `final=False` (the early check, heard through any music) an unsupported language below
+    EARLY_UNSUPPORTED_CONFIDENCE is not decided yet: returns False so the caller checks again on
+    the separated vocals. Returns True when the language is settled.
+    """
     source_lang, target_lang = DIRECTIONS[direction]
     if detected == source_lang or confidence < LANGUAGE_CONFIDENCE:
-        return
+        return True
     heard = f"{language_name(detected)} ({confidence:.0%} confidence)"
     if detected == target_lang:
         raise UnsupportedLanguageError(
@@ -298,6 +329,8 @@ def check_language(detected: str, confidence: float, direction: str) -> None:
             f"{LANGUAGES[target_lang]} was selected. Choose {LANGUAGES[target_lang]} → "
             f"{LANGUAGES[source_lang]} and upload again."
         )
+    if not final and confidence < EARLY_UNSUPPORTED_CONFIDENCE:
+        return False
     raise UnsupportedLanguageError(
         f"This video appears to be in {heard}. Only English and Spanish speech is supported."
     )
@@ -370,6 +403,188 @@ def align_words(models, audio_16k, text: str, language: str) -> list[dict]:
     return words
 
 
+def _speech_spans(audio, top_db: float = TRIM_TOP_DB):
+    import librosa
+
+    return librosa.effects.split(audio, top_db=top_db, frame_length=1024, hop_length=256)
+
+
+def _plain(text: str) -> str:
+    """Lowercase letters and digits only, accents removed: what intelligibility is judged on."""
+    import unicodedata
+
+    text = unicodedata.normalize("NFKD", text.lower())
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    return " ".join(re.sub(r"[^\w\s]", " ", text).split())
+
+
+def take_cer(models, audio, sr: int, text: str, language: str) -> float:
+    """Character error rate of a synthesised take heard back by Whisper, against its text."""
+    import jiwer
+    import librosa
+    import numpy as np
+
+    audio16 = librosa.resample(np.asarray(audio, dtype=float), orig_sr=sr, target_sr=TARGET_SR)
+    heard = models.asr.transcribe(
+        audio16.astype(np.float32), language=language, task="transcribe", temperature=0.0,
+        verbose=None,
+    )["text"]
+    reference = _plain(text)
+    return float(jiwer.cer(reference, _plain(heard) or "-")) if reference else 0.0
+
+
+def voiced_seconds(audio, sr: int) -> float:
+    import numpy as np
+
+    audio = np.asarray(audio, dtype=float)
+    if audio.size == 0 or not np.any(audio):
+        return 0.0
+    return float(sum(int(end) - int(start) for start, end in _speech_spans(audio)) / sr)
+
+
+def tighten(audio, sr: int, max_pause: float = MAX_PAUSE_S):
+    """Cut leading and trailing silence from a synthesised line and shorten long inner pauses."""
+    import numpy as np
+
+    audio = np.asarray(audio, dtype=float)
+    if audio.size == 0 or not np.any(audio):
+        return audio
+    spans = _speech_spans(audio)
+    if len(spans) == 0:
+        return audio
+    merged = [[int(start), int(end)] for start, end in spans]
+    keep = int(max_pause * sr)
+    pieces = [audio[max(0, merged[0][0] - int(LEAD_KEEP_S * sr)) : merged[0][1]]]
+    for (_, prev_end), (start, end) in itertools.pairwise(merged):
+        pieces.append(audio[prev_end:start] if start - prev_end <= keep else np.zeros(keep))
+        pieces.append(audio[start:end])
+    pieces.append(audio[merged[-1][1] : merged[-1][1] + int(TAIL_KEEP_S * sr)])
+    return np.concatenate(pieces)
+
+
+def place(timeline, audio, offset: int, limit: int, sr: int) -> float:
+    """Add a line to the timeline at `offset`, never past `limit` (sample index).
+
+    Whatever would run past the limit -- the next line's start, or the end of the media -- is faded
+    out and dropped instead of summed with the next voice. Returns the seconds dropped.
+    """
+    import numpy as np
+
+    limit = min(limit, len(timeline))
+    usable = max(0, min(len(audio), limit - offset))
+    piece = np.array(audio[:usable], dtype=float)
+    dropped = (len(audio) - usable) / sr
+    if dropped > 0 and usable > 0:
+        fade = min(int(FADE_S * sr), usable)
+        piece[usable - fade :] *= np.linspace(1.0, 0.0, fade)
+    timeline[offset : offset + usable] += piece
+    return dropped
+
+
+def line_windows(segments, labels, total_duration: float) -> list[tuple[float, float]]:
+    """For each line, the seconds it may occupy and the time its audio must be gone by.
+
+    A line may run SPILL_S past the speech it replaces, but always leaves the next line its pause:
+    TURN_GAP_S before another speaker, SAME_SPEAKER_GAP_S before the same one.
+    """
+    windows = []
+    for i, seg in enumerate(segments):
+        start, end = float(seg["start"]), float(seg["end"]) + SPILL_S
+        if i + 1 < len(segments):
+            gap = SAME_SPEAKER_GAP_S if labels[i] == labels[i + 1] else TURN_GAP_S
+            next_start = float(segments[i + 1]["start"])
+            end = min(end, next_start - gap)
+            hard_stop = next_start  # never over the next line, whatever the minimum window
+        else:
+            end = min(end, total_duration)
+            hard_stop = total_duration
+        window = max(end - start, MIN_WINDOW_S)
+        windows.append((window, min(start + window, hard_stop)))
+    return windows
+
+
+def xtts_speed(text: str, language: str, window: float) -> float:
+    """XTTS speed for a line: enough to fit `window` seconds, within the range that costs nothing."""
+    chars = max(1, len(text.replace(" ", "")))
+    predicted = chars / CHARS_PER_VOICED_S.get(language, 12.0)
+    predicted += SENTENCE_BREAK_S * (len(split_sentences(text)) - 1)
+    return round(min(max(predicted / max(window, 0.1), 1.0), MAX_XTTS_SPEED), 3)
+
+
+_SENTENCE_BREAK = re.compile(r"(?<=[?!…])\s+|(?<=\.)\s+(?=[A-ZÁÉÍÓÚÑÜ¿¡])")
+
+
+def split_sentences(text: str) -> list[str]:
+    """Split a transcript line into sentences for translation.
+
+    MarianMT given a whole multi-sentence line drops sentences and question marks (the pretrained
+    model dropped a sentence in 5 of 8 such English lines); one sentence at a time it drops none.
+    A full stop only ends a sentence before a capital or an opening ¿/¡, and a trailing one-word
+    fragment -- a Whisper cut-off like "...I agree. I" -- stays with the sentence before it.
+    """
+    parts = [part.strip() for part in _SENTENCE_BREAK.split(text.strip()) if part.strip()]
+    if len(parts) > 1 and len(parts[-1].split()) == 1 and parts[-1][-1] not in ".?!…":
+        fragment = parts.pop()
+        parts[-1] = f"{parts[-1]} {fragment}"
+    return parts or [text.strip()]
+
+
+def synthesise_whole(text: str) -> bool:
+    """True when XTTS should get the line in one piece (it holds a very short sentence)."""
+    return any(len(sentence.split()) <= SHORT_SENTENCE_WORDS for sentence in split_sentences(text))
+
+
+def shorten_translations(
+    models, texts: list[str], translations: list[str], windows, source: str, target: str
+) -> list[str]:
+    """Re-translate, with a shorter wording, the lines predicted not to fit their window.
+
+    Professional dubbing shortens the words rather than speeding the voice. For flagged lines each
+    sentence is re-chosen from MarianMT's beam-8 candidates: within 0.3 of the best score, keeping
+    every question, negation, number and sentence ending, and passing a round-trip check (its
+    back-translation at most 15 chrF worse). On the lines of 35 past jobs that did not fit this
+    removed ~10 % of the characters with no meaning errors in the 35 changed sentences judged.
+    Lines that fit are returned untouched.
+    """
+    flagged = [
+        i for i, (text, (window, _)) in enumerate(zip(translations, windows, strict=True))
+        if text and shorten.needs_shortening(text, window, target, FREE_COMPRESSION)
+    ]
+    if not flagged:
+        return list(translations)
+    pieces = [split_sentences(texts[i]) for i in flagged]
+    sentences = [sentence for group in pieces for sentence in group]
+    currents = models.translate_many(sentences, source, target)
+    budgets = []
+    for i, group in zip(flagged, pieces, strict=True):
+        line_budget = shorten.budget_chars(windows[i][0], target, FREE_COMPRESSION)
+        k = len(budgets)
+        chars = [shorten.spoken_chars(c) for c in currents[k : k + len(group)]]
+        budgets += [int(line_budget * c / max(1, sum(chars))) for c in chars]
+    tokenizer, model = models.mt_model(source, target)
+    chosen = shorten.translate_fitted(
+        model, tokenizer, sentences, currents, target, [True] * len(sentences), budgets,
+        back_translate=lambda xs: models.translate_many(xs, target, source),
+    )
+    out, k = list(translations), 0
+    for i, group in zip(flagged, pieces, strict=True):
+        out[i] = " ".join(t.strip() for t in chosen[k : k + len(group)] if t.strip())
+        k += len(group)
+    return out
+
+
+def translate_lines(models, texts: list[str], source: str, target: str) -> list[str]:
+    """Translate each line sentence by sentence, in one batch, and rejoin."""
+    pieces = [split_sentences(text) for text in texts]
+    flat = [sentence for sentences in pieces for sentence in sentences]
+    out = models.translate_many(flat, source, target)
+    joined, k = [], 0
+    for sentences in pieces:
+        joined.append(" ".join(t.strip() for t in out[k : k + len(sentences)] if t.strip()))
+        k += len(sentences)
+    return joined
+
+
 def dub(
     video_path: Path,
     direction: str,
@@ -409,13 +624,16 @@ def dub(
     # fails within seconds instead of producing a confidently nonsensical dub.
     note(4, "Detecting spoken language")
     detected_lang, lang_confidence = detect_language(models, source_wav)
-    check_language(detected_lang, lang_confidence, direction)
-    note(5, f"Detected {language_name(detected_lang)} speech")
+    language_settled = check_language(detected_lang, lang_confidence, direction, final=False)
+    if language_settled:
+        note(5, f"Detected {language_name(detected_lang)} speech")
 
     # Full-quality stereo copy, kept for separation and for the final mix. The 16 kHz mono file
     # above is what Whisper and ECAPA want; mixing music at 16 kHz mono would discard most of
     # what the background-preservation step exists to save.
     background_mode = background.requested_mode()
+    # Checked with the other settings, before minutes of separation and transcription.
+    forced_speakers = speakers.requested_speakers()
     separated = None
     full_wav = None
     if background_mode != "none":
@@ -445,6 +663,12 @@ def dub(
         except Exception:  # noqa: BLE001 - the original mix is a fine fallback
             asr_wav = source_wav
 
+    if not language_settled:
+        # Heard as another language through the music: listen again to the voices alone.
+        detected_lang, lang_confidence = detect_language(models, asr_wav)
+        check_language(detected_lang, lang_confidence, direction)
+        note(9, f"Detected {language_name(detected_lang)} speech")
+
     note(10, f"Transcribing {LANGUAGES[source_lang]} speech")
     segments = transcribe_segments(models, asr_wav, source_lang)
     if not segments:
@@ -454,11 +678,55 @@ def dub(
     # One batched call rather than one per segment: translation is cheap next to synthesis, and
     # doing it up front means the per-segment timing used for the ETA measures synthesis alone.
     try:
-        translations = models.translate_many(
-            [seg["text"] for seg in segments], source_lang, target_lang
+        translations = translate_lines(
+            models, [seg["text"] for seg in segments], source_lang, target_lang
         )
     except Exception:  # noqa: BLE001 - fall back to per-segment translation
         translations = [None] * len(segments)
+
+    # Zero-shot cloning is per speaker, so each actor is voiced from a reference cut from their own
+    # segments. One reference for the whole soundtrack gave every actor the same voice: XTTS reads
+    # only its first 30 s, so everyone sounded like whoever spoke first.
+    note(21, "Identifying speakers")
+    voice_path = separated["vocals"] if separated is not None else (full_wav or source_wav)
+    speaker_error = ""
+    try:
+        labels = speakers.assign_speakers(models, asr_wav, segments, forced_speakers)
+        references = speakers.build_references(voice_path, segments, labels, job_dir / "speakers")
+        count = len(set(labels))
+        note(22, f"Found {count} speaker{'s' if count != 1 else ''}")
+    except Exception as exc:  # noqa: BLE001 - one shared voice is worse, not a reason to fail
+        traceback.print_exc()
+        speaker_error = f"{type(exc).__name__}: {exc}"[:200]
+        labels, references = [0] * len(segments), {}
+        note(22, "Speaker detection failed; using one voice for everyone")
+
+    # A speaker without a reference of their own (detection failed, or too little clean audio)
+    # is voiced from one reference built from all the speech -- still the cleaned vocal stem, never
+    # the raw soundtrack with its music and its first-30-s bias.
+    fallback_reference = source_wav
+    if any(label not in references for label in set(labels)):
+        try:
+            shared = speakers.build_references(
+                voice_path, segments, [0] * len(segments), job_dir / "speakers" / "shared"
+            )
+            fallback_reference = shared.get(0, {}).get("xtts_path", source_wav)
+        except Exception:  # noqa: BLE001 - the soundtrack itself is the last resort
+            traceback.print_exc()
+
+    # Each line's window, now that we know who speaks next -- then shorter wording for the lines
+    # that cannot fit it even with the compression that costs nothing.
+    windows = line_windows(segments, labels, total_duration)
+    unshortened = list(translations)
+    if all(t is not None for t in translations):
+        note(23, "Fitting the translation to the timing")
+        try:
+            translations = shorten_translations(
+                models, [seg["text"] for seg in segments], translations, windows,
+                source_lang, target_lang,
+            )
+        except Exception:  # noqa: BLE001 - shortening improves a dub, it never blocks one
+            traceback.print_exc()
 
     timeline_sr = 24000  # XTTS-v2 output rate; the assembled track uses this throughout
     timeline = np.zeros(math.ceil(total_duration * timeline_sr) + timeline_sr, dtype=np.float64)
@@ -475,7 +743,7 @@ def dub(
 
     for i, seg in enumerate(segments):
         started_segment = time.time()
-        span = 20 + int(65 * i / max(1, len(segments)))
+        span = 24 + int(61 * i / max(1, len(segments)))
         remaining = len(segments) - i
         eta = None
         # The FIRST segment carries one-off warm-up (lazy allocation, first touch of the model's
@@ -499,29 +767,66 @@ def dub(
             final_duration=0.0,
             scale_applied=1.0,
             clamped=False,
+            speaker=labels[i] + 1,
             source_words=seg.get("words", []),
         )
+        if translations[i] is not None and translations[i] != unshortened[i]:
+            record.unshortened_text = unshortened[i]
         try:
             translated = translations[i]
             if translated is None:
-                translated = models.translate(seg["text"], source_lang, target_lang)
+                translated = " ".join(
+                    models.translate(sentence, source_lang, target_lang).strip()
+                    for sentence in split_sentences(seg["text"])
+                )
             record.translated_text = translated
             if not translated.strip():
                 raise ValueError("translation was empty")
 
             out_wav = segment_dir / f"seg_{i:04d}.wav"
-            # The speaker reference is the FULL source audio, not the segment: XTTS produces a
-            # better-conditioned voice from several seconds of reference than from one short clip.
-            models.synthesize(translated, source_wav, target_lang, out_wav, seed=498 + i)
-            generated, gen_sr = _read_wav(out_wav)
+            # The reference is the speaker's whole reference file, not this segment alone: XTTS
+            # conditions far better on several seconds of a voice than on one short clip.
+            reference = references.get(labels[i], {}).get("xtts_path", fallback_reference)
+            window, stop = windows[i]
+            speed = xtts_speed(translated, target_lang, window)
+            chars = max(1, len(translated.replace(" ", "")))
+            slow = RUNAWAY_RATE_SHARE * CHARS_PER_VOICED_S.get(target_lang, 12.0)
+            best = None
+            for attempt in range(1 + RUNAWAY_RETRIES):
+                take = segment_dir / f"seg_{i:04d}_take{attempt}.wav"
+                models.synthesize(
+                    translated, reference, target_lang, take, seed=498 + i + 7919 * attempt,
+                    speed=speed, split_sentences=not synthesise_whole(translated),
+                )
+                generated, gen_sr = _read_wav(take)
+                spoken = tighten(generated, gen_sr)
+                voiced = voiced_seconds(generated, gen_sr) * speed  # at speed 1, for the rate
+                runaway = voiced > 0 and chars / voiced < slow
+                try:
+                    cer = take_cer(models, spoken, gen_sr, translated, target_lang)
+                except Exception:  # noqa: BLE001 - no verdict: judge on length alone
+                    cer = 0.0
+                # Best take: not a runaway, then clearest, then shortest.
+                rank = (runaway, round(cer, 2), len(spoken))
+                if best is None or rank < best[0]:
+                    best = (rank, generated, spoken, take, cer)
+                if not runaway and cer <= MAX_TAKE_CER:
+                    break  # a normal, intelligible take
+            _, generated, spoken, take, record.take_cer = best
+            record.takes = attempt + 1
+            take.replace(out_wav)
+            for extra in segment_dir.glob(f"seg_{i:04d}_take*.wav"):
+                extra.unlink()
+            record.tts_speed = speed
             record.raw_tts_duration = len(generated) / gen_sr
+            record.trimmed_duration = len(spoken) / gen_sr
 
-            # --- prosody preservation: fit the dub into the slot it replaces ---
-            wanted = original / record.raw_tts_duration if record.raw_tts_duration > 0 else 1.0
+            # --- fit the dub into its window: WSOLA compresses what XTTS's speed did not ---
+            wanted = min(1.0, window / record.trimmed_duration) if record.trimmed_duration else 1.0
             scale = min(max(wanted, MIN_SCALE), MAX_SCALE)
-            record.clamped = abs(scale - wanted) > 1e-6
+            record.clamped = wanted < MIN_SCALE - 1e-6
             record.scale_applied = scale
-            retimed = time_scale(generated, gen_sr, scale)
+            retimed = wsola.stretch(spoken, gen_sr, scale) if scale < 1.0 else spoken
             record.final_duration = len(retimed) / gen_sr
 
             if gen_sr != timeline_sr:
@@ -531,8 +836,11 @@ def dub(
                     np.asarray(retimed, dtype=float), orig_sr=gen_sr, target_sr=timeline_sr
                 )
             offset = int(seg["start"] * timeline_sr)
-            end = min(offset + len(retimed), len(timeline))
-            timeline[offset:end] += retimed[: end - offset]
+            limit = round(stop * timeline_sr)
+            record.truncated_s = round(place(timeline, retimed, offset, limit, timeline_sr), 3)
+            if record.truncated_s:
+                retimed = retimed[: max(0, limit - offset)]
+                record.final_duration = len(retimed) / timeline_sr
             _write_wav(segment_dir / f"seg_{i:04d}_retimed.wav", retimed, timeline_sr)
 
             try:
@@ -588,14 +896,45 @@ def dub(
             final_wav = dubbed_wav
 
     note(92, "Measuring speaker similarity")
+    # Per speaker: that speaker's dubbed segments against their own reference. Comparing the whole
+    # dub with the whole vocal track would score a blend against a blend, and could not show
+    # whether each actor kept their own voice.
+    speaker_rows = []
+    for label in sorted(set(labels)):
+        ok_members = [r for r in results if r.speaker == label + 1 and not r.error]
+        row = {
+            "speaker": label + 1,
+            "segments": sum(1 for r in results if r.speaker == label + 1),
+            "voiced": len(ok_members),
+            "reference_s": references.get(label, {}).get("seconds"),
+            "similarity": None,
+        }
+        if label in references and ok_members:
+            try:
+                clips = [
+                    _read_wav(segment_dir / f"seg_{r.index:04d}_retimed.wav")[0]
+                    for r in ok_members
+                ]
+                own_dub = job_dir / "speakers" / f"speaker_{label + 1}_dub.wav"
+                _write_wav(own_dub, np.concatenate(clips), timeline_sr)
+                row["similarity"] = models.speaker_similarity(references[label]["path"], own_dub)
+            except Exception:  # noqa: BLE001 - metric is informative, not load-bearing
+                row["similarity"] = None
+        speaker_rows.append(row)
+
     similarity = None
-    try:
-        # Compare against the isolated voice when we have it: measuring against the full mix would
-        # charge the dub for music it was never supposed to reproduce.
-        reference_wav = separated["vocals"] if separated is not None else source_wav
-        similarity = models.speaker_similarity(reference_wav, dubbed_wav)
-    except Exception:  # noqa: BLE001 - metric is informative, not load-bearing
-        similarity = None
+    # Weighted by segments actually voiced: a speaker's score is measured on those alone.
+    scored = [(r["similarity"], r["voiced"]) for r in speaker_rows if r["similarity"] is not None]
+    if scored:
+        similarity = sum(s * n for s, n in scored) / sum(n for _, n in scored)
+    else:
+        try:
+            # Compare against the isolated voice when we have it: measuring against the full mix
+            # would charge the dub for music it was never supposed to reproduce.
+            reference_wav = separated["vocals"] if separated is not None else source_wav
+            similarity = models.speaker_similarity(reference_wav, dubbed_wav)
+        except Exception:  # noqa: BLE001 - metric is informative, not load-bearing
+            similarity = None
 
     note(95, "Merging audio back into video")
     if has_video_stream(video_path):
@@ -618,10 +957,13 @@ def dub(
         duration_match_ratio=(final_total / original_total) if original_total else None,
         raw_duration_ratio=(raw_total / original_total) if original_total else None,
         clamped_segments=sum(1 for r in results if r.clamped),
+        truncated_segments=sum(1 for r in results if r.truncated_s > 0),
         failed_segments=sum(1 for r in results if r.error),
         background_mode=background_mode,
         background_model=background_model,
         mix_info=mix_info,
+        speakers=speaker_rows,
+        speaker_detection_error=speaker_error,
         detected_language=detected_lang,
         language_confidence=round(lang_confidence, 3),
         elapsed_s=round(time.time() - started, 1),

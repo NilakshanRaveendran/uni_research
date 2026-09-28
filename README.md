@@ -143,9 +143,14 @@ general improvement in translation adequacy. Reproduce the experiment with
 
 ## Write-up: dissertation and manuscript
 
-Two LaTeX documents are produced from the committed result files. Neither contains a hand-typed
-number: `thesis/scripts/thesis_numbers.py` writes `thesis/numbers.json` from the CSVs and JSON in
-`results/` and `artifacts/`, and `thesis/scripts/thesis_figures.py` draws every figure from it.
+Two LaTeX documents report the committed result files. `thesis/scripts/thesis_numbers.py` writes
+`thesis/numbers.json` from the CSVs and JSON in `results/` and `artifacts/` (it regenerates
+byte-identically), and `thesis/scripts/thesis_figures.py` draws every figure from it. The numbers in
+the `.tex` sources were transcribed from those files by hand, not inserted by a script, so a few
+table cells carry double rounding; `docs/viva/DEFECT_REGISTER.md` lists every known discrepancy. The
+reported pipeline results come from `results/synthesis_final.csv` (re-measured with
+`bilingual_voice.remeasure`), not from the `results/final_metrics.csv` the commands in section 4
+produce.
 
 | Path | What it is |
 |---|---|
@@ -170,11 +175,14 @@ of `thesis/uwuthesis.sty`.
   voiced/unvoiced decision depends on the number of frequency candidates; narrowing it suppresses
   voicing detection entirely on quiet recordings.
 - **Plausibility band, 60-400 Hz** — applied downstream in `metrics.py` and `analysis.py` as a
-  data-quality gate. A median F0 outside the adult speaking range is a tracking failure, not a voice.
+  data-quality gate. A mean F0 outside the adult speaking range is a tracking failure, not a voice.
 
-F0 is always correlated in **semitones**, never in hertz. Correlating in hertz without the gate
-understates the generated-versus-human correspondence by roughly a factor of seven; this is
-documented in Section 4.9 of the dissertation.
+F0 level is correlated in **semitones**, never in hertz. Correlating in hertz without the gate
+understates the generated-versus-human correspondence several-fold; this is documented in Section
+4.10 of the dissertation. One exception is known: the system's F0-*range* correlation in Table 4.4
+(0.035 / 0.040) was computed from the standard deviation in hertz, ungated, while the human column
+uses the semitone standard deviation. `thesis/scripts/remeasure_f0_range.py` measures the system
+side the same way as the human side (0.088 / 0.112 within-speaker).
 
 ## Local website
 

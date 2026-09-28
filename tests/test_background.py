@@ -380,3 +380,43 @@ def test_separation_stays_on_cpu_because_it_measured_faster() -> None:
     assert bg.separation_device() == "cpu"
     doc = bg.separation_device.__doc__ or ""
     assert "faster" in doc.lower(), "the reason recorded must be speed, not a safety claim"
+
+
+def test_research_runs_default_to_cpu_and_the_web_app_asks_for_auto(monkeypatch) -> None:
+    from pathlib import Path
+
+    from bilingual_voice.pipeline import LocalModels
+
+    monkeypatch.delenv("BVT_TTS_DEVICE", raising=False)
+    assert LocalModels(model_root=Path("models")).tts_device == "cpu"
+    assert LocalModels(model_root=Path("models"), tts_device="auto").tts_device == "auto"
+    source = Path("webapp/backend/main.py").read_text(encoding="utf-8")
+    assert 'tts_device=os.environ.get("BVT_TTS_DEVICE", "auto")' in source
+
+
+def test_falling_back_to_cpu_forgets_voices_cloned_on_the_gpu() -> None:
+    """Cached voices hold device tensors: after the move to CPU they must be recomputed, or every
+    later synthesis fails with a device mismatch."""
+    from bilingual_voice.pipeline import _clear_voice_cache, _memoize_voice_cloning
+
+    class FakeModel:
+        def __init__(self):
+            self.device = "mps"
+            self.calls = 0
+
+        def clone_voice(self, speaker_wav, **kwargs):
+            self.calls += 1
+            return {"device": self.device}
+
+    class FakeTTS:
+        def __init__(self):
+            self.synthesizer = type("S", (), {"tts_model": FakeModel()})()
+
+    tts = FakeTTS()
+    model = tts.synthesizer.tts_model
+    _memoize_voice_cloning(tts)
+    assert model.clone_voice("ref.wav")["device"] == "mps"
+    model.device = "cpu"
+    _clear_voice_cache(tts)
+    assert model.clone_voice("ref.wav")["device"] == "cpu"
+    assert model.calls == 2

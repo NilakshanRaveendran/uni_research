@@ -13,8 +13,9 @@ would post a duration score it could never reproduce in deployment.
 The honest source is the machine translation, because in the real pipeline
 (audio -> Whisper -> MarianMT -> XTTS) the MT output is what XTTS is about to speak. It exists
 before synthesis, so using it is causally legitimate. This module produces it for every split with
-the SAME fine-tuned checkpoints and the SAME greedy decoding the pipeline uses
-(`pipeline.LocalModels.translate`: `generate(max_new_tokens=512)`, no beam search), so the feature
+the SAME fine-tuned checkpoints and the SAME decoding the pipeline uses
+(`pipeline.LocalModels.translate`: `generate(max_new_tokens=512)`, which takes `num_beams=4` from the
+checkpoint's generation_config -- beam search, not greedy), so the feature
 distribution at training time matches the feature distribution at inference time.
 
 One residual mismatch, stated rather than hidden: MT is run here over the GOLD source transcript,

@@ -156,7 +156,9 @@ def inject(
             )
             dense_shape = np.interp(position, grid, shape)
         else:
-            dense_shape = current_st - current_level
+            # Unvoiced frames are -79.7 st placeholders; left in, the median filter below would pull
+            # the pitch of neighbouring voiced frames down to the floor.
+            dense_shape = np.where(voiced, current_st - current_level, 0.0)
 
         reference = current_level if current_level_st is None else float(current_level_st)
         # Smooth BEFORE rescaling, so the span is set on the track that actually gets written --
@@ -170,9 +172,16 @@ def inject(
                 )
                 dense_shape = dense_shape * scale
 
+        # Centre the shape on the frames that will actually be voiced: a DCT shape is mean-zero over
+        # its 64 points and a measured one median-zero over the TARGET's frames, so either would
+        # otherwise move the level by up to a few semitones.
+        dense_shape = dense_shape - float(np.median(dense_shape[voiced]))
         level = reference if target_level_st is None else float(target_level_st)
         shift = float(np.clip(level - reference, -level_cap, level_cap))
-        new_st = current_level + shift + dense_shape
+        # The shift was measured against `reference`, so it is applied to `reference` -- adding it
+        # to WORLD's own median instead (the earlier code) mixed the two estimators and wrote the
+        # level 0.65-1.09 st off on median, more than 1 st off for 37-55 % of utterances.
+        new_st = reference + shift + dense_shape
 
         new_hz = np.clip(_to_hz(new_st), F0_PLAUSIBLE_MIN, F0_PLAUSIBLE_MAX)
         # Only voiced frames are touched. The mask itself is never edited.
