@@ -58,10 +58,9 @@ plots/*.pdf
 
 
 # Web app
-webapp/jobs/*
-!webapp/jobs/*/
-webapp/jobs/*/*
-!webapp/jobs/*/result.json
+# Every dub writes a job folder; none of it is tracked any more. The result.json files already
+# committed (cited as evidence in docs/viva) stay tracked, since ignore rules only affect new files.
+webapp/jobs/
 webapp/.runtime/
 webapp/frontend/node_modules/
 webapp/frontend/.next/
