@@ -1,0 +1,288 @@
+{
+  "job_id": "6c907c89eb4a",
+  "direction": "en-es",
+  "video_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/6c907c89eb4a/dubbed.mp4",
+  "audio_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/6c907c89eb4a/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 11.7,
+      "source_text": "Good afternoon everyone. I am Tiranya Bhaskarem. My end-run number is CST 21065. Today I am going to present our industrial intent presentation.",
+      "translated_text": "Buenas tardes a todos. Soy Tiranya Bhaskarem. Mi n\u00famero final es CST 21065. Hoy voy a presentar nuestra presentaci\u00f3n de intenciones industriales.",
+      "original_duration": 11.7,
+      "raw_tts_duration": 14.093333333333334,
+      "final_duration": 11.989333333333333,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.0,
+      "trimmed_duration": 11.989333333333333,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0851063829787234,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Buenas",
+          "start": 0.0,
+          "end": 0.3
+        },
+        {
+          "word": "tardes",
+          "start": 0.3,
+          "end": 0.68
+        },
+        {
+          "word": "a",
+          "start": 0.68,
+          "end": 0.8
+        },
+        {
+          "word": "todos.",
+          "start": 0.8,
+          "end": 1.12
+        },
+        {
+          "word": "Soy",
+          "start": 1.4,
+          "end": 1.64
+        },
+        {
+          "word": "Tiranya",
+          "start": 1.64,
+          "end": 2.22
+        },
+        {
+          "word": "Bhaskarem.",
+          "start": 2.22,
+          "end": 3.1
+        },
+        {
+          "word": "Mi",
+          "start": 3.52,
+          "end": 3.66
+        },
+        {
+          "word": "n\u00famero",
+          "start": 3.66,
+          "end": 3.94
+        },
+        {
+          "word": "final",
+          "start": 3.94,
+          "end": 4.44
+        },
+        {
+          "word": "es",
+          "start": 4.44,
+          "end": 5.16
+        },
+        {
+          "word": "CST",
+          "start": 5.16,
+          "end": 5.98
+        },
+        {
+          "word": "21065.",
+          "start": 5.98,
+          "end": 8.14
+        },
+        {
+          "word": "Hoy",
+          "start": 8.52,
+          "end": 8.7
+        },
+        {
+          "word": "voy",
+          "start": 8.7,
+          "end": 8.88
+        },
+        {
+          "word": "a",
+          "start": 8.88,
+          "end": 9.0
+        },
+        {
+          "word": "presentar",
+          "start": 9.0,
+          "end": 9.58
+        },
+        {
+          "word": "nuestra",
+          "start": 9.58,
+          "end": 9.74
+        },
+        {
+          "word": "presentaci\u00f3n",
+          "start": 9.74,
+          "end": 10.56
+        },
+        {
+          "word": "de",
+          "start": 10.56,
+          "end": 10.7
+        },
+        {
+          "word": "intenciones",
+          "start": 10.7,
+          "end": 11.2
+        },
+        {
+          "word": "industriales.",
+          "start": 11.2,
+          "end": 11.88
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Good",
+          "start": 0.0,
+          "end": 0.8
+        },
+        {
+          "word": "afternoon",
+          "start": 0.8,
+          "end": 1.08
+        },
+        {
+          "word": "everyone.",
+          "start": 1.08,
+          "end": 1.48
+        },
+        {
+          "word": "I",
+          "start": 1.82,
+          "end": 1.82
+        },
+        {
+          "word": "am",
+          "start": 1.82,
+          "end": 1.92
+        },
+        {
+          "word": "Tiranya",
+          "start": 1.92,
+          "end": 2.24
+        },
+        {
+          "word": "Bhaskarem.",
+          "start": 2.24,
+          "end": 2.9
+        },
+        {
+          "word": "My",
+          "start": 3.22,
+          "end": 3.22
+        },
+        {
+          "word": "end",
+          "start": 3.22,
+          "end": 3.84
+        },
+        {
+          "word": "-run",
+          "start": 3.84,
+          "end": 3.98
+        },
+        {
+          "word": "number",
+          "start": 3.98,
+          "end": 4.3
+        },
+        {
+          "word": "is",
+          "start": 4.3,
+          "end": 4.66
+        },
+        {
+          "word": "CST",
+          "start": 4.66,
+          "end": 5.4
+        },
+        {
+          "word": "21065.",
+          "start": 5.4,
+          "end": 6.6
+        },
+        {
+          "word": "Today",
+          "start": 7.3,
+          "end": 7.56
+        },
+        {
+          "word": "I",
+          "start": 7.56,
+          "end": 7.76
+        },
+        {
+          "word": "am",
+          "start": 7.76,
+          "end": 7.86
+        },
+        {
+          "word": "going",
+          "start": 7.86,
+          "end": 8.04
+        },
+        {
+          "word": "to",
+          "start": 8.04,
+          "end": 8.22
+        },
+        {
+          "word": "present",
+          "start": 8.22,
+          "end": 8.56
+        },
+        {
+          "word": "our",
+          "start": 8.56,
+          "end": 8.86
+        },
+        {
+          "word": "industrial",
+          "start": 8.86,
+          "end": 9.48
+        },
+        {
+          "word": "intent",
+          "start": 9.48,
+          "end": 10.26
+        },
+        {
+          "word": "presentation.",
+          "start": 10.26,
+          "end": 11.7
+        }
+      ]
+    }
+  ],
+  "speaker_similarity": 0.6139596700668335,
+  "duration_match_ratio": 1.0247293447293448,
+  "raw_duration_ratio": 1.2045584045584046,
+  "clamped_segments": 0,
+  "failed_segments": 0,
+  "truncated_segments": 0,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "detected_language": "en",
+  "language_confidence": 0.534,
+  "mix_info": {
+    "speech_gain": 0.25,
+    "limiter_gain": 1.0,
+    "peak": 0.2522
+  },
+  "speakers": [
+    {
+      "speaker": 1,
+      "segments": 1,
+      "voiced": 1,
+      "reference_s": 11.5,
+      "similarity": 0.6139596700668335
+    }
+  ],
+  "speaker_detection_error": "",
+  "elapsed_s": 125.4
+}

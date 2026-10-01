@@ -1,0 +1,1010 @@
+{
+  "job_id": "506971fcebbd",
+  "direction": "en-es",
+  "video_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/506971fcebbd/dubbed.mp4",
+  "audio_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/506971fcebbd/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 0.42,
+      "source_text": "Hi guys.",
+      "translated_text": "Hola chicos.",
+      "original_duration": 0.42,
+      "raw_tts_duration": 1.43,
+      "final_duration": 0.72,
+      "scale_applied": 0.7045009784735812,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 1.022,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Hola",
+          "start": 0.0,
+          "end": 0.12
+        },
+        {
+          "word": "chicos.",
+          "start": 0.12,
+          "end": 0.26
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Hi",
+          "start": 0.0,
+          "end": 0.18
+        },
+        {
+          "word": "guys.",
+          "start": 0.18,
+          "end": 0.42
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "start": 2.16,
+      "end": 3.7,
+      "source_text": "Tomorrow we have the presentation,",
+      "translated_text": "Ma\u00f1ana tenemos la presentaci\u00f3n,",
+      "original_duration": 1.54,
+      "raw_tts_duration": 2.0806666666666667,
+      "final_duration": 1.6253333333333333,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 1.6253333333333333,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Ma\u00f1ana",
+          "start": 2.16,
+          "end": 2.4
+        },
+        {
+          "word": "tenemos",
+          "start": 2.4,
+          "end": 2.7
+        },
+        {
+          "word": "la",
+          "start": 2.7,
+          "end": 2.88
+        },
+        {
+          "word": "presentaci\u00f3n,",
+          "start": 2.88,
+          "end": 3.34
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Tomorrow",
+          "start": 2.16,
+          "end": 2.72
+        },
+        {
+          "word": "we",
+          "start": 2.72,
+          "end": 2.98
+        },
+        {
+          "word": "have",
+          "start": 2.98,
+          "end": 3.14
+        },
+        {
+          "word": "the",
+          "start": 3.14,
+          "end": 3.28
+        },
+        {
+          "word": "presentation,",
+          "start": 3.28,
+          "end": 3.7
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "start": 3.9,
+      "end": 6.8,
+      "source_text": "so just I check our model, how it's working fine.",
+      "translated_text": "As\u00ed que miro nuestro modelo, c\u00f3mo est\u00e1 funcionando bien.",
+      "original_duration": 2.9,
+      "raw_tts_duration": 2.55,
+      "final_duration": 2.116,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 2.116,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.018518518518518517,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "As\u00ed",
+          "start": 3.9,
+          "end": 4.04
+        },
+        {
+          "word": "que",
+          "start": 4.04,
+          "end": 4.14
+        },
+        {
+          "word": "miro",
+          "start": 4.14,
+          "end": 4.32
+        },
+        {
+          "word": "nuestro",
+          "start": 4.32,
+          "end": 4.48
+        },
+        {
+          "word": "modelo,",
+          "start": 4.48,
+          "end": 4.74
+        },
+        {
+          "word": "c\u00f3mo",
+          "start": 4.92,
+          "end": 5.02
+        },
+        {
+          "word": "est\u00e1",
+          "start": 5.02,
+          "end": 5.14
+        },
+        {
+          "word": "funcionando",
+          "start": 5.14,
+          "end": 5.56
+        },
+        {
+          "word": "bien.",
+          "start": 5.56,
+          "end": 5.72
+        }
+      ],
+      "source_words": [
+        {
+          "word": "so",
+          "start": 3.9,
+          "end": 4.0
+        },
+        {
+          "word": "just",
+          "start": 4.0,
+          "end": 4.2
+        },
+        {
+          "word": "I",
+          "start": 4.2,
+          "end": 4.32
+        },
+        {
+          "word": "check",
+          "start": 4.32,
+          "end": 4.54
+        },
+        {
+          "word": "our",
+          "start": 4.54,
+          "end": 4.78
+        },
+        {
+          "word": "model,",
+          "start": 4.78,
+          "end": 5.52
+        },
+        {
+          "word": "how",
+          "start": 5.88,
+          "end": 6.06
+        },
+        {
+          "word": "it's",
+          "start": 6.06,
+          "end": 6.26
+        },
+        {
+          "word": "working",
+          "start": 6.26,
+          "end": 6.5
+        },
+        {
+          "word": "fine.",
+          "start": 6.5,
+          "end": 6.8
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "start": 7.46,
+      "end": 9.88,
+      "source_text": "So I just invest to get for this girl.",
+      "translated_text": "As\u00ed que s\u00f3lo invierto para conseguir por esta chica.",
+      "original_duration": 2.420000000000001,
+      "raw_tts_duration": 2.272666666666667,
+      "final_duration": 1.764,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 1.764,
+      "truncated_s": 0.0,
+      "unshortened_text": "As\u00ed que s\u00f3lo invierto para conseguir para esta chica.",
+      "takes": 1,
+      "take_cer": 0.11764705882352941,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "As\u00ed",
+          "start": 7.46,
+          "end": 7.58
+        },
+        {
+          "word": "que",
+          "start": 7.58,
+          "end": 7.66
+        },
+        {
+          "word": "s\u00f3lo",
+          "start": 7.66,
+          "end": 7.76
+        },
+        {
+          "word": "invierto",
+          "start": 7.76,
+          "end": 8.04
+        },
+        {
+          "word": "para",
+          "start": 8.04,
+          "end": 8.16
+        },
+        {
+          "word": "conseguir",
+          "start": 8.16,
+          "end": 8.42
+        },
+        {
+          "word": "por",
+          "start": 8.42,
+          "end": 8.58
+        },
+        {
+          "word": "esta",
+          "start": 8.58,
+          "end": 8.7
+        },
+        {
+          "word": "chica.",
+          "start": 8.7,
+          "end": 8.98
+        }
+      ],
+      "source_words": [
+        {
+          "word": "So",
+          "start": 7.46,
+          "end": 7.48
+        },
+        {
+          "word": "I",
+          "start": 7.48,
+          "end": 8.44
+        },
+        {
+          "word": "just",
+          "start": 8.44,
+          "end": 8.66
+        },
+        {
+          "word": "invest",
+          "start": 8.66,
+          "end": 8.9
+        },
+        {
+          "word": "to",
+          "start": 8.9,
+          "end": 9.1
+        },
+        {
+          "word": "get",
+          "start": 9.1,
+          "end": 9.22
+        },
+        {
+          "word": "for",
+          "start": 9.22,
+          "end": 9.42
+        },
+        {
+          "word": "this",
+          "start": 9.42,
+          "end": 9.6
+        },
+        {
+          "word": "girl.",
+          "start": 9.6,
+          "end": 9.88
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "start": 10.68,
+      "end": 12.36,
+      "source_text": "Okay, could you explain your presentation",
+      "translated_text": "Bien, \u00bfpodr\u00eda explicar su presentaci\u00f3n?",
+      "original_duration": 1.6799999999999997,
+      "raw_tts_duration": 2.4113333333333333,
+      "final_duration": 1.58,
+      "scale_applied": 0.8033898305084747,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 1.9666666666666666,
+      "truncated_s": 0.0,
+      "unshortened_text": "Vale, \u00bfpodr\u00edas explicar tu presentaci\u00f3n?",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Bien,",
+          "start": 10.68,
+          "end": 10.8
+        },
+        {
+          "word": "\u00bfpodr\u00eda",
+          "start": 11.1,
+          "end": 11.28
+        },
+        {
+          "word": "explicar",
+          "start": 11.28,
+          "end": 11.48
+        },
+        {
+          "word": "su",
+          "start": 11.48,
+          "end": 11.6
+        },
+        {
+          "word": "presentaci\u00f3n?",
+          "start": 11.6,
+          "end": 12.04
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Okay,",
+          "start": 10.68,
+          "end": 11.0
+        },
+        {
+          "word": "could",
+          "start": 11.22,
+          "end": 11.4
+        },
+        {
+          "word": "you",
+          "start": 11.4,
+          "end": 11.52
+        },
+        {
+          "word": "explain",
+          "start": 11.52,
+          "end": 11.8
+        },
+        {
+          "word": "your",
+          "start": 11.8,
+          "end": 12.02
+        },
+        {
+          "word": "presentation",
+          "start": 12.02,
+          "end": 12.36
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "start": 12.36,
+      "end": 13.46,
+      "source_text": "while you're saying something?",
+      "translated_text": "\u00bfMientras dices algo?",
+      "original_duration": 1.1000000000000014,
+      "raw_tts_duration": 1.43,
+      "final_duration": 1.0173333333333334,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.131,
+      "trimmed_duration": 1.0173333333333334,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 3,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "\u00bfMientras",
+          "start": 12.36,
+          "end": 12.6
+        },
+        {
+          "word": "dices",
+          "start": 12.6,
+          "end": 12.84
+        },
+        {
+          "word": "algo?",
+          "start": 12.84,
+          "end": 13.06
+        }
+      ],
+      "source_words": [
+        {
+          "word": "while",
+          "start": 12.36,
+          "end": 12.76
+        },
+        {
+          "word": "you're",
+          "start": 12.76,
+          "end": 12.98
+        },
+        {
+          "word": "saying",
+          "start": 12.98,
+          "end": 13.1
+        },
+        {
+          "word": "something?",
+          "start": 13.1,
+          "end": 13.46
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "start": 14.66,
+      "end": 17.2,
+      "source_text": "Okay, we will then English to Spanish",
+      "translated_text": "Bueno, entonces vamos a Ingl\u00e9s a Espa\u00f1ol",
+      "original_duration": 2.539999999999999,
+      "raw_tts_duration": 3.1046666666666667,
+      "final_duration": 2.44,
+      "scale_applied": 0.9521331945889688,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.161,
+      "trimmed_duration": 2.562666666666667,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 2,
+      "words": [
+        {
+          "word": "Bueno,",
+          "start": 14.66,
+          "end": 14.88
+        },
+        {
+          "word": "entonces",
+          "start": 15.26,
+          "end": 15.62
+        },
+        {
+          "word": "vamos",
+          "start": 15.62,
+          "end": 16.1
+        },
+        {
+          "word": "a",
+          "start": 16.1,
+          "end": 16.26
+        },
+        {
+          "word": "Ingl\u00e9s",
+          "start": 16.26,
+          "end": 16.52
+        },
+        {
+          "word": "a",
+          "start": 16.52,
+          "end": 16.6
+        },
+        {
+          "word": "Espa\u00f1ol",
+          "start": 16.6,
+          "end": 16.96
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Okay,",
+          "start": 14.66,
+          "end": 15.22
+        },
+        {
+          "word": "we",
+          "start": 15.58,
+          "end": 15.78
+        },
+        {
+          "word": "will",
+          "start": 15.78,
+          "end": 16.0
+        },
+        {
+          "word": "then",
+          "start": 16.0,
+          "end": 16.22
+        },
+        {
+          "word": "English",
+          "start": 16.22,
+          "end": 16.58
+        },
+        {
+          "word": "to",
+          "start": 16.58,
+          "end": 16.84
+        },
+        {
+          "word": "Spanish",
+          "start": 16.84,
+          "end": 17.2
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "start": 17.2,
+      "end": 20.5,
+      "source_text": "and Spanish to English, speech to speech translator,",
+      "translated_text": "y espa\u00f1ol a ingl\u00e9s, habla a traductor de habla,",
+      "original_duration": 3.3000000000000007,
+      "raw_tts_duration": 3.478,
+      "final_duration": 2.782,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.0,
+      "trimmed_duration": 2.782,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.06666666666666667,
+      "speaker": 2,
+      "words": [
+        {
+          "word": "y",
+          "start": 17.2,
+          "end": 17.3
+        },
+        {
+          "word": "espa\u00f1ol",
+          "start": 17.3,
+          "end": 17.66
+        },
+        {
+          "word": "a",
+          "start": 17.66,
+          "end": 17.94
+        },
+        {
+          "word": "ingl\u00e9s,",
+          "start": 17.94,
+          "end": 18.12
+        },
+        {
+          "word": "habla",
+          "start": 18.56,
+          "end": 18.8
+        },
+        {
+          "word": "a",
+          "start": 18.8,
+          "end": 18.9
+        },
+        {
+          "word": "traductor",
+          "start": 18.9,
+          "end": 19.36
+        },
+        {
+          "word": "de",
+          "start": 19.36,
+          "end": 19.5
+        },
+        {
+          "word": "habla,",
+          "start": 19.5,
+          "end": 19.72
+        }
+      ],
+      "source_words": [
+        {
+          "word": "and",
+          "start": 17.2,
+          "end": 17.44
+        },
+        {
+          "word": "Spanish",
+          "start": 17.44,
+          "end": 17.72
+        },
+        {
+          "word": "to",
+          "start": 17.72,
+          "end": 18.02
+        },
+        {
+          "word": "English,",
+          "start": 18.02,
+          "end": 18.32
+        },
+        {
+          "word": "speech",
+          "start": 18.58,
+          "end": 18.74
+        },
+        {
+          "word": "to",
+          "start": 18.74,
+          "end": 18.96
+        },
+        {
+          "word": "speech",
+          "start": 18.96,
+          "end": 19.3
+        },
+        {
+          "word": "translator,",
+          "start": 19.3,
+          "end": 20.5
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "start": 20.94,
+      "end": 24.62,
+      "source_text": "using speak the translation in original speaker voice,",
+      "translated_text": "utilizando la traducci\u00f3n a voz del orador original,",
+      "original_duration": 3.6799999999999997,
+      "raw_tts_duration": 3.755333333333333,
+      "final_duration": 3.2893333333333334,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.0,
+      "trimmed_duration": 3.2893333333333334,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 2,
+      "words": [
+        {
+          "word": "utilizando",
+          "start": 20.94,
+          "end": 21.62
+        },
+        {
+          "word": "la",
+          "start": 21.62,
+          "end": 21.78
+        },
+        {
+          "word": "traducci\u00f3n",
+          "start": 21.78,
+          "end": 22.44
+        },
+        {
+          "word": "a",
+          "start": 22.44,
+          "end": 22.58
+        },
+        {
+          "word": "voz",
+          "start": 22.58,
+          "end": 22.7
+        },
+        {
+          "word": "del",
+          "start": 22.7,
+          "end": 22.94
+        },
+        {
+          "word": "orador",
+          "start": 22.94,
+          "end": 23.3
+        },
+        {
+          "word": "original,",
+          "start": 23.3,
+          "end": 23.82
+        }
+      ],
+      "source_words": [
+        {
+          "word": "using",
+          "start": 20.94,
+          "end": 21.18
+        },
+        {
+          "word": "speak",
+          "start": 21.18,
+          "end": 22.22
+        },
+        {
+          "word": "the",
+          "start": 22.22,
+          "end": 22.56
+        },
+        {
+          "word": "translation",
+          "start": 22.56,
+          "end": 23.16
+        },
+        {
+          "word": "in",
+          "start": 23.16,
+          "end": 23.48
+        },
+        {
+          "word": "original",
+          "start": 23.48,
+          "end": 23.84
+        },
+        {
+          "word": "speaker",
+          "start": 23.84,
+          "end": 24.28
+        },
+        {
+          "word": "voice,",
+          "start": 24.28,
+          "end": 24.62
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "start": 25.18,
+      "end": 29.36,
+      "source_text": "and then we measure how much of the speaker it really keeps.",
+      "translated_text": "y luego medimos cu\u00e1nto del orador que realmente mantiene.",
+      "original_duration": 4.18,
+      "raw_tts_duration": 4.726,
+      "final_duration": 3.9233333333333333,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.0,
+      "trimmed_duration": 3.9233333333333333,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 2,
+      "words": [
+        {
+          "word": "y",
+          "start": 25.18,
+          "end": 25.32
+        },
+        {
+          "word": "luego",
+          "start": 25.32,
+          "end": 25.6
+        },
+        {
+          "word": "medimos",
+          "start": 25.6,
+          "end": 26.26
+        },
+        {
+          "word": "cu\u00e1nto",
+          "start": 26.26,
+          "end": 26.8
+        },
+        {
+          "word": "del",
+          "start": 26.8,
+          "end": 26.92
+        },
+        {
+          "word": "orador",
+          "start": 26.92,
+          "end": 27.34
+        },
+        {
+          "word": "que",
+          "start": 27.34,
+          "end": 27.54
+        },
+        {
+          "word": "realmente",
+          "start": 27.54,
+          "end": 27.88
+        },
+        {
+          "word": "mantiene.",
+          "start": 27.88,
+          "end": 28.56
+        }
+      ],
+      "source_words": [
+        {
+          "word": "and",
+          "start": 25.18,
+          "end": 25.56
+        },
+        {
+          "word": "then",
+          "start": 25.56,
+          "end": 25.94
+        },
+        {
+          "word": "we",
+          "start": 25.94,
+          "end": 26.18
+        },
+        {
+          "word": "measure",
+          "start": 26.18,
+          "end": 26.54
+        },
+        {
+          "word": "how",
+          "start": 26.54,
+          "end": 26.86
+        },
+        {
+          "word": "much",
+          "start": 26.86,
+          "end": 27.58
+        },
+        {
+          "word": "of",
+          "start": 27.58,
+          "end": 27.86
+        },
+        {
+          "word": "the",
+          "start": 27.86,
+          "end": 28.02
+        },
+        {
+          "word": "speaker",
+          "start": 28.02,
+          "end": 28.34
+        },
+        {
+          "word": "it",
+          "start": 28.34,
+          "end": 28.56
+        },
+        {
+          "word": "really",
+          "start": 28.56,
+          "end": 28.98
+        },
+        {
+          "word": "keeps.",
+          "start": 28.98,
+          "end": 29.36
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "start": 30.0,
+      "end": 30.44,
+      "source_text": "Transcriber Voice",
+      "translated_text": "Voz de transcriptor",
+      "original_duration": 0.4400000000000013,
+      "raw_tts_duration": 1.8993333333333333,
+      "final_duration": 0.74,
+      "scale_applied": 0.67,
+      "clamped": true,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 1.4226666666666667,
+      "truncated_s": 0.213,
+      "unshortened_text": "Voz del transcriptor",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 2,
+      "words": [
+        {
+          "word": "Voz",
+          "start": 30.0,
+          "end": 30.26
+        },
+        {
+          "word": "de",
+          "start": 30.26,
+          "end": 30.38
+        },
+        {
+          "word": "transcriptor",
+          "start": 30.38,
+          "end": 30.72
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Transcriber",
+          "start": 30.0,
+          "end": 30.08
+        },
+        {
+          "word": "Voice",
+          "start": 30.08,
+          "end": 30.44
+        }
+      ]
+    }
+  ],
+  "speaker_similarity": 0.4038866324858232,
+  "duration_match_ratio": 0.9089807162534435,
+  "raw_duration_ratio": 1.2040495867768592,
+  "clamped_segments": 1,
+  "failed_segments": 0,
+  "truncated_segments": 1,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "detected_language": "en",
+  "language_confidence": 0.618,
+  "mix_info": {
+    "speech_gain": 0.25,
+    "limiter_gain": 1.0,
+    "peak": 0.3381
+  },
+  "speakers": [
+    {
+      "speaker": 1,
+      "segments": 6,
+      "voiced": 6,
+      "reference_s": 8.84,
+      "similarity": 0.3311139941215515
+    },
+    {
+      "speaker": 2,
+      "segments": 5,
+      "voiced": 5,
+      "reference_s": 12.9,
+      "similarity": 0.4912137985229492
+    }
+  ],
+  "speaker_detection_error": "",
+  "elapsed_s": 235.0
+}

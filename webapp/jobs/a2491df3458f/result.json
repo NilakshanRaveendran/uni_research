@@ -1,0 +1,2629 @@
+{
+  "job_id": "a2491df3458f",
+  "direction": "en-es",
+  "video_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/a2491df3458f/dubbed.mp4",
+  "audio_out": "/Users/nilakshanraveendran/Documents/research/webapp/jobs/a2491df3458f/dubbed_mixed.wav",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 2.72,
+      "source_text": "If you're eating right now, just skip this video.",
+      "translated_text": "Si est\u00e1s comiendo ahora, olv\u00eddate de este video.",
+      "original_duration": 2.72,
+      "raw_tts_duration": 3.062,
+      "final_duration": 2.6493333333333333,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.212,
+      "trimmed_duration": 2.6493333333333333,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Si",
+          "start": 0.0,
+          "end": 0.12
+        },
+        {
+          "word": "est\u00e1s",
+          "start": 0.12,
+          "end": 0.34
+        },
+        {
+          "word": "comiendo",
+          "start": 0.34,
+          "end": 0.72
+        },
+        {
+          "word": "ahora,",
+          "start": 0.72,
+          "end": 0.94
+        },
+        {
+          "word": "olv\u00eddate",
+          "start": 1.2,
+          "end": 1.56
+        },
+        {
+          "word": "de",
+          "start": 1.56,
+          "end": 1.9
+        },
+        {
+          "word": "este",
+          "start": 1.9,
+          "end": 2.08
+        },
+        {
+          "word": "video.",
+          "start": 2.08,
+          "end": 2.36
+        }
+      ],
+      "source_words": [
+        {
+          "word": "If",
+          "start": 0.0,
+          "end": 0.28
+        },
+        {
+          "word": "you're",
+          "start": 0.28,
+          "end": 0.46
+        },
+        {
+          "word": "eating",
+          "start": 0.46,
+          "end": 0.7
+        },
+        {
+          "word": "right",
+          "start": 0.7,
+          "end": 0.92
+        },
+        {
+          "word": "now,",
+          "start": 0.92,
+          "end": 1.24
+        },
+        {
+          "word": "just",
+          "start": 1.46,
+          "end": 1.64
+        },
+        {
+          "word": "skip",
+          "start": 1.64,
+          "end": 2.06
+        },
+        {
+          "word": "this",
+          "start": 2.06,
+          "end": 2.34
+        },
+        {
+          "word": "video.",
+          "start": 2.34,
+          "end": 2.72
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "start": 2.92,
+      "end": 8.62,
+      "source_text": "Okay, so the Apple AirPods Pros and all honestly in all regards minus the price are pretty darn amazing.",
+      "translated_text": "Vale, as\u00ed que los Apple AirPods Pros y todo honestamente en todos los aspectos menos el precio son bastante incre\u00edble.",
+      "original_duration": 5.699999999999999,
+      "raw_tts_duration": 7.744666666666666,
+      "final_duration": 5.82,
+      "scale_applied": 0.7972602739726028,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 7.3,
+      "truncated_s": 0.0,
+      "unshortened_text": "Vale, as\u00ed que los Apple AirPods Pros y todos honestamente en todos los aspectos menos el precio son bastante incre\u00edbles.",
+      "takes": 1,
+      "take_cer": 0.04310344827586207,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Vale,",
+          "start": 2.92,
+          "end": 3.12
+        },
+        {
+          "word": "as\u00ed",
+          "start": 3.22,
+          "end": 3.28
+        },
+        {
+          "word": "que",
+          "start": 3.28,
+          "end": 3.4
+        },
+        {
+          "word": "los",
+          "start": 3.4,
+          "end": 3.52
+        },
+        {
+          "word": "Apple",
+          "start": 3.52,
+          "end": 3.7
+        },
+        {
+          "word": "AirPods",
+          "start": 3.7,
+          "end": 4.06
+        },
+        {
+          "word": "Pros",
+          "start": 4.06,
+          "end": 4.34
+        },
+        {
+          "word": "y",
+          "start": 4.34,
+          "end": 4.68
+        },
+        {
+          "word": "todo",
+          "start": 4.68,
+          "end": 4.88
+        },
+        {
+          "word": "honestamente",
+          "start": 4.88,
+          "end": 5.46
+        },
+        {
+          "word": "en",
+          "start": 5.46,
+          "end": 5.66
+        },
+        {
+          "word": "todos",
+          "start": 5.66,
+          "end": 5.86
+        },
+        {
+          "word": "los",
+          "start": 5.86,
+          "end": 6.06
+        },
+        {
+          "word": "aspectos",
+          "start": 6.06,
+          "end": 6.44
+        },
+        {
+          "word": "menos",
+          "start": 6.44,
+          "end": 6.6
+        },
+        {
+          "word": "el",
+          "start": 6.6,
+          "end": 6.98
+        },
+        {
+          "word": "precio",
+          "start": 6.98,
+          "end": 7.26
+        },
+        {
+          "word": "son",
+          "start": 7.26,
+          "end": 7.44
+        },
+        {
+          "word": "bastante",
+          "start": 7.44,
+          "end": 7.7
+        },
+        {
+          "word": "incre\u00edble.",
+          "start": 7.7,
+          "end": 8.32
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Okay,",
+          "start": 2.92,
+          "end": 3.02
+        },
+        {
+          "word": "so",
+          "start": 3.12,
+          "end": 3.16
+        },
+        {
+          "word": "the",
+          "start": 3.16,
+          "end": 3.3
+        },
+        {
+          "word": "Apple",
+          "start": 3.3,
+          "end": 3.6
+        },
+        {
+          "word": "AirPods",
+          "start": 3.6,
+          "end": 4.02
+        },
+        {
+          "word": "Pros",
+          "start": 4.02,
+          "end": 4.5
+        },
+        {
+          "word": "and",
+          "start": 4.5,
+          "end": 4.7
+        },
+        {
+          "word": "all",
+          "start": 4.7,
+          "end": 4.94
+        },
+        {
+          "word": "honestly",
+          "start": 4.94,
+          "end": 5.36
+        },
+        {
+          "word": "in",
+          "start": 5.36,
+          "end": 5.72
+        },
+        {
+          "word": "all",
+          "start": 5.72,
+          "end": 5.96
+        },
+        {
+          "word": "regards",
+          "start": 5.96,
+          "end": 6.4
+        },
+        {
+          "word": "minus",
+          "start": 6.4,
+          "end": 6.8
+        },
+        {
+          "word": "the",
+          "start": 6.8,
+          "end": 7.02
+        },
+        {
+          "word": "price",
+          "start": 7.02,
+          "end": 7.32
+        },
+        {
+          "word": "are",
+          "start": 7.32,
+          "end": 7.58
+        },
+        {
+          "word": "pretty",
+          "start": 7.58,
+          "end": 7.9
+        },
+        {
+          "word": "darn",
+          "start": 7.9,
+          "end": 8.14
+        },
+        {
+          "word": "amazing.",
+          "start": 8.14,
+          "end": 8.62
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "start": 8.84,
+      "end": 13.18,
+      "source_text": "Great sound quality, great design, good battery life, at least for the first fear or two,",
+      "translated_text": "Gran calidad de sonido, gran dise\u00f1o, buena vida de la bater\u00eda, al menos para el primer miedo o dos,",
+      "original_duration": 4.34,
+      "raw_tts_duration": 6.219333333333333,
+      "final_duration": 4.38,
+      "scale_applied": 0.7706744868035191,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 5.683333333333334,
+      "truncated_s": 0.0,
+      "unshortened_text": "Gran calidad de sonido, gran dise\u00f1o, buena duraci\u00f3n de la bater\u00eda, al menos para el primer miedo o dos,",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Gran",
+          "start": 8.84,
+          "end": 8.98
+        },
+        {
+          "word": "calidad",
+          "start": 8.98,
+          "end": 9.22
+        },
+        {
+          "word": "de",
+          "start": 9.22,
+          "end": 9.38
+        },
+        {
+          "word": "sonido,",
+          "start": 9.38,
+          "end": 9.72
+        },
+        {
+          "word": "gran",
+          "start": 10.0,
+          "end": 10.08
+        },
+        {
+          "word": "dise\u00f1o,",
+          "start": 10.08,
+          "end": 10.46
+        },
+        {
+          "word": "buena",
+          "start": 10.7,
+          "end": 10.84
+        },
+        {
+          "word": "vida",
+          "start": 10.84,
+          "end": 10.98
+        },
+        {
+          "word": "de",
+          "start": 10.98,
+          "end": 11.1
+        },
+        {
+          "word": "la",
+          "start": 11.1,
+          "end": 11.14
+        },
+        {
+          "word": "bater\u00eda,",
+          "start": 11.14,
+          "end": 11.56
+        },
+        {
+          "word": "al",
+          "start": 11.74,
+          "end": 11.82
+        },
+        {
+          "word": "menos",
+          "start": 11.82,
+          "end": 11.96
+        },
+        {
+          "word": "para",
+          "start": 11.96,
+          "end": 12.12
+        },
+        {
+          "word": "el",
+          "start": 12.12,
+          "end": 12.2
+        },
+        {
+          "word": "primer",
+          "start": 12.2,
+          "end": 12.32
+        },
+        {
+          "word": "miedo",
+          "start": 12.32,
+          "end": 12.64
+        },
+        {
+          "word": "o",
+          "start": 12.64,
+          "end": 12.84
+        },
+        {
+          "word": "dos,",
+          "start": 12.84,
+          "end": 13.0
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Great",
+          "start": 8.84,
+          "end": 8.96
+        },
+        {
+          "word": "sound",
+          "start": 8.96,
+          "end": 9.24
+        },
+        {
+          "word": "quality,",
+          "start": 9.24,
+          "end": 9.6
+        },
+        {
+          "word": "great",
+          "start": 9.8,
+          "end": 9.92
+        },
+        {
+          "word": "design,",
+          "start": 9.92,
+          "end": 10.48
+        },
+        {
+          "word": "good",
+          "start": 10.78,
+          "end": 10.9
+        },
+        {
+          "word": "battery",
+          "start": 10.9,
+          "end": 11.24
+        },
+        {
+          "word": "life,",
+          "start": 11.24,
+          "end": 11.54
+        },
+        {
+          "word": "at",
+          "start": 11.62,
+          "end": 11.7
+        },
+        {
+          "word": "least",
+          "start": 11.7,
+          "end": 11.84
+        },
+        {
+          "word": "for",
+          "start": 11.84,
+          "end": 12.04
+        },
+        {
+          "word": "the",
+          "start": 12.04,
+          "end": 12.12
+        },
+        {
+          "word": "first",
+          "start": 12.12,
+          "end": 12.38
+        },
+        {
+          "word": "fear",
+          "start": 12.38,
+          "end": 12.74
+        },
+        {
+          "word": "or",
+          "start": 12.74,
+          "end": 12.98
+        },
+        {
+          "word": "two,",
+          "start": 12.98,
+          "end": 13.18
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "start": 13.32,
+      "end": 20.28,
+      "source_text": "before the inevitably degrade to nothing, but all of that aside, the AirPods Pro lineup also features rubber white tips.",
+      "translated_text": "antes de la inevitable degradaci\u00f3n a la nada, pero todo eso a un lado, la l\u00ednea AirPods Pro tambi\u00e9n cuenta con puntas blancas de goma.",
+      "original_duration": 6.960000000000001,
+      "raw_tts_duration": 8.960666666666667,
+      "final_duration": 7.12,
+      "scale_applied": 0.8735481760183214,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 8.150666666666666,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "antes",
+          "start": 13.32,
+          "end": 13.52
+        },
+        {
+          "word": "de",
+          "start": 13.52,
+          "end": 13.66
+        },
+        {
+          "word": "la",
+          "start": 13.66,
+          "end": 13.76
+        },
+        {
+          "word": "inevitable",
+          "start": 13.76,
+          "end": 14.16
+        },
+        {
+          "word": "degradaci\u00f3n",
+          "start": 14.16,
+          "end": 14.78
+        },
+        {
+          "word": "a",
+          "start": 14.78,
+          "end": 14.98
+        },
+        {
+          "word": "la",
+          "start": 14.98,
+          "end": 15.04
+        },
+        {
+          "word": "nada,",
+          "start": 15.04,
+          "end": 15.24
+        },
+        {
+          "word": "pero",
+          "start": 15.54,
+          "end": 15.66
+        },
+        {
+          "word": "todo",
+          "start": 15.66,
+          "end": 15.84
+        },
+        {
+          "word": "eso",
+          "start": 15.84,
+          "end": 16.04
+        },
+        {
+          "word": "a",
+          "start": 16.04,
+          "end": 16.16
+        },
+        {
+          "word": "un",
+          "start": 16.16,
+          "end": 16.24
+        },
+        {
+          "word": "lado,",
+          "start": 16.24,
+          "end": 16.4
+        },
+        {
+          "word": "la",
+          "start": 16.74,
+          "end": 16.82
+        },
+        {
+          "word": "l\u00ednea",
+          "start": 16.82,
+          "end": 17.04
+        },
+        {
+          "word": "AirPods",
+          "start": 17.04,
+          "end": 17.46
+        },
+        {
+          "word": "Pro",
+          "start": 17.46,
+          "end": 17.86
+        },
+        {
+          "word": "tambi\u00e9n",
+          "start": 17.86,
+          "end": 18.36
+        },
+        {
+          "word": "cuenta",
+          "start": 18.36,
+          "end": 18.72
+        },
+        {
+          "word": "con",
+          "start": 18.72,
+          "end": 18.92
+        },
+        {
+          "word": "puntas",
+          "start": 18.92,
+          "end": 19.2
+        },
+        {
+          "word": "blancas",
+          "start": 19.2,
+          "end": 19.58
+        },
+        {
+          "word": "de",
+          "start": 19.58,
+          "end": 19.68
+        },
+        {
+          "word": "goma.",
+          "start": 19.68,
+          "end": 19.96
+        }
+      ],
+      "source_words": [
+        {
+          "word": "before",
+          "start": 13.32,
+          "end": 13.48
+        },
+        {
+          "word": "the",
+          "start": 13.48,
+          "end": 13.72
+        },
+        {
+          "word": "inevitably",
+          "start": 13.72,
+          "end": 14.12
+        },
+        {
+          "word": "degrade",
+          "start": 14.12,
+          "end": 14.56
+        },
+        {
+          "word": "to",
+          "start": 14.56,
+          "end": 14.8
+        },
+        {
+          "word": "nothing,",
+          "start": 14.8,
+          "end": 15.12
+        },
+        {
+          "word": "but",
+          "start": 15.32,
+          "end": 15.42
+        },
+        {
+          "word": "all",
+          "start": 15.42,
+          "end": 15.68
+        },
+        {
+          "word": "of",
+          "start": 15.68,
+          "end": 15.86
+        },
+        {
+          "word": "that",
+          "start": 15.86,
+          "end": 16.04
+        },
+        {
+          "word": "aside,",
+          "start": 16.04,
+          "end": 16.48
+        },
+        {
+          "word": "the",
+          "start": 16.68,
+          "end": 16.78
+        },
+        {
+          "word": "AirPods",
+          "start": 16.78,
+          "end": 17.12
+        },
+        {
+          "word": "Pro",
+          "start": 17.12,
+          "end": 17.58
+        },
+        {
+          "word": "lineup",
+          "start": 17.58,
+          "end": 17.86
+        },
+        {
+          "word": "also",
+          "start": 17.86,
+          "end": 18.28
+        },
+        {
+          "word": "features",
+          "start": 18.28,
+          "end": 18.66
+        },
+        {
+          "word": "rubber",
+          "start": 18.66,
+          "end": 19.28
+        },
+        {
+          "word": "white",
+          "start": 19.28,
+          "end": 19.8
+        },
+        {
+          "word": "tips.",
+          "start": 19.8,
+          "end": 20.28
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "start": 20.54,
+      "end": 22.28,
+      "source_text": "You probably see where I'm going here.",
+      "translated_text": "Probablemente veas a d\u00f3nde voy aqu\u00ed.",
+      "original_duration": 1.740000000000002,
+      "raw_tts_duration": 2.219333333333333,
+      "final_duration": 1.764,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 1.764,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Probablemente",
+          "start": 20.54,
+          "end": 21.16
+        },
+        {
+          "word": "veas",
+          "start": 21.16,
+          "end": 21.48
+        },
+        {
+          "word": "a",
+          "start": 21.48,
+          "end": 21.52
+        },
+        {
+          "word": "d\u00f3nde",
+          "start": 21.52,
+          "end": 21.7
+        },
+        {
+          "word": "voy",
+          "start": 21.7,
+          "end": 21.88
+        },
+        {
+          "word": "aqu\u00ed.",
+          "start": 21.88,
+          "end": 22.06
+        }
+      ],
+      "source_words": [
+        {
+          "word": "You",
+          "start": 20.54,
+          "end": 20.64
+        },
+        {
+          "word": "probably",
+          "start": 20.64,
+          "end": 20.92
+        },
+        {
+          "word": "see",
+          "start": 20.92,
+          "end": 21.24
+        },
+        {
+          "word": "where",
+          "start": 21.24,
+          "end": 21.46
+        },
+        {
+          "word": "I'm",
+          "start": 21.46,
+          "end": 21.64
+        },
+        {
+          "word": "going",
+          "start": 21.64,
+          "end": 21.94
+        },
+        {
+          "word": "here.",
+          "start": 21.94,
+          "end": 22.28
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "start": 22.62,
+      "end": 28.76,
+      "source_text": "Because of air wax and UV light and general oxidation, these tips go from white to yellow fairly quickly.",
+      "translated_text": "Debido a la cera de aire y luz UV y oxidaci\u00f3n general, estas puntas van de blanco a amarillo bastante r\u00e1pidamente.",
+      "original_duration": 6.140000000000001,
+      "raw_tts_duration": 8.032666666666668,
+      "final_duration": 6.04,
+      "scale_applied": 0.8056914184081813,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 7.496666666666667,
+      "truncated_s": 0.0,
+      "unshortened_text": "Debido a la cera de aire y la luz UV y la oxidaci\u00f3n general, estas puntas van de blanco a amarillo bastante r\u00e1pidamente.",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Debido",
+          "start": 22.62,
+          "end": 22.88
+        },
+        {
+          "word": "a",
+          "start": 22.88,
+          "end": 22.98
+        },
+        {
+          "word": "la",
+          "start": 22.98,
+          "end": 22.98
+        },
+        {
+          "word": "cera",
+          "start": 22.98,
+          "end": 23.2
+        },
+        {
+          "word": "de",
+          "start": 23.2,
+          "end": 23.28
+        },
+        {
+          "word": "aire",
+          "start": 23.28,
+          "end": 23.46
+        },
+        {
+          "word": "y",
+          "start": 23.46,
+          "end": 23.7
+        },
+        {
+          "word": "luz",
+          "start": 23.7,
+          "end": 23.86
+        },
+        {
+          "word": "UV",
+          "start": 23.86,
+          "end": 24.26
+        },
+        {
+          "word": "y",
+          "start": 24.26,
+          "end": 24.4
+        },
+        {
+          "word": "oxidaci\u00f3n",
+          "start": 24.4,
+          "end": 24.88
+        },
+        {
+          "word": "general,",
+          "start": 24.88,
+          "end": 25.2
+        },
+        {
+          "word": "estas",
+          "start": 25.6,
+          "end": 25.7
+        },
+        {
+          "word": "puntas",
+          "start": 25.7,
+          "end": 26.18
+        },
+        {
+          "word": "van",
+          "start": 26.18,
+          "end": 26.46
+        },
+        {
+          "word": "de",
+          "start": 26.46,
+          "end": 26.6
+        },
+        {
+          "word": "blanco",
+          "start": 26.6,
+          "end": 26.86
+        },
+        {
+          "word": "a",
+          "start": 26.86,
+          "end": 27.0
+        },
+        {
+          "word": "amarillo",
+          "start": 27.0,
+          "end": 27.38
+        },
+        {
+          "word": "bastante",
+          "start": 27.38,
+          "end": 27.82
+        },
+        {
+          "word": "r\u00e1pidamente.",
+          "start": 27.82,
+          "end": 28.5
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Because",
+          "start": 22.62,
+          "end": 22.66
+        },
+        {
+          "word": "of",
+          "start": 22.66,
+          "end": 22.94
+        },
+        {
+          "word": "air",
+          "start": 22.94,
+          "end": 23.16
+        },
+        {
+          "word": "wax",
+          "start": 23.16,
+          "end": 23.44
+        },
+        {
+          "word": "and",
+          "start": 23.44,
+          "end": 23.7
+        },
+        {
+          "word": "UV",
+          "start": 23.7,
+          "end": 23.9
+        },
+        {
+          "word": "light",
+          "start": 23.9,
+          "end": 24.26
+        },
+        {
+          "word": "and",
+          "start": 24.26,
+          "end": 24.46
+        },
+        {
+          "word": "general",
+          "start": 24.46,
+          "end": 24.84
+        },
+        {
+          "word": "oxidation,",
+          "start": 24.84,
+          "end": 25.58
+        },
+        {
+          "word": "these",
+          "start": 25.82,
+          "end": 26.0
+        },
+        {
+          "word": "tips",
+          "start": 26.0,
+          "end": 26.28
+        },
+        {
+          "word": "go",
+          "start": 26.28,
+          "end": 26.54
+        },
+        {
+          "word": "from",
+          "start": 26.54,
+          "end": 26.82
+        },
+        {
+          "word": "white",
+          "start": 26.82,
+          "end": 27.22
+        },
+        {
+          "word": "to",
+          "start": 27.22,
+          "end": 27.52
+        },
+        {
+          "word": "yellow",
+          "start": 27.52,
+          "end": 27.94
+        },
+        {
+          "word": "fairly",
+          "start": 27.94,
+          "end": 28.36
+        },
+        {
+          "word": "quickly.",
+          "start": 28.36,
+          "end": 28.76
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "start": 28.76,
+      "end": 35.94,
+      "source_text": "And yeah, I know it's just part of being human and this process is normal, blah, blah, but let's be real, it's kind of disgusting.",
+      "translated_text": "Y s\u00ed, s\u00e9 que es s\u00f3lo parte de ser humano y este proceso es normal, bla, bla, pero seamos reales, es un poco asqueroso.",
+      "original_duration": 7.179999999999996,
+      "raw_tts_duration": 10.304666666666666,
+      "final_duration": 7.46,
+      "scale_applied": 0.8000858000857998,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.061,
+      "trimmed_duration": 9.324,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0625,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Y",
+          "start": 28.76,
+          "end": 28.9
+        },
+        {
+          "word": "s\u00ed,",
+          "start": 28.9,
+          "end": 29.02
+        },
+        {
+          "word": "s\u00e9",
+          "start": 29.38,
+          "end": 29.58
+        },
+        {
+          "word": "que",
+          "start": 29.58,
+          "end": 29.7
+        },
+        {
+          "word": "es",
+          "start": 29.7,
+          "end": 29.84
+        },
+        {
+          "word": "s\u00f3lo",
+          "start": 29.84,
+          "end": 30.04
+        },
+        {
+          "word": "parte",
+          "start": 30.04,
+          "end": 30.36
+        },
+        {
+          "word": "de",
+          "start": 30.36,
+          "end": 30.52
+        },
+        {
+          "word": "ser",
+          "start": 30.52,
+          "end": 30.66
+        },
+        {
+          "word": "humano",
+          "start": 30.66,
+          "end": 30.96
+        },
+        {
+          "word": "y",
+          "start": 30.96,
+          "end": 31.34
+        },
+        {
+          "word": "este",
+          "start": 31.34,
+          "end": 31.52
+        },
+        {
+          "word": "proceso",
+          "start": 31.52,
+          "end": 31.9
+        },
+        {
+          "word": "es",
+          "start": 31.9,
+          "end": 32.04
+        },
+        {
+          "word": "normal,",
+          "start": 32.04,
+          "end": 32.4
+        },
+        {
+          "word": "bla,",
+          "start": 32.76,
+          "end": 32.94
+        },
+        {
+          "word": "bla,",
+          "start": 33.24,
+          "end": 33.46
+        },
+        {
+          "word": "pero",
+          "start": 33.76,
+          "end": 33.94
+        },
+        {
+          "word": "seamos",
+          "start": 33.94,
+          "end": 34.28
+        },
+        {
+          "word": "reales,",
+          "start": 34.28,
+          "end": 34.84
+        },
+        {
+          "word": "es",
+          "start": 35.08,
+          "end": 35.18
+        },
+        {
+          "word": "un",
+          "start": 35.18,
+          "end": 35.28
+        },
+        {
+          "word": "poco",
+          "start": 35.28,
+          "end": 35.48
+        },
+        {
+          "word": "asqueroso.",
+          "start": 35.48,
+          "end": 36.06
+        }
+      ],
+      "source_words": [
+        {
+          "word": "And",
+          "start": 28.76,
+          "end": 29.08
+        },
+        {
+          "word": "yeah,",
+          "start": 29.08,
+          "end": 29.3
+        },
+        {
+          "word": "I",
+          "start": 29.36,
+          "end": 29.56
+        },
+        {
+          "word": "know",
+          "start": 29.56,
+          "end": 29.78
+        },
+        {
+          "word": "it's",
+          "start": 29.78,
+          "end": 29.96
+        },
+        {
+          "word": "just",
+          "start": 29.96,
+          "end": 30.1
+        },
+        {
+          "word": "part",
+          "start": 30.1,
+          "end": 30.36
+        },
+        {
+          "word": "of",
+          "start": 30.36,
+          "end": 30.5
+        },
+        {
+          "word": "being",
+          "start": 30.5,
+          "end": 30.72
+        },
+        {
+          "word": "human",
+          "start": 30.72,
+          "end": 31.14
+        },
+        {
+          "word": "and",
+          "start": 31.14,
+          "end": 31.46
+        },
+        {
+          "word": "this",
+          "start": 31.46,
+          "end": 31.7
+        },
+        {
+          "word": "process",
+          "start": 31.7,
+          "end": 32.08
+        },
+        {
+          "word": "is",
+          "start": 32.08,
+          "end": 32.38
+        },
+        {
+          "word": "normal,",
+          "start": 32.38,
+          "end": 32.74
+        },
+        {
+          "word": "blah,",
+          "start": 33.12,
+          "end": 33.28
+        },
+        {
+          "word": "blah,",
+          "start": 33.4,
+          "end": 33.6
+        },
+        {
+          "word": "but",
+          "start": 33.68,
+          "end": 33.92
+        },
+        {
+          "word": "let's",
+          "start": 33.92,
+          "end": 34.22
+        },
+        {
+          "word": "be",
+          "start": 34.22,
+          "end": 34.34
+        },
+        {
+          "word": "real,",
+          "start": 34.34,
+          "end": 34.66
+        },
+        {
+          "word": "it's",
+          "start": 34.96,
+          "end": 35.24
+        },
+        {
+          "word": "kind",
+          "start": 35.24,
+          "end": 35.44
+        },
+        {
+          "word": "of",
+          "start": 35.44,
+          "end": 35.58
+        },
+        {
+          "word": "disgusting.",
+          "start": 35.58,
+          "end": 35.94
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "start": 36.32,
+      "end": 42.12,
+      "source_text": "Now looking online, you'll find people doing all kinds of stuff to try and fix this, from using toothpaste to liquid soap,",
+      "translated_text": "Mirando en l\u00ednea, encontrar\u00e1s gente haciendo todo tipo de cosas para tratar de arreglar esto, desde usar pasta de dientes hasta jab\u00f3n l\u00edquido,",
+      "original_duration": 5.799999999999997,
+      "raw_tts_duration": 7.328666666666667,
+      "final_duration": 5.82,
+      "scale_applied": 0.8441307290659448,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 6.894666666666667,
+      "truncated_s": 0.0,
+      "unshortened_text": "Ahora mirando en l\u00ednea, encontrar\u00e1s gente haciendo todo tipo de cosas para tratar de arreglar esto, desde usar pasta de dientes hasta jab\u00f3n l\u00edquido,",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Mirando",
+          "start": 36.32,
+          "end": 36.6
+        },
+        {
+          "word": "en",
+          "start": 36.6,
+          "end": 36.72
+        },
+        {
+          "word": "l\u00ednea,",
+          "start": 36.72,
+          "end": 36.96
+        },
+        {
+          "word": "encontrar\u00e1s",
+          "start": 37.02,
+          "end": 37.46
+        },
+        {
+          "word": "gente",
+          "start": 37.46,
+          "end": 37.66
+        },
+        {
+          "word": "haciendo",
+          "start": 37.66,
+          "end": 37.98
+        },
+        {
+          "word": "todo",
+          "start": 37.98,
+          "end": 38.16
+        },
+        {
+          "word": "tipo",
+          "start": 38.16,
+          "end": 38.42
+        },
+        {
+          "word": "de",
+          "start": 38.42,
+          "end": 38.56
+        },
+        {
+          "word": "cosas",
+          "start": 38.56,
+          "end": 38.78
+        },
+        {
+          "word": "para",
+          "start": 38.78,
+          "end": 38.98
+        },
+        {
+          "word": "tratar",
+          "start": 38.98,
+          "end": 39.2
+        },
+        {
+          "word": "de",
+          "start": 39.2,
+          "end": 39.38
+        },
+        {
+          "word": "arreglar",
+          "start": 39.38,
+          "end": 39.64
+        },
+        {
+          "word": "esto,",
+          "start": 39.64,
+          "end": 39.86
+        },
+        {
+          "word": "desde",
+          "start": 40.14,
+          "end": 40.26
+        },
+        {
+          "word": "usar",
+          "start": 40.26,
+          "end": 40.46
+        },
+        {
+          "word": "pasta",
+          "start": 40.46,
+          "end": 40.78
+        },
+        {
+          "word": "de",
+          "start": 40.78,
+          "end": 40.94
+        },
+        {
+          "word": "dientes",
+          "start": 40.94,
+          "end": 41.22
+        },
+        {
+          "word": "hasta",
+          "start": 41.22,
+          "end": 41.4
+        },
+        {
+          "word": "jab\u00f3n",
+          "start": 41.4,
+          "end": 41.7
+        },
+        {
+          "word": "l\u00edquido,",
+          "start": 41.7,
+          "end": 42.04
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Now",
+          "start": 36.32,
+          "end": 36.4
+        },
+        {
+          "word": "looking",
+          "start": 36.4,
+          "end": 36.64
+        },
+        {
+          "word": "online,",
+          "start": 36.64,
+          "end": 37.04
+        },
+        {
+          "word": "you'll",
+          "start": 37.14,
+          "end": 37.28
+        },
+        {
+          "word": "find",
+          "start": 37.28,
+          "end": 37.44
+        },
+        {
+          "word": "people",
+          "start": 37.44,
+          "end": 37.72
+        },
+        {
+          "word": "doing",
+          "start": 37.72,
+          "end": 38.06
+        },
+        {
+          "word": "all",
+          "start": 38.06,
+          "end": 38.28
+        },
+        {
+          "word": "kinds",
+          "start": 38.28,
+          "end": 38.58
+        },
+        {
+          "word": "of",
+          "start": 38.58,
+          "end": 38.78
+        },
+        {
+          "word": "stuff",
+          "start": 38.78,
+          "end": 38.98
+        },
+        {
+          "word": "to",
+          "start": 38.98,
+          "end": 39.2
+        },
+        {
+          "word": "try",
+          "start": 39.2,
+          "end": 39.4
+        },
+        {
+          "word": "and",
+          "start": 39.4,
+          "end": 39.56
+        },
+        {
+          "word": "fix",
+          "start": 39.56,
+          "end": 39.72
+        },
+        {
+          "word": "this,",
+          "start": 39.72,
+          "end": 39.9
+        },
+        {
+          "word": "from",
+          "start": 40.02,
+          "end": 40.12
+        },
+        {
+          "word": "using",
+          "start": 40.12,
+          "end": 40.44
+        },
+        {
+          "word": "toothpaste",
+          "start": 40.44,
+          "end": 41.0
+        },
+        {
+          "word": "to",
+          "start": 41.0,
+          "end": 41.38
+        },
+        {
+          "word": "liquid",
+          "start": 41.38,
+          "end": 41.7
+        },
+        {
+          "word": "soap,",
+          "start": 41.7,
+          "end": 42.12
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "start": 42.24,
+      "end": 47.32,
+      "source_text": "and I'm sure someone even tried using rice or something or sand to try to get rid of the yellowness.",
+      "translated_text": "Y estoy seguro de que alguien incluso trat\u00f3 de usar arroz o algo o arena para tratar de deshacerse de la amarillez.",
+      "original_duration": 5.079999999999998,
+      "raw_tts_duration": 6.592666666666666,
+      "final_duration": 5.14,
+      "scale_applied": 0.8374972843797512,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 6.137333333333333,
+      "truncated_s": 0.0,
+      "unshortened_text": "Y estoy seguro de que alguien incluso trat\u00f3 de usar arroz o algo o arena para tratar de deshacerse de la amarillendad.",
+      "takes": 1,
+      "take_cer": 0.008771929824561403,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Y",
+          "start": 42.24,
+          "end": 42.32
+        },
+        {
+          "word": "estoy",
+          "start": 42.32,
+          "end": 42.44
+        },
+        {
+          "word": "seguro",
+          "start": 42.44,
+          "end": 42.7
+        },
+        {
+          "word": "de",
+          "start": 42.7,
+          "end": 42.84
+        },
+        {
+          "word": "que",
+          "start": 42.84,
+          "end": 42.94
+        },
+        {
+          "word": "alguien",
+          "start": 42.94,
+          "end": 43.12
+        },
+        {
+          "word": "incluso",
+          "start": 43.12,
+          "end": 43.42
+        },
+        {
+          "word": "trat\u00f3",
+          "start": 43.42,
+          "end": 44.02
+        },
+        {
+          "word": "de",
+          "start": 44.02,
+          "end": 44.06
+        },
+        {
+          "word": "usar",
+          "start": 44.06,
+          "end": 44.3
+        },
+        {
+          "word": "arroz",
+          "start": 44.3,
+          "end": 44.76
+        },
+        {
+          "word": "o",
+          "start": 44.76,
+          "end": 44.94
+        },
+        {
+          "word": "algo",
+          "start": 44.94,
+          "end": 45.16
+        },
+        {
+          "word": "o",
+          "start": 45.16,
+          "end": 45.48
+        },
+        {
+          "word": "arena",
+          "start": 45.48,
+          "end": 45.7
+        },
+        {
+          "word": "para",
+          "start": 45.7,
+          "end": 45.88
+        },
+        {
+          "word": "tratar",
+          "start": 45.88,
+          "end": 46.14
+        },
+        {
+          "word": "de",
+          "start": 46.14,
+          "end": 46.3
+        },
+        {
+          "word": "deshacerse",
+          "start": 46.3,
+          "end": 46.72
+        },
+        {
+          "word": "de",
+          "start": 46.72,
+          "end": 46.8
+        },
+        {
+          "word": "la",
+          "start": 46.8,
+          "end": 46.86
+        },
+        {
+          "word": "amarillez.",
+          "start": 46.86,
+          "end": 47.26
+        }
+      ],
+      "source_words": [
+        {
+          "word": "and",
+          "start": 42.24,
+          "end": 42.58
+        },
+        {
+          "word": "I'm",
+          "start": 42.58,
+          "end": 42.92
+        },
+        {
+          "word": "sure",
+          "start": 42.92,
+          "end": 43.12
+        },
+        {
+          "word": "someone",
+          "start": 43.12,
+          "end": 43.42
+        },
+        {
+          "word": "even",
+          "start": 43.42,
+          "end": 43.6
+        },
+        {
+          "word": "tried",
+          "start": 43.6,
+          "end": 43.86
+        },
+        {
+          "word": "using",
+          "start": 43.86,
+          "end": 44.14
+        },
+        {
+          "word": "rice",
+          "start": 44.14,
+          "end": 44.44
+        },
+        {
+          "word": "or",
+          "start": 44.44,
+          "end": 44.58
+        },
+        {
+          "word": "something",
+          "start": 44.58,
+          "end": 44.88
+        },
+        {
+          "word": "or",
+          "start": 44.88,
+          "end": 45.12
+        },
+        {
+          "word": "sand",
+          "start": 45.12,
+          "end": 45.54
+        },
+        {
+          "word": "to",
+          "start": 45.54,
+          "end": 45.78
+        },
+        {
+          "word": "try",
+          "start": 45.78,
+          "end": 45.98
+        },
+        {
+          "word": "to",
+          "start": 45.98,
+          "end": 46.14
+        },
+        {
+          "word": "get",
+          "start": 46.14,
+          "end": 46.34
+        },
+        {
+          "word": "rid",
+          "start": 46.34,
+          "end": 46.5
+        },
+        {
+          "word": "of",
+          "start": 46.5,
+          "end": 46.64
+        },
+        {
+          "word": "the",
+          "start": 46.64,
+          "end": 46.8
+        },
+        {
+          "word": "yellowness.",
+          "start": 46.8,
+          "end": 47.32
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "start": 47.48,
+      "end": 48.74,
+      "source_text": "Do any of these solutions work?",
+      "translated_text": "\u00bfFunciona alguna de estas soluciones?",
+      "original_duration": 1.2600000000000051,
+      "raw_tts_duration": 2.219333333333333,
+      "final_duration": 1.38,
+      "scale_applied": 0.7776108189331344,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 1.7746666666666666,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "\u00bfFunciona",
+          "start": 47.48,
+          "end": 47.84
+        },
+        {
+          "word": "alguna",
+          "start": 47.84,
+          "end": 47.98
+        },
+        {
+          "word": "de",
+          "start": 47.98,
+          "end": 48.12
+        },
+        {
+          "word": "estas",
+          "start": 48.12,
+          "end": 48.26
+        },
+        {
+          "word": "soluciones?",
+          "start": 48.26,
+          "end": 48.64
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Do",
+          "start": 47.48,
+          "end": 47.56
+        },
+        {
+          "word": "any",
+          "start": 47.56,
+          "end": 47.8
+        },
+        {
+          "word": "of",
+          "start": 47.8,
+          "end": 47.92
+        },
+        {
+          "word": "these",
+          "start": 47.92,
+          "end": 48.04
+        },
+        {
+          "word": "solutions",
+          "start": 48.04,
+          "end": 48.4
+        },
+        {
+          "word": "work?",
+          "start": 48.4,
+          "end": 48.74
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "start": 48.96,
+      "end": 51.38,
+      "source_text": "Well, let me save you some time and say no.",
+      "translated_text": "Bueno, d\u00e9jame ahorrarte algo de tiempo y decir no.",
+      "original_duration": 2.4200000000000017,
+      "raw_tts_duration": 4.171333333333333,
+      "final_duration": 2.58,
+      "scale_applied": 0.7270336276535784,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 3.5486666666666666,
+      "truncated_s": 0.0,
+      "unshortened_text": "Bueno, d\u00e9jame ahorrarte algo de tiempo y decir que no.",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Bueno,",
+          "start": 48.96,
+          "end": 49.12
+        },
+        {
+          "word": "d\u00e9jame",
+          "start": 49.46,
+          "end": 49.62
+        },
+        {
+          "word": "ahorrarte",
+          "start": 49.62,
+          "end": 49.92
+        },
+        {
+          "word": "algo",
+          "start": 49.92,
+          "end": 50.08
+        },
+        {
+          "word": "de",
+          "start": 50.08,
+          "end": 50.2
+        },
+        {
+          "word": "tiempo",
+          "start": 50.2,
+          "end": 50.36
+        },
+        {
+          "word": "y",
+          "start": 50.36,
+          "end": 50.54
+        },
+        {
+          "word": "decir",
+          "start": 50.54,
+          "end": 50.74
+        },
+        {
+          "word": "no.",
+          "start": 50.74,
+          "end": 51.16
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Well,",
+          "start": 48.96,
+          "end": 49.22
+        },
+        {
+          "word": "let",
+          "start": 49.38,
+          "end": 49.5
+        },
+        {
+          "word": "me",
+          "start": 49.5,
+          "end": 49.6
+        },
+        {
+          "word": "save",
+          "start": 49.6,
+          "end": 49.8
+        },
+        {
+          "word": "you",
+          "start": 49.8,
+          "end": 49.92
+        },
+        {
+          "word": "some",
+          "start": 49.92,
+          "end": 50.06
+        },
+        {
+          "word": "time",
+          "start": 50.06,
+          "end": 50.3
+        },
+        {
+          "word": "and",
+          "start": 50.3,
+          "end": 50.46
+        },
+        {
+          "word": "say",
+          "start": 50.46,
+          "end": 50.74
+        },
+        {
+          "word": "no.",
+          "start": 50.74,
+          "end": 51.38
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "start": 51.64,
+      "end": 57.84,
+      "source_text": "And so the only solution is to simply get new tips or just switch to a different size tips that are already included",
+      "translated_text": "Y as\u00ed la \u00fanica soluci\u00f3n es simplemente obtener nuevos consejos o simplemente cambiar a un tama\u00f1o diferente consejos que ya est\u00e1n incluidos",
+      "original_duration": 6.200000000000003,
+      "raw_tts_duration": 7.467333333333333,
+      "final_duration": 6.1,
+      "scale_applied": 0.8594777381176031,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 7.097333333333333,
+      "truncated_s": 0.0,
+      "unshortened_text": "Y por lo que la \u00fanica soluci\u00f3n es simplemente obtener nuevos consejos o simplemente cambiar a un tama\u00f1o diferente consejos que ya est\u00e1n incluidos",
+      "takes": 1,
+      "take_cer": 0.021739130434782608,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Y",
+          "start": 51.64,
+          "end": 51.74
+        },
+        {
+          "word": "as\u00ed",
+          "start": 51.74,
+          "end": 51.86
+        },
+        {
+          "word": "la",
+          "start": 51.86,
+          "end": 52.0
+        },
+        {
+          "word": "\u00fanica",
+          "start": 52.0,
+          "end": 52.16
+        },
+        {
+          "word": "soluci\u00f3n",
+          "start": 52.16,
+          "end": 52.58
+        },
+        {
+          "word": "es",
+          "start": 52.58,
+          "end": 52.68
+        },
+        {
+          "word": "simplemente",
+          "start": 52.68,
+          "end": 52.88
+        },
+        {
+          "word": "obtener",
+          "start": 52.88,
+          "end": 53.52
+        },
+        {
+          "word": "nuevos",
+          "start": 53.52,
+          "end": 53.7
+        },
+        {
+          "word": "consejos",
+          "start": 53.7,
+          "end": 54.38
+        },
+        {
+          "word": "o",
+          "start": 54.38,
+          "end": 54.62
+        },
+        {
+          "word": "simplemente",
+          "start": 54.62,
+          "end": 54.94
+        },
+        {
+          "word": "cambiar",
+          "start": 54.94,
+          "end": 55.38
+        },
+        {
+          "word": "a",
+          "start": 55.38,
+          "end": 55.52
+        },
+        {
+          "word": "un",
+          "start": 55.52,
+          "end": 55.6
+        },
+        {
+          "word": "tama\u00f1o",
+          "start": 55.6,
+          "end": 55.82
+        },
+        {
+          "word": "diferente",
+          "start": 55.82,
+          "end": 56.06
+        },
+        {
+          "word": "consejos",
+          "start": 56.06,
+          "end": 56.72
+        },
+        {
+          "word": "que",
+          "start": 56.72,
+          "end": 56.82
+        },
+        {
+          "word": "ya",
+          "start": 56.82,
+          "end": 56.96
+        },
+        {
+          "word": "est\u00e1n",
+          "start": 56.96,
+          "end": 57.14
+        },
+        {
+          "word": "incluidos",
+          "start": 57.14,
+          "end": 57.54
+        }
+      ],
+      "source_words": [
+        {
+          "word": "And",
+          "start": 51.64,
+          "end": 51.78
+        },
+        {
+          "word": "so",
+          "start": 51.78,
+          "end": 52.0
+        },
+        {
+          "word": "the",
+          "start": 52.0,
+          "end": 52.16
+        },
+        {
+          "word": "only",
+          "start": 52.16,
+          "end": 52.48
+        },
+        {
+          "word": "solution",
+          "start": 52.48,
+          "end": 52.98
+        },
+        {
+          "word": "is",
+          "start": 52.98,
+          "end": 53.18
+        },
+        {
+          "word": "to",
+          "start": 53.18,
+          "end": 53.3
+        },
+        {
+          "word": "simply",
+          "start": 53.3,
+          "end": 53.56
+        },
+        {
+          "word": "get",
+          "start": 53.56,
+          "end": 53.82
+        },
+        {
+          "word": "new",
+          "start": 53.82,
+          "end": 54.12
+        },
+        {
+          "word": "tips",
+          "start": 54.12,
+          "end": 54.5
+        },
+        {
+          "word": "or",
+          "start": 54.5,
+          "end": 54.9
+        },
+        {
+          "word": "just",
+          "start": 54.9,
+          "end": 55.26
+        },
+        {
+          "word": "switch",
+          "start": 55.26,
+          "end": 55.46
+        },
+        {
+          "word": "to",
+          "start": 55.46,
+          "end": 55.68
+        },
+        {
+          "word": "a",
+          "start": 55.68,
+          "end": 55.84
+        },
+        {
+          "word": "different",
+          "start": 55.84,
+          "end": 56.16
+        },
+        {
+          "word": "size",
+          "start": 56.16,
+          "end": 56.52
+        },
+        {
+          "word": "tips",
+          "start": 56.52,
+          "end": 56.86
+        },
+        {
+          "word": "that",
+          "start": 56.86,
+          "end": 57.1
+        },
+        {
+          "word": "are",
+          "start": 57.1,
+          "end": 57.22
+        },
+        {
+          "word": "already",
+          "start": 57.22,
+          "end": 57.52
+        },
+        {
+          "word": "included",
+          "start": 57.52,
+          "end": 57.84
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "start": 57.84,
+      "end": 60.66,
+      "source_text": "in the AirPods box, which is what I did.",
+      "translated_text": "en la caja de AirPods, que es lo que hice.",
+      "original_duration": 2.819999999999993,
+      "raw_tts_duration": 2.784666666666667,
+      "final_duration": 2.276,
+      "scale_applied": 1.0,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.0,
+      "trimmed_duration": 2.276,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 2,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "en",
+          "start": 57.84,
+          "end": 57.96
+        },
+        {
+          "word": "la",
+          "start": 57.96,
+          "end": 58.04
+        },
+        {
+          "word": "caja",
+          "start": 58.04,
+          "end": 58.34
+        },
+        {
+          "word": "de",
+          "start": 58.34,
+          "end": 58.46
+        },
+        {
+          "word": "AirPods,",
+          "start": 58.46,
+          "end": 58.82
+        },
+        {
+          "word": "que",
+          "start": 59.18,
+          "end": 59.26
+        },
+        {
+          "word": "es",
+          "start": 59.26,
+          "end": 59.4
+        },
+        {
+          "word": "lo",
+          "start": 59.4,
+          "end": 59.52
+        },
+        {
+          "word": "que",
+          "start": 59.52,
+          "end": 59.64
+        },
+        {
+          "word": "hice.",
+          "start": 59.64,
+          "end": 59.88
+        }
+      ],
+      "source_words": [
+        {
+          "word": "in",
+          "start": 57.84,
+          "end": 58.18
+        },
+        {
+          "word": "the",
+          "start": 58.18,
+          "end": 58.36
+        },
+        {
+          "word": "AirPods",
+          "start": 58.36,
+          "end": 58.78
+        },
+        {
+          "word": "box,",
+          "start": 58.78,
+          "end": 59.32
+        },
+        {
+          "word": "which",
+          "start": 59.58,
+          "end": 59.76
+        },
+        {
+          "word": "is",
+          "start": 59.76,
+          "end": 59.94
+        },
+        {
+          "word": "what",
+          "start": 59.94,
+          "end": 60.16
+        },
+        {
+          "word": "I",
+          "start": 60.16,
+          "end": 60.42
+        },
+        {
+          "word": "did.",
+          "start": 60.42,
+          "end": 60.66
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "start": 60.8,
+      "end": 62.88,
+      "source_text": "But at this point, even those ran out.",
+      "translated_text": "Pero en este punto, incluso se acabaron.",
+      "original_duration": 2.0800000000000054,
+      "raw_tts_duration": 3.2006666666666668,
+      "final_duration": 2.24,
+      "scale_applied": 0.808275198460429,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 2.771333333333333,
+      "truncated_s": 0.0,
+      "unshortened_text": "Pero en este punto, incluso los que se acabaron.",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "Pero",
+          "start": 60.8,
+          "end": 60.94
+        },
+        {
+          "word": "en",
+          "start": 60.94,
+          "end": 61.2
+        },
+        {
+          "word": "este",
+          "start": 61.2,
+          "end": 61.4
+        },
+        {
+          "word": "punto,",
+          "start": 61.4,
+          "end": 61.68
+        },
+        {
+          "word": "incluso",
+          "start": 61.94,
+          "end": 62.3
+        },
+        {
+          "word": "se",
+          "start": 62.3,
+          "end": 62.58
+        },
+        {
+          "word": "acabaron.",
+          "start": 62.58,
+          "end": 62.92
+        }
+      ],
+      "source_words": [
+        {
+          "word": "But",
+          "start": 60.8,
+          "end": 60.94
+        },
+        {
+          "word": "at",
+          "start": 60.94,
+          "end": 61.14
+        },
+        {
+          "word": "this",
+          "start": 61.14,
+          "end": 61.34
+        },
+        {
+          "word": "point,",
+          "start": 61.34,
+          "end": 61.66
+        },
+        {
+          "word": "even",
+          "start": 61.82,
+          "end": 62.04
+        },
+        {
+          "word": "those",
+          "start": 62.04,
+          "end": 62.36
+        },
+        {
+          "word": "ran",
+          "start": 62.36,
+          "end": 62.62
+        },
+        {
+          "word": "out.",
+          "start": 62.62,
+          "end": 62.88
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "start": 63.14,
+      "end": 65.02,
+      "source_text": "Only Apple made all black AirPods.",
+      "translated_text": "S\u00f3lo Apple hizo todos los AirPods negros.",
+      "original_duration": 1.8799999999999955,
+      "raw_tts_duration": 3.2006666666666668,
+      "final_duration": 2.18,
+      "scale_applied": 0.787951807228913,
+      "clamped": false,
+      "error": "",
+      "tts_speed": 1.25,
+      "trimmed_duration": 2.7666666666666666,
+      "truncated_s": 0.0,
+      "unshortened_text": "",
+      "takes": 1,
+      "take_cer": 0.0,
+      "speaker": 1,
+      "words": [
+        {
+          "word": "S\u00f3lo",
+          "start": 63.14,
+          "end": 63.38
+        },
+        {
+          "word": "Apple",
+          "start": 63.38,
+          "end": 63.6
+        },
+        {
+          "word": "hizo",
+          "start": 63.6,
+          "end": 64.0
+        },
+        {
+          "word": "todos",
+          "start": 64.0,
+          "end": 64.32
+        },
+        {
+          "word": "los",
+          "start": 64.32,
+          "end": 64.5
+        },
+        {
+          "word": "AirPods",
+          "start": 64.5,
+          "end": 64.7
+        },
+        {
+          "word": "negros.",
+          "start": 64.7,
+          "end": 65.18
+        }
+      ],
+      "source_words": [
+        {
+          "word": "Only",
+          "start": 63.14,
+          "end": 63.4
+        },
+        {
+          "word": "Apple",
+          "start": 63.4,
+          "end": 63.74
+        },
+        {
+          "word": "made",
+          "start": 63.74,
+          "end": 64.06
+        },
+        {
+          "word": "all",
+          "start": 64.06,
+          "end": 64.32
+        },
+        {
+          "word": "black",
+          "start": 64.32,
+          "end": 64.6
+        },
+        {
+          "word": "AirPods.",
+          "start": 64.6,
+          "end": 65.02
+        }
+      ]
+    }
+  ],
+  "speaker_similarity": 0.3459486961364746,
+  "duration_match_ratio": 1.0100984167736415,
+  "raw_duration_ratio": 1.3399978605049205,
+  "clamped_segments": 0,
+  "failed_segments": 0,
+  "truncated_segments": 0,
+  "background_mode": "separate",
+  "background_model": "torchaudio HDEMUCS_HIGH_MUSDB_PLUS",
+  "detected_language": "en",
+  "language_confidence": 1.0,
+  "mix_info": {
+    "speech_gain": 1.333,
+    "limiter_gain": 0.6126,
+    "peak": 1.6161
+  },
+  "speakers": [
+    {
+      "speaker": 1,
+      "segments": 15,
+      "voiced": 15,
+      "reference_s": 25.0,
+      "similarity": 0.3459486961364746
+    }
+  ],
+  "speaker_detection_error": "",
+  "elapsed_s": 1036.4
+}
